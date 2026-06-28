@@ -1,122 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AppLayout from './components/layout/AppLayout';
+import AuthorityLayout from './components/layout/AuthorityLayout';
+import AdminLayout from './components/layout/AdminLayout';
+
+import Auth from './pages/Auth';
+import Home from './pages/Home';
+import Community from './pages/Community';
+import Profile from './pages/Profile';
+import Notifications from './pages/Notifications';
+import MyComplaints from './pages/MyComplaints';
+import Dashboard from './pages/Dashboard';
+
+// Placeholders for missing Authority Routes
+const AuthorityTasks = () => <div className="p-8"><h1 className="text-2xl font-bold">Assigned Tasks</h1></div>;
+const AuthorityAnalytics = () => <div className="p-8"><h1 className="text-2xl font-bold">Analytics & Reports</h1></div>;
+const AuthoritySettings = () => <div className="p-8"><h1 className="text-2xl font-bold">Authority Settings</h1></div>;
+
+// Placeholders for missing Admin Routes
+const AdminMonitor = () => <div className="p-8"><h1 className="text-2xl font-bold">System Monitor</h1></div>;
+const AdminAuthorities = () => <div className="p-8"><h1 className="text-2xl font-bold">Manage Authorities</h1></div>;
+const AdminBroadcasts = () => <div className="p-8"><h1 className="text-2xl font-bold">Global Broadcasts</h1></div>;
+const AdminSettings = () => <div className="p-8"><h1 className="text-2xl font-bold">System Settings</h1></div>;
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        
+        {/* Citizen Zone */}
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<Home />} />
+          <Route path="complaints" element={<MyComplaints />} />
+          <Route path="community" element={<Community />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
 
-      <div className="ticks"></div>
+        {/* Authority Zone */}
+        <Route path="/authority" element={<AuthorityLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="tasks" element={<AuthorityTasks />} />
+          <Route path="analytics" element={<AuthorityAnalytics />} />
+          <Route path="settings" element={<AuthoritySettings />} />
+        </Route>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Admin Zone */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminMonitor />} />
+          <Route path="authorities" element={<AdminAuthorities />} />
+          <Route path="broadcasts" element={<AdminBroadcasts />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
