@@ -8,7 +8,10 @@ import connectDB from './src/config/db.js';
 import logger from './src/utils/logger.js';
 import { notFound, errorHandler } from './src/middlewares/errorHandler.js';
 import { initSocket } from './src/config/socket.js';
+import cookieParser from "cookie-parser";
 
+import userRouter from "./src/routes/userRoutes.js";
+import complaintRouter from "./src/routes/complainRoutes.js"
 // Connect to database
 connectDB();
 
@@ -29,11 +32,19 @@ app.use(express.json());
 
 // Enable CORS
 app.use(cors());
+//
+app.use(cookieParser());
+//
+app.use(express.urlencoded({ extended: true }));
+
 
 // Routes
 app.get('/', (req, res) => {
     res.send('CivicPulse API is running...');
 });
+//user Routes
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/complaint", complaintRouter);
 
 // Error Handling Middlewares
 app.use(notFound);
