@@ -8,7 +8,6 @@ import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 const Auth = () => {
-    const [isAuthority, setIsAuthority] = useState(false);
     const [isLogin, setIsLogin] = useState(false); // Toggle for Citizen login/signup
     
     // Form state
@@ -57,11 +56,7 @@ const Auth = () => {
         }
     };
 
-    const handleAuthoritySubmit = async (e) => {
-        e.preventDefault();
-        toast.error("Authority login is currently under maintenance.");
-        // In the future, this will connect to authority endpoints
-    };
+
 
     return (
         <div className="min-h-screen bg-surface flex items-center justify-center p-4">
@@ -104,26 +99,7 @@ const Auth = () => {
 
                 {/* Right Side: Auth Forms */}
                 <div className="w-full md:w-7/12 p-8 md:p-12 bg-white relative">
-                    <div className="flex bg-surface p-1 rounded-2xl mb-8 relative">
-                        <div 
-                            className={`absolute inset-y-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-out ${isAuthority ? 'left-[calc(50%+2px)]' : 'left-1'}`}
-                        ></div>
-                        <button 
-                            onClick={() => { setIsAuthority(false); setEmail(''); setPassword(''); }}
-                            className={`flex-1 py-3 text-sm font-bold relative z-10 transition-colors ${!isAuthority ? 'text-primary' : 'text-text/50'}`}
-                        >
-                            Citizen Access
-                        </button>
-                        <button 
-                            onClick={() => { setIsAuthority(true); setEmail(''); setPassword(''); }}
-                            className={`flex-1 py-3 text-sm font-bold relative z-10 transition-colors ${isAuthority ? 'text-primary' : 'text-text/50'}`}
-                        >
-                            Authority Login
-                        </button>
-                    </div>
-
                     <AnimatePresence mode="wait">
-                        {!isAuthority ? (
                             <motion.div
                                 key="citizen"
                                 initial={{ opacity: 0, x: -20 }}
@@ -168,7 +144,14 @@ const Auth = () => {
                                         disabled={loading}
                                         className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] hover:-translate-y-0.5 flex items-center justify-center gap-2 group mt-2 disabled:opacity-70 disabled:hover:translate-y-0"
                                     >
-                                        {loading ? <Loader2 size={18} className="animate-spin" /> : (isLogin ? "Login Securely" : "Continue Anonymously")}
+                                        {loading ? (
+                                            <>
+                                                <Loader2 size={18} className="animate-spin" /> 
+                                                {isLogin ? "Logging in..." : "Signing up..."}
+                                            </>
+                                        ) : (
+                                            isLogin ? "Login Securely" : "Continue Anonymously"
+                                        )}
                                         {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
                                     </button>
                                 </form>
@@ -177,6 +160,7 @@ const Auth = () => {
                                     <button 
                                         onClick={() => setIsLogin(!isLogin)}
                                         className="text-sm font-bold text-primary hover:underline"
+                                        type="button"
                                     >
                                         {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
                                     </button>
@@ -188,51 +172,6 @@ const Auth = () => {
                                     </p>
                                 )}
                             </motion.div>
-                        ) : (
-                            <motion.div
-                                key="authority"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                transition={{ duration: 0.2 }}
-                                className="space-y-5"
-                            >
-                                <div className="text-center mb-8">
-                                    <h2 className="text-2xl font-black text-text mb-2">Authority Portal</h2>
-                                    <p className="text-text/60 text-sm">Authorized personnel only.</p>
-                                </div>
-
-                                <form onSubmit={handleAuthoritySubmit} className="space-y-5">
-                                    <div>
-                                        <label className="block text-sm font-bold text-text/80 mb-2">Official Email</label>
-                                        <input 
-                                            type="email" 
-                                            placeholder="officer@city.gov" 
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-text/80 mb-2">Password</label>
-                                        <input 
-                                            type="password" 
-                                            placeholder="••••••••" 
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                        />
-                                    </div>
-
-                                    <button 
-                                        type="submit"
-                                        className="w-full bg-text hover:bg-text/90 text-white font-bold py-4 rounded-2xl transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-center mt-4"
-                                    >
-                                        Secure Login
-                                    </button>
-                                </form>
-                            </motion.div>
-                        )}
                     </AnimatePresence>
                 </div>
             </motion.div>
