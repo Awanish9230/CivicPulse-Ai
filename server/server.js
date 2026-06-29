@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import http from 'http';
+import rateLimit from 'express-rate-limit';
 import connectDB from './src/config/db.js';
 import logger from './src/utils/logger.js';
 import { notFound, errorHandler } from './src/middlewares/errorHandler.js';
@@ -24,6 +25,16 @@ initSocket(server);
 
 // Security middleware
 app.use(helmet());
+
+// Global Rate Limiting
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use(globalLimiter);
 
 // Compression middleware
 app.use(compression());

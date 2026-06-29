@@ -25,6 +25,24 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         fetchUser();
+
+        // Global Axios Interceptor to catch 401 errors globally
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response?.status === 401) {
+                    setUser(null);
+                    toast.error("Session expired. Please log in again.");
+                    // Ensure the user is kicked back to the auth page
+                    if (window.location.pathname !== '/auth') {
+                        window.location.href = '/auth';
+                    }
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        return () => axios.interceptors.response.eject(interceptor);
     }, []);
 
     // Global Identity Rotation Logic
