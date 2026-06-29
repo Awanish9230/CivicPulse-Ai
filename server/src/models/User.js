@@ -22,6 +22,11 @@ const userSchema = new mongoose.Schema({
         unique: true,
         index: true,
     },
+    role: {
+        type: String,
+        enum: ['Citizen', 'Authority'],
+        default: 'Citizen',
+    },
     // anonymousIdLastRotated: {
     //     type: Date,
     //     default: Date.now

@@ -18,6 +18,11 @@ export const initSocket = (server) => {
         socket.on('joinRoom', (room) => {
             socket.join(room);
             logger.info(`Socket ${socket.id} joined room ${room}`);
+            
+            // Broadcast updated user count for this room
+            const clients = io.sockets.adapter.rooms.get(room);
+            const numClients = clients ? clients.size : 0;
+            io.to(room).emit('roomData', { room, onlineCount: numClients });
         });
 
         // Handle incoming messages
@@ -29,6 +34,17 @@ export const initSocket = (server) => {
 
         socket.on('typing', (data) => {
             socket.to(data.room).emit('userTyping', data.user);
+        });
+
+        socket.on('disconnecting', () => {
+            // Broadcast count updates for rooms the user is leaving
+            for (const room of socket.rooms) {
+                if (room !== socket.id) {
+                    const clients = io.sockets.adapter.rooms.get(room);
+                    const numClients = clients ? clients.size - 1 : 0;
+                    io.to(room).emit('roomData', { room, onlineCount: numClients });
+                }
+            }
         });
 
         socket.on('disconnect', () => {
