@@ -5,17 +5,19 @@ import {
     createComplaint,
     getMyComplaints,
     getAllComplaints,
-    upvoteComplaint
+    upvoteComplaint,
+    resolveComplaint
 } from "../controllers/complainController.js";
 
 const router = Router();
 
 // Citizen Routes
 router.post("/:complaintId/upvote", verifyJWT, upvoteComplaint);
+router.post("/:complaintId/resolve", verifyJWT, resolveComplaint);
 router.post(
     "/create",
     verifyJWT,
-    upload.single("image"),
+    upload.array("images", 5),
     createComplaint
 );
 

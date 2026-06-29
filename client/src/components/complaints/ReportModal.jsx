@@ -9,7 +9,13 @@ const CATEGORIES = ['Road', 'Electricity', 'Garbage', 'Water', 'Drainage', 'Traf
 const ReportModal = ({ captureData, onClose, onSuccess }) => {
     const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
-    const [address, setAddress] = useState(null);
+    const [address, setAddress] = useState({
+        line1: '',
+        line2: '',
+        pinCode: '',
+        district: '',
+        state: ''
+    });
     const [isFetchingAddress, setIsFetchingAddress] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,10 +30,11 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                 if (res.data && res.data.address) {
                     const addr = res.data.address;
                     setAddress({
-                        fullAddress: res.data.display_name,
-                        ward: addr.suburb || addr.neighbourhood || addr.village || 'Unknown Ward',
-                        district: addr.state_district || addr.county || addr.city || 'Unknown District',
-                        pinCode: addr.postcode || 'Unknown'
+                        line1: addr.road || addr.suburb || addr.neighbourhood || '',
+                        line2: addr.village || addr.city_district || '',
+                        district: addr.state_district || addr.county || addr.city || '',
+                        state: addr.state || '',
+                        pinCode: addr.postcode || ''
                     });
                 }
             } catch (error) {
@@ -53,13 +60,16 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
         setIsSubmitting(true);
 
         try {
-            // Convert Base64 to Blob
-            const response = await fetch(captureData.photo);
-            const blob = await response.blob();
-            const file = new File([blob], `complaint_${Date.now()}.jpg`, { type: 'image/jpeg' });
-
             const formData = new FormData();
-            formData.append('image', file);
+            
+            // Convert multiple Base64 photos to Blobs
+            for (let i = 0; i < captureData.photos.length; i++) {
+                const response = await fetch(captureData.photos[i]);
+                const blob = await response.blob();
+                const file = new File([blob], `complaint_${Date.now()}_${i}.jpg`, { type: 'image/jpeg' });
+                formData.append('images', file);
+            }
+
             formData.append('category', category);
             formData.append('description', description);
             
@@ -105,33 +115,75 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                 </div>
 
                 <div className="p-6 overflow-y-auto flex-1">
-                    <div className="mb-6 rounded-2xl overflow-hidden bg-black/5 relative h-48">
-                        <img src={captureData.photo} alt="Captured issue" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-2xl"></div>
+                    <div className="mb-6 flex gap-2 overflow-x-auto pb-2 snap-x">
+                        {captureData.photos.map((photo, i) => (
+                            <div key={i} className="w-40 h-40 shrink-0 rounded-2xl overflow-hidden bg-black/5 relative snap-center">
+                                <img src={photo} alt="Captured issue" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-2xl"></div>
+                            </div>
+                        ))}
                     </div>
 
                     <form id="report-form" onSubmit={handleSubmit} className="space-y-5">
                         
-                        {/* Auto-Fetched Address (Read-only) */}
-                        <div>
-                            <label className="block text-sm font-bold text-text/70 mb-1.5 flex items-center gap-2">
-                                <MapPin size={16} className="text-primary" />
-                                Exact Location (Auto-detected)
+                        {/* Editable Address Fields */}
+                        <div className="bg-surface border border-border/50 rounded-xl p-4">
+                            <label className="block text-sm font-bold text-text mb-3 flex items-center justify-between">
+                                <span className="flex items-center gap-2">
+                                    <MapPin size={16} className="text-primary" />
+                                    Location Details
+                                </span>
+                                {isFetchingAddress && <Loader2 size={14} className="animate-spin text-primary" />}
                             </label>
-                            <div className="bg-surface border border-border/50 rounded-xl p-3.5 text-sm">
-                                {isFetchingAddress ? (
-                                    <div className="flex items-center gap-2 text-text/50 font-medium">
-                                        <Loader2 size={16} className="animate-spin text-primary" />
-                                        Pinpointing your location...
-                                    </div>
-                                ) : address ? (
-                                    <div>
-                                        <p className="font-bold text-text mb-1 flex items-center gap-1"><CheckCircle size={14} className="text-green-500"/> Verified</p>
-                                        <p className="text-text/70 leading-relaxed">{address.fullAddress}</p>
-                                    </div>
-                                ) : (
-                                    <p className="text-orange-500 font-medium">Could not fetch physical address. GPS coordinates will be used instead.</p>
-                                )}
+                            
+                            <div className="space-y-3">
+                                <div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Address Line 1 (Street/Locality)" 
+                                        value={address.line1} 
+                                        onChange={(e) => setAddress({...address, line1: e.target.value})}
+                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Address Line 2 (Landmark - Optional)" 
+                                        value={address.line2} 
+                                        onChange={(e) => setAddress({...address, line2: e.target.value})}
+                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <input 
+                                        type="text" 
+                                        placeholder="District/City" 
+                                        value={address.district} 
+                                        onChange={(e) => setAddress({...address, district: e.target.value})}
+                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                        required
+                                    />
+                                    <input 
+                                        type="text" 
+                                        placeholder="State" 
+                                        value={address.state} 
+                                        onChange={(e) => setAddress({...address, state: e.target.value})}
+                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Pin Code" 
+                                        value={address.pinCode} 
+                                        onChange={(e) => setAddress({...address, pinCode: e.target.value})}
+                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                        required
+                                    />
+                                </div>
                             </div>
                         </div>
 

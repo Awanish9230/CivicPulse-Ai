@@ -39,6 +39,18 @@ const Community = () => {
         fetchComplaints();
     }, []);
 
+    const handleResolve = async (id) => {
+        try {
+            await axios.post(`http://localhost:5000/api/v1/complaint/${id}/resolve`, {}, {
+                withCredentials: true
+            });
+            toast.success("Complaint resolved and optimized!");
+            fetchComplaints();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to resolve complaint");
+        }
+    };
+
     // Socket Initialization for Chat
     useEffect(() => {
         const newSocket = io('http://localhost:5000');
@@ -292,10 +304,9 @@ const Community = () => {
                                             <p className="text-text/80 text-sm leading-relaxed mb-3">
                                                 {item.description}
                                             </p>
-                                            
-                                            {item.imageUrl && (
+                                            {(item.imageUrls?.[0] || item.imageUrl) && (
                                                 <div className="mt-2 mb-4 rounded-xl overflow-hidden border border-border/50 max-w-md h-48 bg-surface">
-                                                    <img src={item.imageUrl} alt="Issue" className="w-full h-full object-cover" />
+                                                    <img src={item.imageUrls?.[0] || item.imageUrl} alt="Issue" className="w-full h-full object-cover" />
                                                 </div>
                                             )}
                                             
@@ -304,9 +315,19 @@ const Community = () => {
                                                     onClick={() => handleUpvote(item._id)}
                                                     className="group flex items-center gap-2 text-xs font-bold text-primary transition-colors bg-primary/10 hover:bg-primary hover:text-white px-4 py-2 rounded-xl"
                                                 >
-                                                    <MapPin size={14} className="group-hover:animate-bounce" />
-                                                    <span>I'm affected too ({item.supportCount || 0})</span>
+                                                    <ThumbsUp size={16} />
+                                                    {item.upvotes || 0} Upvotes
                                                 </button>
+                                                
+                                                {user?.role === 'Authority' && item.status !== 'Resolved' && (
+                                                    <button 
+                                                        onClick={() => handleResolve(item._id)}
+                                                        className="ml-auto flex items-center gap-2 text-white bg-green-500 hover:bg-green-600 px-4 py-1.5 rounded-lg transition-colors font-bold text-xs shadow-md"
+                                                    >
+                                                        <Shield size={14} />
+                                                        Mark Resolved
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

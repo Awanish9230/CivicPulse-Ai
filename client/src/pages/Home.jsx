@@ -1,21 +1,35 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Camera, MapPin, Clock, ThumbsUp, MessageSquare, Shield, Zap, Globe, Mail } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import CameraCapture from '../components/complaints/CameraCapture';
 import ReportModal from '../components/complaints/ReportModal';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { AuthContext } from '../context/AuthContext';
 
 const Home = () => {
+    const { user } = useContext(AuthContext);
     const [isHoveringCamera, setIsHoveringCamera] = useState(false);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
-    const [captureData, setCaptureData] = useState(null); // Holds { photo, gps }
+    const [captureData, setCaptureData] = useState(null); // Holds { photos, gps }
     const [feed, setFeed] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const location = useLocation();
     const navigate = useNavigate();
+
+    const handleResolve = async (id) => {
+        try {
+            await axios.post(`http://localhost:5000/api/v1/complaint/${id}/resolve`, {}, {
+                withCredentials: true
+            });
+            toast.success("Complaint resolved and optimized!");
+            fetchComplaints();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to resolve complaint");
+        }
+    };
 
     // Check query params to auto-open camera (e.g. from MyComplaints)
     useEffect(() => {
@@ -171,9 +185,9 @@ const Home = () => {
                         <div className="flex flex-col md:flex-row gap-6">
                             {/* Image */}
                             <div className="w-full md:w-1/3 h-48 md:h-auto rounded-2xl overflow-hidden relative bg-surface">
-                                {item.imageUrl ? (
+                                {(item.imageUrls?.[0] || item.imageUrl) ? (
                                     <img 
-                                        src={item.imageUrl} 
+                                        src={item.imageUrls?.[0] || item.imageUrl} 
                                         alt={item.description} 
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
@@ -214,6 +228,16 @@ const Home = () => {
                                         <MessageSquare size={18} />
                                         <span>Discussion</span>
                                     </button>
+                                    
+                                    {user?.role === 'Authority' && item.status !== 'Resolved' && (
+                                        <button 
+                                            onClick={() => handleResolve(item._id)}
+                                            className="ml-auto flex items-center gap-2 text-white bg-green-500 hover:bg-green-600 px-4 py-1.5 rounded-lg transition-colors font-bold text-sm shadow-md"
+                                        >
+                                            <Shield size={16} />
+                                            Mark Resolved
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

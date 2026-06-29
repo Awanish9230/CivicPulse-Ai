@@ -2,7 +2,52 @@ import Complaint from "../models/Complaint.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asynchandler.js";
-import uploadOnCloudinary from "../utils/cloudinary.js";
+import uploadOnCloudinary, { deleteFromCloudinary } from "../utils/cloudinary.js";
+
+export const resolveComplaint = asyncHandler(async (req, res) => {
+    const { complaintId } = req.params;
+
+    // Check authority role (assuming `req.user.role === 'Authority'`)
+    if (req.user.role !== 'Authority') {
+        throw new ApiError(403, "Only authorities can resolve complaints");
+    }
+
+    const complaint = await Complaint.findById(complaintId);
+    
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+
+    if (complaint.status === "Resolved") {
+        throw new ApiError(400, "Complaint is already resolved");
+    }
+
+    // Delete excess images from Cloudinary to free up storage limits
+    if (complaint.imageUrls && complaint.imageUrls.length > 1) {
+        // Keep the first image, destroy the rest
+        for (let i = 1; i < complaint.imageUrls.length; i++) {
+            await deleteFromCloudinary(complaint.imageUrls[i]);
+        }
+        
+        // Update database array to only contain the first image
+        complaint.imageUrls = [complaint.imageUrls[0]];
+    }
+
+    complaint.status = "Resolved";
+    await complaint.save();
+
+    // Broadcast to users that it's resolved
+    try {
+        const { getIO } = await import('../config/socket.js');
+        getIO().emit('complaint_status_update', complaint);
+    } catch (e) {
+        console.error("Socket error on resolve complaint", e);
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, complaint, "Complaint resolved and media optimized.")
+    );
+});
 
 export const createComplaint = asyncHandler(async (req, res) => {
 
@@ -46,23 +91,33 @@ export const createComplaint = asyncHandler(async (req, res) => {
         }
     }
 
-    // 4. Validate image
-    const imageLocalPath = req.file?.path;
+    // 4. Validate images
+    const imageFiles = req.files;
 
-    if (!imageLocalPath) {
+    if (!imageFiles || imageFiles.length === 0) {
         throw new ApiError(
             400,
-            "Complaint image is required"
+            "At least one complaint image is required"
         );
     }
 
-    // 5. Upload image to Cloudinary
-    const uploadedImage = await uploadOnCloudinary(imageLocalPath);
+    if (imageFiles.length > 5) {
+        throw new ApiError(400, "Maximum of 5 images allowed");
+    }
 
-    if (!uploadedImage) {
+    // 5. Upload images to Cloudinary
+    const uploadedImages = [];
+    for (const file of imageFiles) {
+        const uploaded = await uploadOnCloudinary(file.path);
+        if (uploaded) {
+            uploadedImages.push(uploaded.secure_url);
+        }
+    }
+
+    if (uploadedImages.length === 0) {
         throw new ApiError(
             500,
-            "Failed to upload complaint image on Cloudinary"
+            "Failed to upload complaint images to Cloudinary"
         );
     }
 
@@ -75,7 +130,9 @@ export const createComplaint = asyncHandler(async (req, res) => {
             coordinates: parsedCoordinates,
         },
         description,
-        imageUrl: uploadedImage.secure_url,
+        imageUrls: uploadedImages,
+        // For backwards compatibility, set the first image as imageUrl as well
+        imageUrl: uploadedImages[0],
         ...(parsedAddress && { address: parsedAddress }),
     });
 

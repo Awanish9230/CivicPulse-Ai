@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+function arrayLimit(val) {
+    return val.length <= 5;
+}
+
 const complaintSchema = new mongoose.Schema({
     reportedBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -34,7 +38,12 @@ const complaintSchema = new mongoose.Schema({
     },
     imageUrl: {
         type: String,
-        required: true,
+        required: false, // Make optional for backward compatibility
+    },
+    imageUrls: {
+        type: [String], // Array of secure URLs from Cloudinary
+        default: [],
+        validate: [arrayLimit, 'Exceeds the limit of 5 photos']
     },
     voiceNoteUrl: {
         type: String,
