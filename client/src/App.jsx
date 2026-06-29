@@ -37,6 +37,7 @@ function App() {
           <Route path="community" element={<Community />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="dashboard" element={<Dashboard />} />
         </Route>
 
         {/* Authority Zone */}

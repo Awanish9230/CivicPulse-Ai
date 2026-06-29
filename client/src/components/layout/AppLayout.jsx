@@ -1,20 +1,24 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search } from 'lucide-react';
+import { useState } from 'react';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 
 const AppLayout = () => {
     const location = useLocation();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
         <div className="flex min-h-screen bg-[#F8FAFC]">
-            <Sidebar />
+            <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
-            <main className="flex-1 pb-16 md:pb-0 md:ml-20 lg:ml-64 transition-all duration-300 relative z-0">
-                <header className="h-20 border-b border-border/50 glass flex items-center px-6 md:px-10 justify-between sticky top-0 z-40">
-                    <div className="md:hidden font-black text-2xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 tracking-tight">
-                        CivicPulse
+            <main className={`flex-1 pb-16 md:pb-0 transition-all duration-300 relative z-0 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
+                <header className="h-20 border-b border-border/50 glass flex items-center px-6 md:px-10 justify-between sticky top-0 z-40 gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="md:hidden font-black text-2xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 tracking-tight">
+                            CivicPulse
+                        </div>
                     </div>
                     <div className="hidden md:flex w-full max-w-2xl mx-auto items-center relative group">
                         <Search className="absolute left-4 text-text/40 group-focus-within:text-primary transition-colors" size={20} />
