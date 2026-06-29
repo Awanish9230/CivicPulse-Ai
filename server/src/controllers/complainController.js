@@ -116,3 +116,52 @@ export const getMyComplaints = asyncHandler(async (req, res) => {
     );
 
 });
+
+
+export const deleteComplaint = asyncHandler(async (req, res) => {
+
+    // 1. Get complaint id
+    const { complaintId } = req.params;
+
+    // 2. Find complaint
+    const complaint = await Complaint.findById(complaintId);
+
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+
+    // 3. Check ownership
+    if (
+        complaint.reportedBy.toString() !==
+        req.user._id.toString()
+    ) {
+        throw new ApiError(
+            403,
+            "You are not authorized to delete this complaint"
+        );
+    }
+
+    // 4. Allow deletion only before processing starts
+    if (complaint.status !== "Submitted") {
+        throw new ApiError(
+            400,
+            "Complaint can only be deleted while it is in Submitted status"
+        );
+    }
+
+    // 5. Delete complaint
+    await Complaint.findByIdAndDelete(complaintId);
+
+    // Later:
+    // Delete image from Cloudinary using publicId
+
+    // 6. Response
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {},
+            "Complaint deleted successfully"
+        )
+    );
+
+});
