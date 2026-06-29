@@ -24,8 +24,20 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['Citizen', 'Authority'],
+        enum: ['Citizen', 'Authority', 'Admin'],
         default: 'Citizen',
+    },
+    name: {
+        type: String,
+        trim: true,
+    },
+    authorityLevel: {
+        type: String,
+        enum: ['Junior', 'Senior', 'HOD'],
+    },
+    department: {
+        type: String,
+        trim: true,
     },
     // anonymousIdLastRotated: {
     //     type: Date,

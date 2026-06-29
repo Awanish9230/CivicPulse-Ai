@@ -72,8 +72,13 @@ const complaintSchema = new mongoose.Schema({
         officer: String,
     },
     escalationLevel: {
-        type: Number, // 0 = normal, 1 = 48h, 2 = 72h, 3 = 96h
-        default: 0,
+        type: String,
+        enum: ['Junior', 'Senior', 'HOD'],
+        default: 'Junior',
+    },
+    lastActivityAt: {
+        type: Date,
+        default: Date.now,
     },
     officialReplies: [{
         authorityName: { type: String, required: true },

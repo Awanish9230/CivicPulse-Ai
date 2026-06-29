@@ -1,11 +1,12 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Map, CheckSquare, BarChart, Settings, LogOut, Lock } from 'lucide-react';
+import { Search, Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users } from 'lucide-react';
 import { useState } from 'react';
 
 const authNavItems = [
     { name: 'Dashboard', path: '/authority', icon: Map },
     { name: 'Tasks', path: '/authority/tasks', icon: CheckSquare },
+    { name: 'Members', path: '/authority/members', icon: Users },
     { name: 'Analytics', path: '/authority/analytics', icon: BarChart },
     { name: 'Settings', path: '/authority/settings', icon: Settings },
 ];
@@ -61,6 +62,31 @@ const AuthoritySidebar = ({ onLogout }) => {
 const AuthorityLayout = () => {
     const location = useLocation();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    
+    // Quick and dirty real login for authority panel
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            // Must use a real HTTP client to set cookies
+            const axios = (await import('axios')).default;
+            const { data } = await axios.post('http://localhost:5000/api/v1/user/login', { email, password }, {
+                withCredentials: true
+            });
+            if (data.data.user.role === 'Authority' || data.data.user.role === 'Admin' || data.data.user.email === 'officer@city.gov') {
+                setIsAuthenticated(true);
+            } else {
+                alert("Unauthorized: Not an authority account");
+            }
+        } catch (error) {
+            alert(error.response?.data?.message || "Login failed");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!isAuthenticated) {
         return (
@@ -76,22 +102,37 @@ const AuthorityLayout = () => {
                     <h1 className="text-3xl font-black mb-2">Authority Login</h1>
                     <p className="text-slate-400 mb-8">Access restricted to authorized personnel.</p>
 
-                    <div className="space-y-4">
+                    <form onSubmit={handleLogin} className="space-y-4">
                         <div>
                             <label className="block text-sm font-bold text-slate-300 mb-2">Official Email</label>
-                            <input type="email" placeholder="officer@city.gov" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white" />
+                            <input 
+                                type="email" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="officer@city.gov" 
+                                required
+                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white" 
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-300 mb-2">Password</label>
-                            <input type="password" placeholder="••••••••" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white" />
+                            <input 
+                                type="password" 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••" 
+                                required
+                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white" 
+                            />
                         </div>
                         <button 
-                            onClick={() => setIsAuthenticated(true)}
-                            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg mt-4"
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg mt-4 disabled:opacity-50"
                         >
-                            Secure Login
+                            {loading ? 'Authenticating...' : 'Secure Login'}
                         </button>
-                    </div>
+                    </form>
                 </motion.div>
             </div>
         );

@@ -15,6 +15,8 @@ import userRoutes from './src/routes/userRoutes.js';
 import complainRoutes from './src/routes/complainRoutes.js';
 import notificationRoutes from './src/routes/notificationRoutes.js';
 import messageRoutes from './src/routes/messageRoutes.js';
+import authorityRoutes from './src/routes/authorityRoutes.js';
+import startEscalationCron from './src/utils/escalationCron.js';
 
 // Connect to database
 connectDB();
@@ -24,6 +26,9 @@ const server = http.createServer(app);
 
 // Initialize Socket.io
 initSocket(server);
+
+// Start Cron Jobs
+startEscalationCron();
 
 // Security middleware
 app.use(helmet());
@@ -66,6 +71,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/complaint", complainRoutes);
 app.use("/api/v1/notification", notificationRoutes);
 app.use("/api/v1/message", messageRoutes);
+app.use("/api/v1/authority", authorityRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);
