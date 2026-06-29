@@ -74,7 +74,12 @@ const complaintSchema = new mongoose.Schema({
     escalationLevel: {
         type: Number, // 0 = normal, 1 = 48h, 2 = 72h, 3 = 96h
         default: 0,
-    }
+    },
+    officialReplies: [{
+        authorityName: { type: String, required: true },
+        content: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }]
 }, {
     timestamps: true,
 });

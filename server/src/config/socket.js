@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import logger from '../utils/logger.js';
+import Message from '../models/Message.js';
 
 let io;
 
@@ -27,9 +28,31 @@ export const initSocket = (server) => {
 
         // Handle incoming messages
         socket.on('sendMessage', async (messageData) => {
-            // Note: Toxicity check and DB save would happen here
-            const { room, message } = messageData;
-            io.to(room).emit('receiveMessage', message);
+            try {
+                const { room, message } = messageData;
+                const channelName = room === 'local-community-general' ? 'general' : 'ask-authority';
+                
+                // Save to database
+                const newMessage = await Message.create({
+                    sender: message.senderId,
+                    senderName: message.senderName,
+                    channel: channelName,
+                    content: message.text,
+                    type: 'Text', // Or parse if you support image URLs directly
+                });
+
+                // Attach ID and timestamps to the emitted message
+                const emittedMessage = {
+                    ...message,
+                    _id: newMessage._id,
+                    createdAt: newMessage.createdAt,
+                    channel: channelName
+                };
+
+                io.to(room).emit('receiveMessage', emittedMessage);
+            } catch (error) {
+                logger.error("Socket message error:", error);
+            }
         });
 
         socket.on('typing', (data) => {

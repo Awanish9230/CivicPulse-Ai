@@ -7,7 +7,8 @@ import {
     getMyComplaints,
     getAllComplaints,
     upvoteComplaint,
-    resolveComplaint
+    resolveComplaint,
+    addOfficialReply
 } from "../controllers/complainController.js";
 
 const router = Router();
@@ -23,6 +24,7 @@ const uploadLimiter = rateLimit({
 // Citizen Routes
 router.post("/:complaintId/upvote", verifyJWT, upvoteComplaint);
 router.post("/:complaintId/resolve", verifyJWT, resolveComplaint);
+router.post("/:complaintId/reply", verifyJWT, addOfficialReply);
 router.post(
     "/create",
     verifyJWT,

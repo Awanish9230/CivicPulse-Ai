@@ -3,7 +3,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User } from 'lucide-react';
+import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, MessageSquare } from 'lucide-react';
 
 const Dashboard = () => {
     const [filter, setFilter] = useState('All');
@@ -14,6 +14,30 @@ const Dashboard = () => {
         critical: 0,
         resolved: 0
     });
+    
+    // Reply State
+    const [activeReplyId, setActiveReplyId] = useState(null);
+    const [replyContent, setReplyContent] = useState('');
+    const [replying, setReplying] = useState(false);
+
+    const handleReply = async (complaintId) => {
+        if (!replyContent.trim()) return;
+        setReplying(true);
+        try {
+            await axios.post(`http://localhost:5000/api/v1/complaint/${complaintId}/reply`, {
+                content: replyContent
+            }, { withCredentials: true });
+            
+            toast.success("Reply posted successfully");
+            setReplyContent('');
+            setActiveReplyId(null);
+            fetchComplaints(); // Refresh to see updates
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to post reply");
+        } finally {
+            setReplying(false);
+        }
+    };
 
     const fetchComplaints = async () => {
         try {
@@ -277,7 +301,37 @@ const Dashboard = () => {
                                         }`}></span>
                                     </span>
                                     <span className="text-xs font-bold text-text/70">{c.status}</span>
+                                    
+                                    <button 
+                                        onClick={() => setActiveReplyId(activeReplyId === c._id ? null : c._id)}
+                                        className="ml-auto flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors bg-primary/10 px-3 py-1 rounded-lg"
+                                    >
+                                        <MessageSquare size={12} />
+                                        Reply
+                                    </button>
                                 </div>
+                                
+                                {activeReplyId === c._id && (
+                                    <div className="mt-3 pt-3 border-t border-border/50 flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            value={replyContent}
+                                            onChange={(e) => setReplyContent(e.target.value)}
+                                            placeholder="Type official update..."
+                                            className="flex-1 bg-white border border-border/50 text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleReply(c._id);
+                                            }}
+                                        />
+                                        <button 
+                                            onClick={() => handleReply(c._id)}
+                                            disabled={replying || !replyContent.trim()}
+                                            className="bg-primary text-white p-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                                        >
+                                            <Send size={14} />
+                                        </button>
+                                    </div>
+                                )}
                             </motion.div>
                         ))}
                     </div>

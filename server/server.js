@@ -11,9 +11,11 @@ import { notFound, errorHandler } from './src/middlewares/errorHandler.js';
 import { initSocket } from './src/config/socket.js';
 import cookieParser from "cookie-parser";
 
-import userRouter from "./src/routes/userRoutes.js";
-import complaintRouter from "./src/routes/complainRoutes.js";
-import notificationRouter from "./src/routes/notificationRoutes.js";
+import userRoutes from './src/routes/userRoutes.js';
+import complainRoutes from './src/routes/complainRoutes.js';
+import notificationRoutes from './src/routes/notificationRoutes.js';
+import messageRoutes from './src/routes/messageRoutes.js';
+
 // Connect to database
 connectDB();
 
@@ -45,15 +47,13 @@ app.use(express.json());
 // Enable CORS
 app.use(cors({
     origin: function (origin, callback) {
-        // allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         return callback(null, origin);
     },
     credentials: true,
 }));
-//
+
 app.use(cookieParser());
-//
 app.use(express.urlencoded({ extended: true }));
 
 
@@ -61,10 +61,11 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
     res.send('CivicPulse API is running...');
 });
-//user Routes
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/complaint", complaintRouter);
-app.use("/api/v1/notification", notificationRouter);
+
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/complaint", complainRoutes);
+app.use("/api/v1/notification", notificationRoutes);
+app.use("/api/v1/message", messageRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);

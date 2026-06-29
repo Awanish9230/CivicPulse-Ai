@@ -6,6 +6,15 @@ const messageSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
+    senderName: {
+        type: String, // Capture the display name at time of sending
+        required: true,
+    },
+    channel: {
+        type: String,
+        enum: ['general', 'ask-authority'],
+        required: true,
+    },
     complaintId: {
         // Null if it's general community chat, populated if it's tied to a specific complaint discussion
         type: mongoose.Schema.Types.ObjectId,
@@ -20,7 +29,7 @@ const messageSchema = new mongoose.Schema({
         },
         coordinates: {
             type: [Number], // [longitude, latitude]
-            required: true,
+            required: false, // Make false since global chat might not have exact coordinates
         }
     },
     content: {
@@ -41,6 +50,8 @@ const messageSchema = new mongoose.Schema({
 });
 
 messageSchema.index({ location: '2dsphere' });
+// Automatically delete messages after 90 days
+messageSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
 const Message = mongoose.model('Message', messageSchema);
 export default Message;

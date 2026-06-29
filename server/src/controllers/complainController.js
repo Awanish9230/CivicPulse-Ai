@@ -49,6 +49,33 @@ export const resolveComplaint = asyncHandler(async (req, res) => {
     );
 });
 
+export const addOfficialReply = asyncHandler(async (req, res) => {
+    const { complaintId } = req.params;
+    const { content } = req.body;
+    
+    if (!content) {
+        throw new ApiError(400, "Reply content is required");
+    }
+    
+    // Use the current user's anonymous ID or default to "City Official"
+    const authorityName = req.user?.anonymousId || "City Official";
+    
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+    
+    complaint.officialReplies.push({
+        authorityName,
+        content,
+        createdAt: new Date()
+    });
+    
+    await complaint.save();
+    
+    res.status(200).json(new ApiResponse(200, complaint, "Official reply added"));
+});
+
 export const createComplaint = asyncHandler(async (req, res) => {
 
     // 1. Get complaint details

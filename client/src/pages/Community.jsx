@@ -77,6 +77,26 @@ const Community = () => {
         return () => newSocket.close();
     }, []);
 
+    // Fetch chat history when channel changes
+    useEffect(() => {
+        if (activeChannel === 'general' || activeChannel === 'ask-authority') {
+            const fetchChatHistory = async () => {
+                try {
+                    const { data } = await axios.get(`http://localhost:5000/api/v1/message/${activeChannel}`, {
+                        withCredentials: true
+                    });
+                    setMessages(prev => ({
+                        ...prev,
+                        [activeChannel]: data.data
+                    }));
+                } catch (error) {
+                    console.error("Failed to load chat history", error);
+                }
+            };
+            fetchChatHistory();
+        }
+    }, [activeChannel]);
+
     // Auto-scroll chat
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -329,6 +349,23 @@ const Community = () => {
                                                     </button>
                                                 )}
                                             </div>
+
+                                            {/* Render Official Replies */}
+                                            {item.officialReplies && item.officialReplies.length > 0 && (
+                                                <div className="mt-4 space-y-2 border-t border-border/50 pt-4">
+                                                    <h5 className="text-xs font-bold text-text/60 uppercase tracking-wider mb-2">Authority Updates</h5>
+                                                    {item.officialReplies.map((reply, i) => (
+                                                        <div key={i} className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <ShieldAlert size={14} className="text-blue-500" />
+                                                                <span className="font-bold text-sm text-blue-600">{reply.authorityName}</span>
+                                                                <span className="text-xs text-text/40 ml-auto">{getTimeAgo(reply.createdAt)}</span>
+                                                            </div>
+                                                            <p className="text-sm text-text/80">{reply.content}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     {/* Heatmap background effect */}
