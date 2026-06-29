@@ -4,12 +4,14 @@ import { upload } from "../middlewares/uploadmiddleware.js";
 import {
     createComplaint,
     getMyComplaints,
-    getAllComplaints
+    getAllComplaints,
+    upvoteComplaint
 } from "../controllers/complainController.js";
 
 const router = Router();
 
 // Citizen Routes
+router.post("/:complaintId/upvote", verifyJWT, upvoteComplaint);
 router.post(
     "/create",
     verifyJWT,

@@ -188,3 +188,25 @@ export const getAllComplaints = asyncHandler(async (req, res) => {
         )
     );
 });
+
+export const upvoteComplaint = asyncHandler(async (req, res) => {
+    const { complaintId } = req.params;
+
+    const complaint = await Complaint.findById(complaintId);
+
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+
+    // Increment support count
+    complaint.supportCount = (complaint.supportCount || 0) + 1;
+    await complaint.save();
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            complaint,
+            "Complaint upvoted successfully"
+        )
+    );
+});

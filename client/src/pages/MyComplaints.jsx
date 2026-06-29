@@ -16,6 +16,7 @@ const MyComplaints = () => {
             });
             setComplaints(data.data || []);
         } catch (error) {
+            console.error('MyComplaints fetch error:', error.response?.data || error.message);
             toast.error("Failed to load your complaints.");
         } finally {
             setLoading(false);

@@ -4,6 +4,8 @@ import { ArrowRight, User, Shield, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 const Auth = () => {
     const [isAuthority, setIsAuthority] = useState(false);
@@ -15,6 +17,7 @@ const Auth = () => {
     const [loading, setLoading] = useState(false);
     
     const navigate = useNavigate();
+    const { login } = useContext(AuthContext);
 
     const handleCitizenSubmit = async (e) => {
         e.preventDefault();
@@ -38,6 +41,7 @@ const Auth = () => {
             });
 
             if (isLogin) {
+                login(response.data.data.user);
                 toast.success("Welcome back! Login successful.");
                 navigate('/');
             } else {
