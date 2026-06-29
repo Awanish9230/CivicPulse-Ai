@@ -28,7 +28,7 @@ export const getChannelMessages = asyncHandler(async (req, res) => {
         timestamp: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
         createdAt: msg.createdAt,
         channel: msg.channel,
-        role: msg.senderName === 'Anonymous Citizen' ? 'Citizen' : 'Authority' // basic fallback, since role isn't in db
+        role: (msg.senderName === 'Anonymous Citizen' || msg.senderName.startsWith('CP-')) ? 'Citizen' : 'Authority'
     }));
 
     res.status(200).json({
