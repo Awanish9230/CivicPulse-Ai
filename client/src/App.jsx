@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import AppLayout from './components/layout/AppLayout';
 import AuthorityLayout from './components/layout/AuthorityLayout';
@@ -25,9 +25,34 @@ const AdminAuthorities = () => <div className="p-8"><h1 className="text-2xl font
 const AdminBroadcasts = () => <div className="p-8"><h1 className="text-2xl font-bold">Global Broadcasts</h1></div>;
 const AdminSettings = () => <div className="p-8"><h1 className="text-2xl font-bold">System Settings</h1></div>;
 
+// Dynamic Title Component
+const DynamicTitle = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    let pageName = 'CivicPulse AI';
+
+    if (path === '/') pageName = 'Home | CivicPulse AI';
+    else if (path === '/auth') pageName = 'Sign In | CivicPulse AI';
+    else if (path.includes('/complaints')) pageName = 'My Complaints | CivicPulse AI';
+    else if (path.includes('/community')) pageName = 'Community | CivicPulse AI';
+    else if (path.includes('/notifications')) pageName = 'Notifications | CivicPulse AI';
+    else if (path.includes('/profile')) pageName = 'Profile | CivicPulse AI';
+    else if (path.includes('/dashboard')) pageName = 'Dashboard | CivicPulse AI';
+    else if (path.includes('/authority')) pageName = 'Authority Portal | CivicPulse AI';
+    else if (path.includes('/admin')) pageName = 'Admin Portal | CivicPulse AI';
+
+    document.title = pageName;
+  }, [location.pathname]);
+
+  return null;
+};
+
 function App() {
   return (
     <BrowserRouter>
+      <DynamicTitle />
       <Toaster position="top-right" />
       <Suspense fallback={<PageLoader />}>
         <Routes>
