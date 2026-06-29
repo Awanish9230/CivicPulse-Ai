@@ -110,13 +110,17 @@ const Community = () => {
             const messageData = {
                 room: activeChannel === 'general' ? 'local-community-general' : 'local-community-authority',
                 message: {
-                    channel: activeChannel,
-                    id: Date.now(),
+                    id: Date.now().toString(),
+                    senderId: user._id,
+                    sender: user.role === 'Authority' ? user.name : user.anonymousId,
+                    role: user.role,
                     text: newMessage,
-                    sender: user.anonymousId || 'Anonymous Citizen',
-                    role: user.role || 'Citizen', // Send role for authority badges
-                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    replyTo: replyingTo // Threaded reply reference
+                    timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    channel: activeChannel,
+                    replyTo: replyingTo ? {
+                        sender: replyingTo.sender,
+                        text: replyingTo.text
+                    } : null
                 }
             };
             socket.emit('sendMessage', messageData);
@@ -332,7 +336,7 @@ const Community = () => {
 
                                 {/* Chat Messages */}
                                 {(messages[activeChannel] || []).map((msg) => {
-                                    const isMe = msg.sender === (user?.anonymousId || 'Anonymous Citizen');
+                                    const isMe = msg.senderId === user?._id || msg.sender === (user?.anonymousId || 'Anonymous Citizen');
                                     const isAuthority = msg.role === 'Authority';
 
                                     return (

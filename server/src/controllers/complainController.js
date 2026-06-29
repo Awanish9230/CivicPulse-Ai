@@ -11,6 +11,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
         category,
         description,
         coordinates,
+        address // stringified JSON
     } = req.body;
 
     // 2. Validate required fields
@@ -23,30 +24,26 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
     // 3. Parse and validate coordinates
     let parsedCoordinates = coordinates;
-
     try {
-
         if (typeof parsedCoordinates === "string") {
             parsedCoordinates = JSON.parse(parsedCoordinates);
         }
-
     } catch (error) {
-
-        throw new ApiError(
-            400,
-            "Coordinates must be a valid JSON array"
-        );
-
+        throw new ApiError(400, "Coordinates must be a valid JSON array");
     }
 
-    if (
-        !Array.isArray(parsedCoordinates) ||
-        parsedCoordinates.length !== 2
-    ) {
-        throw new ApiError(
-            400,
-            "Coordinates must be [longitude, latitude]"
-        );
+    if (!Array.isArray(parsedCoordinates) || parsedCoordinates.length !== 2) {
+        throw new ApiError(400, "Coordinates must be [longitude, latitude]");
+    }
+
+    // Parse address if provided
+    let parsedAddress = null;
+    if (address) {
+        try {
+            parsedAddress = typeof address === "string" ? JSON.parse(address) : address;
+        } catch (error) {
+            console.error("Failed to parse address", error);
+        }
     }
 
     // 4. Validate image
@@ -71,20 +68,15 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
     // 6. Create complaint
     const complaint = await Complaint.create({
-
         reportedBy: req.user._id,
-
         category,
-
         location: {
             type: "Point",
             coordinates: parsedCoordinates,
         },
-
         description,
-
         imageUrl: uploadedImage.secure_url,
-
+        ...(parsedAddress && { address: parsedAddress }),
     });
 
     // Fetch complaint with populated data if necessary, or just emit it

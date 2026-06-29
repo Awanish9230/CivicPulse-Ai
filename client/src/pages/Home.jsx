@@ -1,16 +1,31 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Camera, MapPin, Clock, ThumbsUp, MessageSquare, Shield, Zap, Globe, Mail } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import CameraCapture from '../components/complaints/CameraCapture';
+import ReportModal from '../components/complaints/ReportModal';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const Home = () => {
     const [isHoveringCamera, setIsHoveringCamera] = useState(false);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [captureData, setCaptureData] = useState(null); // Holds { photo, gps }
     const [feed, setFeed] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Check query params to auto-open camera (e.g. from MyComplaints)
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        if (queryParams.get('report') === 'true') {
+            setIsCameraOpen(true);
+            // Clean up the URL to prevent reopening on refresh
+            navigate('/', { replace: true });
+        }
+    }, [location, navigate]);
 
     const fetchComplaints = async () => {
         try {
@@ -30,10 +45,13 @@ const Home = () => {
     }, []);
 
     const handlePhotoCaptured = (data) => {
-        console.log("Captured Data:", data);
-        setIsCameraOpen(false);
-        // Here you would normally dispatch this to Redux/Backend to start the submission flow
-        alert("Photo captured successfully with GPS coordinates! Proceeding to submit form...");
+        setCaptureData(data);
+        setIsCameraOpen(false); // Close camera, open modal
+    };
+
+    const handleReportSuccess = () => {
+        setCaptureData(null);
+        fetchComplaints(); // Refresh the feed!
     };
 
     const getTimeAgo = (dateStr) => {
@@ -265,6 +283,17 @@ const Home = () => {
                             onCapture={handlePhotoCaptured}
                         />
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Report Submission Modal */}
+            <AnimatePresence>
+                {captureData && (
+                    <ReportModal 
+                        captureData={captureData}
+                        onClose={() => setCaptureData(null)}
+                        onSuccess={handleReportSuccess}
+                    />
                 )}
             </AnimatePresence>
         </div>
