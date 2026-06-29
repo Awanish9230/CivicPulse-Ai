@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import AppLayout from './components/layout/AppLayout';
 import AuthorityLayout from './components/layout/AuthorityLayout';
 import AdminLayout from './components/layout/AdminLayout';
@@ -25,6 +26,7 @@ const AdminSettings = () => <div className="p-8"><h1 className="text-2xl font-bo
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" />
       <Routes>
         <Route path="/auth" element={<Auth />} />
         

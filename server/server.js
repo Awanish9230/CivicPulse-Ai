@@ -11,7 +11,8 @@ import { initSocket } from './src/config/socket.js';
 import cookieParser from "cookie-parser";
 
 import userRouter from "./src/routes/userRoutes.js";
-import complaintRouter from "./src/routes/complainRoutes.js"
+import complaintRouter from "./src/routes/complainRoutes.js";
+import notificationRouter from "./src/routes/notificationRoutes.js";
 // Connect to database
 connectDB();
 
@@ -31,7 +32,14 @@ app.use(compression());
 app.use(express.json());
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        return callback(null, origin);
+    },
+    credentials: true,
+}));
 //
 app.use(cookieParser());
 //
@@ -45,6 +53,7 @@ app.get('/', (req, res) => {
 //user Routes
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/complaint", complaintRouter);
+app.use("/api/v1/notification", notificationRouter);
 
 // Error Handling Middlewares
 app.use(notFound);

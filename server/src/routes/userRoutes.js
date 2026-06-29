@@ -3,7 +3,8 @@ import {
     registerUser,
     loginUser,
     logoutUser,
-    rotateAnonymousId
+    rotateAnonymousId,
+    getMe
 } from "../controllers/userContoller.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -17,5 +18,6 @@ router.post("/login", loginUser);
 // Protected Routes
 router.post("/logout", verifyJWT, logoutUser);
 router.post("/rotate-anonymous-id", verifyJWT, rotateAnonymousId);
+router.get("/me", verifyJWT, getMe);
 
 export default router;

@@ -4,6 +4,7 @@ import { upload } from "../middlewares/uploadmiddleware.js";
 import {
     createComplaint,
     getMyComplaints,
+    getAllComplaints
 } from "../controllers/complainController.js";
 
 const router = Router();
@@ -20,6 +21,12 @@ router.get(
     "/my-complaints",
     verifyJWT,
     getMyComplaints
+);
+
+// Authority Routes (can add role middleware later)
+router.get(
+    "/all",
+    getAllComplaints
 );
 
 export default router;

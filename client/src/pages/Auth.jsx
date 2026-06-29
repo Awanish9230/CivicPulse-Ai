@@ -1,12 +1,63 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { UserSecret, ShieldCheck, ArrowRight } from 'lucide-react';
-// Note: We use lucide-react generic icons as fallbacks if UserSecret/ShieldCheck don't exist exactly, 
-// wait, lucide-react might not have 'UserSecret', let's use 'User' and 'Shield' instead to be safe.
-import { User, Shield } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, User, Shield, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Auth = () => {
     const [isAuthority, setIsAuthority] = useState(false);
+    const [isLogin, setIsLogin] = useState(false); // Toggle for Citizen login/signup
+    
+    // Form state
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    
+    const navigate = useNavigate();
+
+    const handleCitizenSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!email || !password) {
+            toast.error("Please enter both email and password");
+            return;
+        }
+
+        setLoading(true);
+        const endpoint = isLogin ? '/api/v1/user/login' : '/api/v1/user/register';
+
+        try {
+            // Using absolute URL for now or relative if proxy is set. Assuming server runs on 5000 and proxy might not be configured, wait, let's use full URL if proxy isn't there, or just /api. Let's assume standard Vite proxy or absolute URL. 
+            // We should use `http://localhost:5000` just in case.
+            const response = await axios.post(`http://localhost:5000${endpoint}`, {
+                email,
+                password
+            }, {
+                withCredentials: true // to set cookies
+            });
+
+            if (isLogin) {
+                toast.success("Welcome back! Login successful.");
+                navigate('/');
+            } else {
+                toast.success("Account created successfully! Please login to continue.");
+                setIsLogin(true); // Switch to login after signup
+                setPassword('');
+            }
+        } catch (error) {
+            const message = error.response?.data?.message || "An error occurred. Please try again.";
+            toast.error(message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAuthoritySubmit = async (e) => {
+        e.preventDefault();
+        toast.error("Authority login is currently under maintenance.");
+        // In the future, this will connect to authority endpoints
+    };
 
     return (
         <div className="min-h-screen bg-surface flex items-center justify-center p-4">
@@ -54,13 +105,13 @@ const Auth = () => {
                             className={`absolute inset-y-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-out ${isAuthority ? 'left-[calc(50%+2px)]' : 'left-1'}`}
                         ></div>
                         <button 
-                            onClick={() => setIsAuthority(false)}
+                            onClick={() => { setIsAuthority(false); setEmail(''); setPassword(''); }}
                             className={`flex-1 py-3 text-sm font-bold relative z-10 transition-colors ${!isAuthority ? 'text-primary' : 'text-text/50'}`}
                         >
                             Citizen Access
                         </button>
                         <button 
-                            onClick={() => setIsAuthority(true)}
+                            onClick={() => { setIsAuthority(true); setEmail(''); setPassword(''); }}
                             className={`flex-1 py-3 text-sm font-bold relative z-10 transition-colors ${isAuthority ? 'text-primary' : 'text-text/50'}`}
                         >
                             Authority Login
@@ -78,35 +129,60 @@ const Auth = () => {
                                 className="space-y-5"
                             >
                                 <div className="text-center mb-6">
-                                    <h2 className="text-2xl font-black text-text mb-2">Join Anonymously</h2>
-                                    <p className="text-text/60 text-sm">Verify your email to prevent spam. We will assign you a secure, rotating identity publicly.</p>
+                                    <h2 className="text-2xl font-black text-text mb-2">
+                                        {isLogin ? "Welcome Back" : "Join Anonymously"}
+                                    </h2>
+                                    <p className="text-text/60 text-sm">
+                                        {isLogin ? "Login to access your citizen dashboard." : "Verify your email to prevent spam. We will assign you a secure, rotating identity publicly."}
+                                    </p>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-bold text-text/80 mb-2">Email Address</label>
-                                    <input 
-                                        type="email" 
-                                        placeholder="you@example.com" 
-                                        className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-text/80 mb-2">Password</label>
-                                    <input 
-                                        type="password" 
-                                        placeholder="••••••••" 
-                                        className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                    />
-                                </div>
+                                <form onSubmit={handleCitizenSubmit} className="space-y-5">
+                                    <div>
+                                        <label className="block text-sm font-bold text-text/80 mb-2">Email Address</label>
+                                        <input 
+                                            type="email" 
+                                            placeholder="you@example.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-text/80 mb-2">Password</label>
+                                        <input 
+                                            type="password" 
+                                            placeholder="••••••••" 
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        />
+                                    </div>
 
-                                <button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] hover:-translate-y-0.5 flex items-center justify-center gap-2 group mt-2">
-                                    Continue Anonymously
-                                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                                </button>
+                                    <button 
+                                        type="submit" 
+                                        disabled={loading}
+                                        className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] hover:-translate-y-0.5 flex items-center justify-center gap-2 group mt-2 disabled:opacity-70 disabled:hover:translate-y-0"
+                                    >
+                                        {loading ? <Loader2 size={18} className="animate-spin" /> : (isLogin ? "Login Securely" : "Continue Anonymously")}
+                                        {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+                                    </button>
+                                </form>
                                 
-                                <p className="text-center text-xs text-text/40 mt-4">
-                                    By continuing, you agree to our Community Guidelines. Spam or toxicity will result in an IP/Device ban.
-                                </p>
+                                <div className="text-center mt-4">
+                                    <button 
+                                        onClick={() => setIsLogin(!isLogin)}
+                                        className="text-sm font-bold text-primary hover:underline"
+                                    >
+                                        {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
+                                    </button>
+                                </div>
+                                
+                                {!isLogin && (
+                                    <p className="text-center text-xs text-text/40 mt-4">
+                                        By continuing, you agree to our Community Guidelines. Spam or toxicity will result in an IP/Device ban.
+                                    </p>
+                                )}
                             </motion.div>
                         ) : (
                             <motion.div
@@ -122,26 +198,35 @@ const Auth = () => {
                                     <p className="text-text/60 text-sm">Authorized personnel only.</p>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-bold text-text/80 mb-2">Official Email</label>
-                                    <input 
-                                        type="email" 
-                                        placeholder="officer@city.gov" 
-                                        className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-text/80 mb-2">Password</label>
-                                    <input 
-                                        type="password" 
-                                        placeholder="••••••••" 
-                                        className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                    />
-                                </div>
+                                <form onSubmit={handleAuthoritySubmit} className="space-y-5">
+                                    <div>
+                                        <label className="block text-sm font-bold text-text/80 mb-2">Official Email</label>
+                                        <input 
+                                            type="email" 
+                                            placeholder="officer@city.gov" 
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-text/80 mb-2">Password</label>
+                                        <input 
+                                            type="password" 
+                                            placeholder="••••••••" 
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="w-full bg-surface border border-border/50 rounded-2xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        />
+                                    </div>
 
-                                <button className="w-full bg-text hover:bg-text/90 text-white font-bold py-4 rounded-2xl transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-center mt-4">
-                                    Secure Login
-                                </button>
+                                    <button 
+                                        type="submit"
+                                        className="w-full bg-text hover:bg-text/90 text-white font-bold py-4 rounded-2xl transition-all shadow-lg hover:-translate-y-0.5 flex items-center justify-center mt-4"
+                                    >
+                                        Secure Login
+                                    </button>
+                                </form>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -150,8 +235,5 @@ const Auth = () => {
         </div>
     );
 };
-
-// Need to import AnimatePresence, so I will add it at the top level
-import { AnimatePresence } from 'framer-motion';
 
 export default Auth;

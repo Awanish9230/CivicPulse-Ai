@@ -87,6 +87,14 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
     });
 
+    // Fetch complaint with populated data if necessary, or just emit it
+    try {
+        const { getIO } = await import('../config/socket.js');
+        getIO().emit('new_complaint', complaint);
+    } catch (e) {
+        console.error("Socket error on create complaint", e);
+    }
+
     // 7. Send response
     return res.status(201).json(
         new ApiResponse(
@@ -164,4 +172,19 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
         )
     );
 
+});
+
+export const getAllComplaints = asyncHandler(async (req, res) => {
+    // Fetch all complaints
+    const complaints = await Complaint.find().sort({
+        createdAt: -1,
+    });
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            complaints,
+            "All complaints fetched successfully"
+        )
+    );
 });

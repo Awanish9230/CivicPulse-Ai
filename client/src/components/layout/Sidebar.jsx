@@ -1,6 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Users, Bell, User, Map } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, FileText, Users, Bell, User, Map, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
 
 const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -13,6 +15,14 @@ const navItems = [
 
 const Sidebar = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { user, logout } = useContext(AuthContext);
+
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        await logout();
+        navigate('/');
+    };
 
     return (
         <aside className="hidden md:flex flex-col w-20 lg:w-64 h-screen bg-white/80 backdrop-blur-xl border-r border-border fixed left-0 top-0 transition-all duration-300 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
@@ -50,15 +60,27 @@ const Sidebar = () => {
             </nav>
 
             <div className="p-4 border-t border-border/50">
-                <Link to="/auth" className="flex items-center justify-center lg:justify-start p-3 rounded-xl text-text/60 hover:text-primary hover:bg-surface transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center">
-                        <User size={16} />
-                    </div>
-                    <div className="hidden lg:block ml-3">
-                        <p className="text-xs font-bold text-text">Auth Portal</p>
-                        <p className="text-[10px] text-text/50">Login / Signup</p>
-                    </div>
-                </Link>
+                {user ? (
+                    <button onClick={handleLogout} className="w-full flex items-center justify-center lg:justify-start p-3 rounded-xl text-text/60 hover:text-danger hover:bg-danger/10 transition-colors">
+                        <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-inherit">
+                            <LogOut size={16} />
+                        </div>
+                        <div className="hidden lg:block ml-3 text-left">
+                            <p className="text-xs font-bold text-inherit">Logout</p>
+                            <p className="text-[10px] text-text/50">{user.anonymousId || user.email}</p>
+                        </div>
+                    </button>
+                ) : (
+                    <Link to="/auth" className="flex items-center justify-center lg:justify-start p-3 rounded-xl text-text/60 hover:text-primary hover:bg-surface transition-colors">
+                        <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center">
+                            <User size={16} />
+                        </div>
+                        <div className="hidden lg:block ml-3">
+                            <p className="text-xs font-bold text-text">Auth Portal</p>
+                            <p className="text-[10px] text-text/50">Login / Signup</p>
+                        </div>
+                    </Link>
+                )}
             </div>
         </aside>
     );
