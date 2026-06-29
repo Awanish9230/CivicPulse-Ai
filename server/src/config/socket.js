@@ -35,7 +35,7 @@ export const initSocket = (server) => {
                 // Save to database
                 const newMessage = await Message.create({
                     sender: message.senderId,
-                    senderName: message.senderName,
+                    senderName: message.sender, // Fix: frontend sends 'sender' not 'senderName'
                     channel: channelName,
                     content: message.text,
                     type: 'Text', // Or parse if you support image URLs directly

@@ -18,8 +18,21 @@ export const getChannelMessages = asyncHandler(async (req, res) => {
         createdAt: { $gte: ninetyDaysAgo }
     }).sort({ createdAt: 1 }).limit(500); // Fetch up to 500 recent messages
 
+    // Map database fields to frontend expected fields
+    const formattedMessages = messages.map(msg => ({
+        id: msg._id,
+        _id: msg._id,
+        senderId: msg.sender,
+        sender: msg.senderName, // frontend expects name here
+        text: msg.content,      // frontend expects content as text
+        timestamp: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        createdAt: msg.createdAt,
+        channel: msg.channel,
+        role: msg.senderName === 'Anonymous Citizen' ? 'Citizen' : 'Authority' // basic fallback, since role isn't in db
+    }));
+
     res.status(200).json({
         success: true,
-        data: messages,
+        data: formattedMessages,
     });
 });

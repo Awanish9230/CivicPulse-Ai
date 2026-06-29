@@ -25,7 +25,6 @@ const messageSchema = new mongoose.Schema({
         type: {
             type: String,
             enum: ['Point'],
-            default: 'Point',
         },
         coordinates: {
             type: [Number], // [longitude, latitude]
@@ -49,7 +48,7 @@ const messageSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-messageSchema.index({ location: '2dsphere' });
+messageSchema.index({ location: '2dsphere' }, { sparse: true });
 // Automatically delete messages after 90 days
 messageSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
