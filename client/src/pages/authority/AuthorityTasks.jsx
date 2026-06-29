@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { CheckSquare, ArrowUpRight, Search, Clock, MapPin, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { CheckSquare, ArrowUpRight, Search, Clock, MapPin, AlertCircle, Map } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const AuthorityTasks = () => {
     const [tasks, setTasks] = useState([]);
@@ -112,9 +114,12 @@ const AuthorityTasks = () => {
                                     )}
                                 </div>
 
-                                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                    <button className="text-blue-600 font-bold text-sm hover:text-blue-700 transition-colors">
-                                        View Details
+                                    <button 
+                                        onClick={() => setExpandedMapId(expandedMapId === task._id ? null : task._id)}
+                                        className="text-blue-600 font-bold text-sm hover:text-blue-700 transition-colors flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg"
+                                    >
+                                        <Map size={14} />
+                                        {expandedMapId === task._id ? 'Hide Map' : 'View Location'}
                                     </button>
                                     
                                     {task.escalationLevel !== 'HOD' && (
@@ -127,6 +132,29 @@ const AuthorityTasks = () => {
                                         </button>
                                     )}
                                 </div>
+
+                                <AnimatePresence>
+                                    {expandedMapId === task._id && task.location?.coordinates && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="mt-4 rounded-xl overflow-hidden border border-slate-200 bg-slate-100"
+                                        >
+                                            <div className="h-48 w-full">
+                                                <MapContainer 
+                                                    center={[task.location.coordinates[1], task.location.coordinates[0]]} 
+                                                    zoom={16} 
+                                                    scrollWheelZoom={false} 
+                                                    className="h-full w-full z-0"
+                                                >
+                                                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                                    <Marker position={[task.location.coordinates[1], task.location.coordinates[0]]} />
+                                                </MapContainer>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </motion.div>
                     ))}

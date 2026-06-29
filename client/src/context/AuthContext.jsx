@@ -31,10 +31,21 @@ export const AuthProvider = ({ children }) => {
             (response) => response,
             (error) => {
                 if (error.response?.status === 401) {
+                    // Do not intercept if it's a login attempt failure
+                    const requestUrl = error.config?.url || '';
+                    if (requestUrl.includes('/login')) {
+                        return Promise.reject(error);
+                    }
+                    
                     setUser(null);
                     toast.error("Session expired. Please log in again.");
-                    // Ensure the user is kicked back to the auth page
-                    if (window.location.pathname !== '/auth') {
+                    
+                    // Route user depending on where they are
+                    if (window.location.pathname.startsWith('/authority')) {
+                        if (window.location.pathname !== '/authority') {
+                            window.location.href = '/authority';
+                        }
+                    } else if (window.location.pathname !== '/auth') {
                         window.location.href = '/auth';
                     }
                 }

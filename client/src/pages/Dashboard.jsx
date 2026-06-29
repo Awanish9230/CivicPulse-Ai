@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, MessageSquare } from 'lucide-react';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const Dashboard = () => {
     const [filter, setFilter] = useState('All');
@@ -203,35 +205,46 @@ const Dashboard = () => {
                         </select>
                     </div>
                     <div className="flex-1 bg-surface relative overflow-hidden group">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-center">
-                                <Map size={48} className="mx-auto text-border mb-4 opacity-50" />
-                                <p className="text-text/40 font-bold tracking-widest uppercase text-sm">Interactive Map Engine Loading...</p>
-                            </div>
-                        </div>
-                        
-                        {/* Animated Fake Map Grid */}
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
-                        
-                        {/* Fake Map Markers with Radar Effect */}
-                        <div className="absolute top-1/4 left-1/4">
-                            <span className="relative flex h-4 w-4">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 shadow-lg border-2 border-white"></span>
-                            </span>
-                        </div>
-                        <div className="absolute top-1/2 right-1/3">
-                            <span className="relative flex h-4 w-4">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" style={{ animationDelay: '0.5s' }}></span>
-                              <span className="relative inline-flex rounded-full h-4 w-4 bg-orange-500 shadow-lg border-2 border-white"></span>
-                            </span>
-                        </div>
-                        <div className="absolute bottom-1/3 left-1/2">
-                            <span className="relative flex h-4 w-4">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" style={{ animationDelay: '1s' }}></span>
-                              <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-500 shadow-lg border-2 border-white"></span>
-                            </span>
-                        </div>
+                        <MapContainer 
+                            center={[28.6139, 77.2090]} // default center (New Delhi)
+                            zoom={12} 
+                            scrollWheelZoom={true} 
+                            className="h-full w-full z-0"
+                        >
+                            <TileLayer 
+                                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                            />
+                            {filteredComplaints.map(c => {
+                                if (!c.location?.coordinates) return null;
+                                const isCritical = c.priority === 'Critical';
+                                const isResolved = c.status === 'Resolved' || c.status === 'Closed';
+                                const color = isResolved ? '#22c55e' : isCritical ? '#ef4444' : '#f97316';
+                                
+                                return (
+                                    <React.Fragment key={c._id}>
+                                        {/* Heatmap Glow (large, transparent) */}
+                                        <CircleMarker 
+                                            center={[c.location.coordinates[1], c.location.coordinates[0]]}
+                                            pathOptions={{ color: 'transparent', fillColor: color, fillOpacity: 0.15 }}
+                                            radius={25}
+                                        />
+                                        {/* Core Point (small, solid) */}
+                                        <CircleMarker 
+                                            center={[c.location.coordinates[1], c.location.coordinates[0]]}
+                                            pathOptions={{ color: 'white', weight: 1, fillColor: color, fillOpacity: 0.8 }}
+                                            radius={6}
+                                        >
+                                            <Popup>
+                                                <div className="font-bold text-sm text-slate-800">{c.category} Issue</div>
+                                                <div className="text-xs text-slate-500 mb-2">{c.status} | {c.priority} Priority</div>
+                                                <div className="text-[10px] text-slate-400">ID: {c._id.slice(-6).toUpperCase()}</div>
+                                            </Popup>
+                                        </CircleMarker>
+                                    </React.Fragment>
+                                );
+                            })}
+                        </MapContainer>
                     </div>
                 </motion.div>
 

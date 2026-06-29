@@ -195,14 +195,19 @@ const ManageMembers = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
-                                    <input 
-                                        type="text" 
+                                    <select 
                                         name="department"
                                         value={formData.department}
                                         onChange={handleChange}
-                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" 
-                                        placeholder="e.g. Roads" 
-                                    />
+                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                    >
+                                        <option value="General">General / Master Admin</option>
+                                        <option value="Sanitation">Sanitation & Garbage</option>
+                                        <option value="Roads">Roads & Transport</option>
+                                        <option value="Electricity">Electricity & Power</option>
+                                        <option value="Water">Water & Sewage</option>
+                                        <option value="Animal Control">Animal Control</option>
+                                    </select>
                                 </div>
                             </div>
 

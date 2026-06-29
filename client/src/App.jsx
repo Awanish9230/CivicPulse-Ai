@@ -14,10 +14,11 @@ const Notifications = React.lazy(() => import('./pages/Notifications'));
 const MyComplaints = React.lazy(() => import('./pages/MyComplaints'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 
-const AuthorityTasks = () => <div className="p-8"><h1 className="text-2xl font-bold">Assigned Tasks</h1></div>;
+const AuthorityTasks = React.lazy(() => import('./pages/authority/AuthorityTasks'));
 const AuthorityAnalytics = () => <div className="p-8"><h1 className="text-2xl font-bold">Analytics & Reports</h1></div>;
 const AuthoritySettings = () => <div className="p-8"><h1 className="text-2xl font-bold">Authority Settings</h1></div>;
 const ManageMembers = React.lazy(() => import('./pages/authority/ManageMembers'));
+const AuthorityChat = React.lazy(() => import('./pages/authority/AuthorityChat'));
 
 // Placeholders for missing Admin Routes
 const AdminMonitor = () => <div className="p-8"><h1 className="text-2xl font-bold">System Monitor</h1></div>;
@@ -72,6 +73,7 @@ function App() {
           <Route path="/authority" element={<AuthorityLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="tasks" element={<AuthorityTasks />} />
+            <Route path="chat" element={<AuthorityChat />} />
             <Route path="members" element={<ManageMembers />} />
             <Route path="analytics" element={<AuthorityAnalytics />} />
             <Route path="settings" element={<AuthoritySettings />} />

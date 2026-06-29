@@ -1,11 +1,13 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users } from 'lucide-react';
-import { useState } from 'react';
+import { Search, Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users, MessageSquare } from 'lucide-react';
+import { useState, useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
 
 const authNavItems = [
     { name: 'Dashboard', path: '/authority', icon: Map },
     { name: 'Tasks', path: '/authority/tasks', icon: CheckSquare },
+    { name: 'Community Chat', path: '/authority/chat', icon: MessageSquare },
     { name: 'Members', path: '/authority/members', icon: Users },
     { name: 'Analytics', path: '/authority/analytics', icon: BarChart },
     { name: 'Settings', path: '/authority/settings', icon: Settings },
@@ -61,23 +63,23 @@ const AuthoritySidebar = ({ onLogout }) => {
 
 const AuthorityLayout = () => {
     const location = useLocation();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const { user, login, logout } = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     
-    // Quick and dirty real login for authority panel
+    const isAuthority = user && (user.role === 'Authority' || user.role === 'Admin');
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
-            // Must use a real HTTP client to set cookies
             const axios = (await import('axios')).default;
             const { data } = await axios.post('http://localhost:5000/api/v1/user/login', { email, password }, {
                 withCredentials: true
             });
-            if (data.data.user.role === 'Authority' || data.data.user.role === 'Admin' || data.data.user.email === 'officer@city.gov') {
-                setIsAuthenticated(true);
+            if (data.data.user.role === 'Authority' || data.data.user.role === 'Admin') {
+                login(data.data.user);
             } else {
                 alert("Unauthorized: Not an authority account");
             }
@@ -88,7 +90,7 @@ const AuthorityLayout = () => {
         }
     };
 
-    if (!isAuthenticated) {
+    if (!isAuthority) {
         return (
             <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
                 <motion.div 
@@ -140,7 +142,7 @@ const AuthorityLayout = () => {
 
     return (
         <div className="flex min-h-screen bg-slate-50">
-            <AuthoritySidebar onLogout={() => setIsAuthenticated(false)} />
+            <AuthoritySidebar onLogout={() => logout()} />
             
             <main className="flex-1 pb-16 md:pb-0 md:ml-20 lg:ml-64 transition-all duration-300 relative z-0">
                 <header className="h-20 border-b border-border/50 bg-white flex items-center px-6 md:px-10 justify-between sticky top-0 z-40 shadow-sm">

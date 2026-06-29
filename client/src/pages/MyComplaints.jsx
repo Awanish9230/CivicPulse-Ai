@@ -1,14 +1,17 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Search, Filter, AlertTriangle, FileText, CheckCircle, Clock } from 'lucide-react';
+import { Search, Filter, AlertTriangle, FileText, CheckCircle, Clock, Map } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const MyComplaints = () => {
     const [filter, setFilter] = useState('All');
     const [complaints, setComplaints] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [expandedMapId, setExpandedMapId] = useState(null);
 
     const fetchMyComplaints = async () => {
         try {
@@ -147,8 +150,46 @@ const MyComplaints = () => {
                                         <h3 className="text-2xl font-black text-text mb-2 line-clamp-1 group-hover:text-primary transition-colors">{c.category} Issue</h3>
                                         <p className="text-text/60 leading-relaxed mb-4 line-clamp-2 max-w-2xl">{c.description}</p>
                                         
-                                        <div className="flex items-center gap-4 text-xs font-medium text-text/40">
+                                        <div className="flex items-center gap-4 text-xs font-medium text-text/40 mb-4">
                                             <div className="flex items-center gap-1.5"><Clock size={14} /> Reported on {new Date(c.createdAt).toLocaleDateString()}</div>
+                                        </div>
+                                        
+                                        <div className="mt-2 border-t border-border/30 pt-4">
+                                            <button 
+                                                onClick={() => setExpandedMapId(expandedMapId === c._id ? null : c._id)}
+                                                className="flex items-center gap-2 text-sm font-bold text-primary hover:text-blue-700 transition-colors bg-blue-50 px-4 py-2 rounded-xl"
+                                            >
+                                                <Map size={16} />
+                                                {expandedMapId === c._id ? 'Hide Location Map' : 'View Location Map'}
+                                            </button>
+                                            
+                                            <AnimatePresence>
+                                                {expandedMapId === c._id && c.location?.coordinates && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: 'auto' }}
+                                                        exit={{ opacity: 0, height: 0 }}
+                                                        className="mt-4 rounded-xl overflow-hidden border border-border/50 bg-slate-100"
+                                                    >
+                                                        <div className="h-64 w-full">
+                                                            <MapContainer 
+                                                                center={[c.location.coordinates[1], c.location.coordinates[0]]} 
+                                                                zoom={16} 
+                                                                scrollWheelZoom={false} 
+                                                                className="h-full w-full z-0"
+                                                            >
+                                                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                                                <Marker position={[c.location.coordinates[1], c.location.coordinates[0]]} />
+                                                            </MapContainer>
+                                                        </div>
+                                                        {c.address && (
+                                                            <div className="p-3 bg-white text-xs font-bold text-slate-600 border-t border-border/50">
+                                                                📍 {c.address.line1}, {c.address.line2 ? `${c.address.line2}, ` : ''}{c.address.district}
+                                                            </div>
+                                                        )}
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
                                     </div>
                                     

@@ -1,14 +1,60 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { X, MapPin, Loader2, CheckCircle } from 'lucide-react';
+import { X, MapPin, Loader2, CheckCircle, Navigation } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default Leaflet marker icons in React
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const CATEGORIES = ['Road', 'Electricity', 'Garbage', 'Water', 'Drainage', 'Traffic', 'Illegal Dumping', 'Street Light', 'Construction', 'Animal', 'Others'];
+
+// Component to handle map clicks and marker dragging
+const LocationMarker = ({ position, setPosition, fetchAddress }) => {
+    const markerRef = useRef(null);
+
+    useMapEvents({
+        click(e) {
+            const newPos = { lat: e.latlng.lat, lng: e.latlng.lng };
+            setPosition(newPos);
+            fetchAddress(newPos.lat, newPos.lng);
+        },
+    });
+
+    const eventHandlers = {
+        dragend() {
+            const marker = markerRef.current;
+            if (marker != null) {
+                const newPos = marker.getLatLng();
+                const posObj = { lat: newPos.lat, lng: newPos.lng };
+                setPosition(posObj);
+                fetchAddress(posObj.lat, posObj.lng);
+            }
+        },
+    };
+
+    return position === null ? null : (
+        <Marker
+            draggable={true}
+            eventHandlers={eventHandlers}
+            position={position}
+            ref={markerRef}
+        ></Marker>
+    );
+};
 
 const ReportModal = ({ captureData, onClose, onSuccess }) => {
     const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
+    const [position, setPosition] = useState(captureData?.gps || { lat: 28.6139, lng: 77.2090 }); // Default to New Delhi if no GPS
     const [address, setAddress] = useState({
         line1: '',
         line2: '',
@@ -18,6 +64,30 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
     });
     const [isFetchingAddress, setIsFetchingAddress] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Reverse Geocode
+    const fetchAddress = async (lat, lng) => {
+        setIsFetchingAddress(true);
+        try {
+            const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+            
+            if (res.data && res.data.address) {
+                const addr = res.data.address;
+                setAddress({
+                    line1: addr.road || addr.suburb || addr.neighbourhood || '',
+                    line2: addr.village || addr.city_district || '',
+                    district: addr.state_district || addr.county || addr.city || '',
+                    state: addr.state || '',
+                    pinCode: addr.postcode || ''
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch address", error);
+            toast.error("Could not determine exact address from map pin.");
+        } finally {
+            setIsFetchingAddress(false);
+        }
+    };
 
     useEffect(() => {
         // Reverse Geocode
@@ -74,7 +144,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
             formData.append('description', description);
             
             // Format coordinates as [longitude, latitude] for GeoJSON
-            const coords = [captureData.gps.lng, captureData.gps.lat];
+            const coords = [position.lng, position.lat];
             formData.append('coordinates', JSON.stringify(coords));
             
             if (address) {
@@ -126,6 +196,23 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
 
                     <form id="report-form" onSubmit={handleSubmit} className="space-y-5">
                         
+                        {/* Interactive Map */}
+                        <div className="bg-surface border border-border/50 rounded-xl overflow-hidden relative">
+                            <div className="bg-slate-50 p-2 flex items-center gap-2 border-b border-border/50">
+                                <Navigation size={16} className="text-primary" />
+                                <span className="text-xs font-bold text-slate-600">Adjust pin to exact location</span>
+                            </div>
+                            <div className="h-48 w-full z-0 relative">
+                                <MapContainer center={position} zoom={16} scrollWheelZoom={true} className="h-full w-full">
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+                                    <LocationMarker position={position} setPosition={setPosition} fetchAddress={fetchAddress} />
+                                </MapContainer>
+                            </div>
+                        </div>
+
                         {/* Editable Address Fields */}
                         <div className="bg-surface border border-border/50 rounded-xl p-4">
                             <label className="block text-sm font-bold text-text mb-3 flex items-center justify-between">
