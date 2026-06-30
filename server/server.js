@@ -17,6 +17,7 @@ import notificationRoutes from './src/routes/notificationRoutes.js';
 import messageRoutes from './src/routes/messageRoutes.js';
 import authorityRoutes from './src/routes/authorityRoutes.js';
 import adminRoutes from './src/routes/adminRoutes.js';
+import publicRoutes from './src/routes/publicRoutes.js';
 import startEscalationCron from './src/utils/escalationCron.js';
 
 // Connect to database
@@ -74,6 +75,7 @@ app.use("/api/v1/notification", notificationRoutes);
 app.use("/api/v1/message", messageRoutes);
 app.use("/api/v1/authority", authorityRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/public", publicRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);
