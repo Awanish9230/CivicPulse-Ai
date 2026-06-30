@@ -65,7 +65,7 @@ const AuthorityChat = () => {
         const loadHistory = async () => {
             if (messages[activeChannel]?.length > 0) return;
             try {
-                const { data } = await axios.get(`http://localhost:5000/api/v1/messages/${activeChannel}`, {
+                const { data } = await axios.get(`http://localhost:5000/api/v1/message/${activeChannel}`, {
                     withCredentials: true
                 });
                 setMessages(prev => ({

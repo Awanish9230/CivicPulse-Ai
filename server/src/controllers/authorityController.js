@@ -59,17 +59,19 @@ export const getAuthorityMembers = asyncHandler(async (req, res) => {
 });
 
 export const getTasks = asyncHandler(async (req, res) => {
-    if (req.user.role !== 'Authority') {
+    if (req.user.role !== 'Authority' && req.user.role !== 'Admin') {
         throw new ApiError(403, "Access denied");
     }
 
-    // A junior only sees Junior tasks, Senior sees Senior, HOD sees HOD
-    const level = req.user.authorityLevel || 'Junior';
+    let filter = { status: { $nin: ['Resolved', 'Closed', 'Rejected'] } };
 
-    const complaints = await Complaint.find({
-        escalationLevel: level,
-        status: { $nin: ['Resolved', 'Closed', 'Rejected'] } // Only active complaints
-    }).sort({ createdAt: -1 }).populate('reportedBy', 'anonymousId');
+    // Admin sees all active tasks. Authorities only see tasks at their escalation level.
+    if (req.user.role !== 'Admin') {
+        const level = req.user.authorityLevel || 'Junior';
+        filter.escalationLevel = level;
+    }
+
+    const complaints = await Complaint.find(filter).sort({ createdAt: -1 }).populate('reportedBy', 'anonymousId');
 
     return res.status(200).json(
         new ApiResponse(200, complaints, "Tasks fetched successfully")
@@ -77,7 +79,7 @@ export const getTasks = asyncHandler(async (req, res) => {
 });
 
 export const escalateTask = asyncHandler(async (req, res) => {
-    if (req.user.role !== 'Authority') {
+    if (req.user.role !== 'Authority' && req.user.role !== 'Admin') {
         throw new ApiError(403, "Access denied");
     }
 

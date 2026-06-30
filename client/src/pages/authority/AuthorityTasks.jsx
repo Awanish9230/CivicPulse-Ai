@@ -9,6 +9,7 @@ import 'leaflet/dist/leaflet.css';
 const AuthorityTasks = () => {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [expandedMapId, setExpandedMapId] = useState(null);
 
     const fetchTasks = async () => {
         try {
@@ -113,7 +114,7 @@ const AuthorityTasks = () => {
                                         </div>
                                     )}
                                 </div>
-
+                                <div className="flex items-center justify-between pt-4 mt-auto border-t border-slate-100">
                                     <button 
                                         onClick={() => setExpandedMapId(expandedMapId === task._id ? null : task._id)}
                                         className="text-blue-600 font-bold text-sm hover:text-blue-700 transition-colors flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg"
