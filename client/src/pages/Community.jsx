@@ -24,7 +24,7 @@ const Community = () => {
 
     const fetchComplaints = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/complaint/all', {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/complaint/all`, {
                 withCredentials: true
             });
             setFeed(data.data || []);
@@ -41,7 +41,7 @@ const Community = () => {
 
     const handleResolve = async (id) => {
         try {
-            await axios.post(`http://localhost:5000/api/v1/complaint/${id}/resolve`, {}, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/${id}/resolve`, {}, {
                 withCredentials: true
             });
             toast.success("Complaint resolved and optimized!");
@@ -53,7 +53,7 @@ const Community = () => {
 
     // Socket Initialization for Chat
     useEffect(() => {
-        const newSocket = io('http://localhost:5000');
+        const newSocket = io(`${import.meta.env.VITE_API_URL}`);
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
@@ -82,7 +82,7 @@ const Community = () => {
         if (activeChannel === 'general' || activeChannel === 'ask-authority') {
             const fetchChatHistory = async () => {
                 try {
-                    const { data } = await axios.get(`http://localhost:5000/api/v1/message/${activeChannel}`, {
+                    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/message/${activeChannel}`, {
                         withCredentials: true
                     });
                     setMessages(prev => ({
@@ -120,7 +120,7 @@ const Community = () => {
         );
 
         try {
-            await axios.post(`http://localhost:5000/api/v1/complaint/${complaintId}/upvote`, {}, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/${complaintId}/upvote`, {}, {
                 withCredentials: true
             });
             toast.success("Impact footprint recorded!");

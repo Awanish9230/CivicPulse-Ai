@@ -9,7 +9,7 @@ const ManageUsers = () => {
 
     const fetchUsers = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/admin/citizens', { withCredentials: true });
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/admin/citizens`, { withCredentials: true });
             
             // Map the returned users to the format expected by the table
             const formattedUsers = data.data.users.map(user => ({

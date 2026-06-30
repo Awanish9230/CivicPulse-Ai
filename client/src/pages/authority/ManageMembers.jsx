@@ -18,7 +18,7 @@ const ManageMembers = () => {
 
     const fetchMembers = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/authority/members', {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/authority/members`, {
                 withCredentials: true
             });
             setMembers(data.data);
@@ -40,7 +40,7 @@ const ManageMembers = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const { data } = await axios.post('http://localhost:5000/api/v1/authority/create', formData, {
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/authority/create`, formData, {
                 withCredentials: true
             });
             toast.success(data.message);

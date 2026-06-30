@@ -9,7 +9,7 @@ const ManageComplaints = () => {
 
     const fetchComplaints = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/admin/complaints', { withCredentials: true });
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/admin/complaints`, { withCredentials: true });
             
             const formattedComplaints = data.data.complaints.map(comp => ({
                 id: comp._id,

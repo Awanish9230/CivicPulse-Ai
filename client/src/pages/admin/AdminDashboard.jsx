@@ -34,7 +34,7 @@ const AdminDashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/v1/admin/stats', { withCredentials: true });
+                const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/admin/stats`, { withCredentials: true });
                 setStats(data.data);
             } catch (error) {
                 console.error("Failed to fetch dashboard stats", error);

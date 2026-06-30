@@ -23,7 +23,7 @@ const Profile = () => {
 
     const rotateIdentity = async () => {
         try {
-            await axios.post('http://localhost:5000/api/v1/user/rotate-anonymous-id', {}, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/rotate-anonymous-id`, {}, {
                 withCredentials: true
             });
             await fetchUser(); // Refresh user info to get new ID

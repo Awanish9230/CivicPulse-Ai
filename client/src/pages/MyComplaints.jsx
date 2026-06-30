@@ -21,7 +21,7 @@ const MyComplaints = () => {
 
     const fetchMyComplaints = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/complaint/my-complaints', {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/complaint/my-complaints`, {
                 withCredentials: true
             });
             setComplaints(data.data || []);
@@ -40,7 +40,7 @@ const MyComplaints = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this complaint? This cannot be undone.")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/v1/complaint/${id}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/v1/complaint/${id}`, {
                 withCredentials: true
             });
             toast.success("Complaint deleted successfully");
@@ -53,7 +53,7 @@ const MyComplaints = () => {
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.patch(`http://localhost:5000/api/v1/complaint/${editingComplaint._id}`, 
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/v1/complaint/${editingComplaint._id}`, 
                 {
                     category: editingComplaint.category,
                     description: editingComplaint.description

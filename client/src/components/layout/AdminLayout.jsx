@@ -138,7 +138,7 @@ const AdminLayout = () => {
         setIsLoggingIn(true);
         try {
             const axios = (await import('axios')).default;
-            const { data } = await axios.post('http://localhost:5000/api/v1/user/login', { email, password }, {
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/login`, { email, password }, {
                 withCredentials: true
             });
             if (data.data.user.role === 'Admin') {

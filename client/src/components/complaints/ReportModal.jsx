@@ -151,7 +151,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                 formData.append('address', JSON.stringify(address));
             }
 
-            await axios.post('http://localhost:5000/api/v1/complaint/create', formData, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/create`, formData, {
                 withCredentials: true,
                 headers: { 'Content-Type': 'multipart/form-data' }
             });

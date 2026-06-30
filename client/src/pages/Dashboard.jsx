@@ -26,7 +26,7 @@ const Dashboard = () => {
         if (!replyContent.trim()) return;
         setReplying(true);
         try {
-            await axios.post(`http://localhost:5000/api/v1/complaint/${complaintId}/reply`, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/${complaintId}/reply`, {
                 content: replyContent
             }, { withCredentials: true });
             
@@ -43,7 +43,7 @@ const Dashboard = () => {
 
     const fetchComplaints = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/complaint/all', {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/complaint/all`, {
                 withCredentials: true
             });
             const fetchedComplaints = data.data;
@@ -84,7 +84,7 @@ const Dashboard = () => {
         fetchComplaints();
 
         // Socket.io connection for real-time updates
-        const socket = io('http://localhost:5000');
+        const socket = io(`${import.meta.env.VITE_API_URL}`);
         
         socket.on('new_complaint', (newComplaint) => {
             toast.success('New emergency complaint received!', { icon: '🚨' });

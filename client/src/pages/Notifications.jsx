@@ -21,7 +21,7 @@ const Notifications = () => {
     const fetchNotifications = useCallback(async (pageNum, filter, append = false) => {
         setLoading(true);
         try {
-            const endpoint = `http://localhost:5000/api/v1/notification?page=${pageNum}&limit=10${filter === 'Unread' ? '&unread=true' : ''}`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/api/v1/notification?page=${pageNum}&limit=10${filter === 'Unread' ? '&unread=true' : ''}`;
             const { data } = await axios.get(endpoint, { withCredentials: true });
             
             const newNotifs = data.data.notifications;
@@ -75,7 +75,7 @@ const Notifications = () => {
 
     const handleClearAll = async () => {
         try {
-            await axios.delete('http://localhost:5000/api/v1/notification', { withCredentials: true });
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/v1/notification`, { withCredentials: true });
             setNotifications([]);
             setHasMore(false);
             fetchUnreadCount();

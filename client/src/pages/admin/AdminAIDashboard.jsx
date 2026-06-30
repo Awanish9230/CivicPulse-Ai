@@ -11,7 +11,7 @@ const AdminAIDashboard = () => {
     const fetchInsights = async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/admin/ai/insights', { withCredentials: true });
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/admin/ai/insights`, { withCredentials: true });
             setInsights(data.data.aiAnalysis);
         } catch (error) {
             toast.error("Failed to fetch AI Insights");

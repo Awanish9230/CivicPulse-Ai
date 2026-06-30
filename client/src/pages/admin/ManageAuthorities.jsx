@@ -9,7 +9,7 @@ const ManageAuthorities = () => {
 
     const fetchAuthorities = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/admin/authorities', { withCredentials: true });
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/admin/authorities`, { withCredentials: true });
             
             const formattedAuthorities = data.data.authorities.map(auth => ({
                 id: auth._id,

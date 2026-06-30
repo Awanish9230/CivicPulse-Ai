@@ -13,7 +13,7 @@ const AuthorityTasks = () => {
 
     const fetchTasks = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/authority/tasks', {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/authority/tasks`, {
                 withCredentials: true
             });
             setTasks(data.data);
@@ -30,7 +30,7 @@ const AuthorityTasks = () => {
 
     const handleEscalate = async (taskId) => {
         try {
-            const { data } = await axios.post(`http://localhost:5000/api/v1/authority/tasks/${taskId}/escalate`, {}, {
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/authority/tasks/${taskId}/escalate`, {}, {
                 withCredentials: true
             });
             toast.success(data.message);
@@ -42,7 +42,7 @@ const AuthorityTasks = () => {
 
     const handleUpdateTask = async (taskId, updates) => {
         try {
-            const { data } = await axios.patch(`http://localhost:5000/api/v1/authority/tasks/${taskId}`, updates, {
+            const { data } = await axios.patch(`${import.meta.env.VITE_API_URL}/api/v1/authority/tasks/${taskId}`, updates, {
                 withCredentials: true
             });
             toast.success(data.message);

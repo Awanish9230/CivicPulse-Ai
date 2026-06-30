@@ -20,7 +20,7 @@ const AuthorityChat = () => {
 
     // Socket Initialization for Chat
     useEffect(() => {
-        const newSocket = io('http://localhost:5000');
+        const newSocket = io(`${import.meta.env.VITE_API_URL}`);
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
@@ -65,7 +65,7 @@ const AuthorityChat = () => {
         const loadHistory = async () => {
             if (messages[activeChannel]?.length > 0) return;
             try {
-                const { data } = await axios.get(`http://localhost:5000/api/v1/message/${activeChannel}`, {
+                const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/message/${activeChannel}`, {
                     withCredentials: true
                 });
                 setMessages(prev => ({
