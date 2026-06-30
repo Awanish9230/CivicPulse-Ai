@@ -58,6 +58,9 @@ const complaintSchema = new mongoose.Schema({
         enum: ['Submitted', 'Verified', 'Assigned', 'In Progress', 'Resolved', 'Closed', 'Rejected'],
         default: 'Submitted',
     },
+    expectedCompletionDate: {
+        type: Date,
+    },
     supportCount: {
         type: Number,
         default: 1, // Represents number of merged duplicate reports

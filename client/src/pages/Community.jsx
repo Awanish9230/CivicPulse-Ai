@@ -312,13 +312,19 @@ const Community = () => {
                                                 <span className="text-xs text-text/40">{getTimeAgo(item.createdAt)}</span>
                                             </div>
                                             
-                                            <div className="flex gap-2 mb-3">
+                                            <div className="flex flex-wrap gap-2 mb-3">
                                                 <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">
                                                     {item.category}
                                                 </span>
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${item.status === 'Resolved' ? 'bg-green-500/10 text-green-600' : 'bg-orange-500/10 text-orange-600'}`}>
                                                     {item.status}
                                                 </span>
+                                                {item.expectedCompletionDate && (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-blue-500/10 text-blue-600 flex items-center gap-1">
+                                                        <Clock size={10} />
+                                                        Est: {new Date(item.expectedCompletionDate).toLocaleDateString()}
+                                                    </span>
+                                                )}
                                             </div>
                                             
                                             <p className="text-text/80 text-sm leading-relaxed mb-3">

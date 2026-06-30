@@ -4,7 +4,8 @@ import {
     createAuthorityMember, 
     getAuthorityMembers,
     getTasks,
-    escalateTask
+    escalateTask,
+    updateTask
 } from "../controllers/authorityController.js";
 
 const router = Router();
@@ -16,5 +17,6 @@ router.get("/members", verifyJWT, getAuthorityMembers);
 // Authority tasks
 router.get("/tasks", verifyJWT, getTasks);
 router.post("/tasks/:complaintId/escalate", verifyJWT, escalateTask);
+router.patch("/tasks/:complaintId", verifyJWT, updateTask);
 
 export default router;

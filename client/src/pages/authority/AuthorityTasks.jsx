@@ -40,6 +40,18 @@ const AuthorityTasks = () => {
         }
     };
 
+    const handleUpdateTask = async (taskId, updates) => {
+        try {
+            const { data } = await axios.patch(`http://localhost:5000/api/v1/authority/tasks/${taskId}`, updates, {
+                withCredentials: true
+            });
+            toast.success(data.message);
+            fetchTasks(); // refresh board
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update task');
+        }
+    };
+
     const getPriorityColor = (priority) => {
         switch(priority) {
             case 'Critical': return 'text-red-600 bg-red-100 border-red-200';
@@ -94,6 +106,13 @@ const AuthorityTasks = () => {
                                 <h3 className="text-xl font-bold text-slate-900 mb-2 line-clamp-1">
                                     {task.category} Issue
                                 </h3>
+
+                                {(task.imageUrls?.[0] || task.imageUrl) && (
+                                    <div className="mb-4 rounded-xl overflow-hidden border border-slate-200 h-48 bg-slate-100">
+                                        <img src={task.imageUrls?.[0] || task.imageUrl} alt="Issue" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+
                                 <p className="text-slate-600 text-sm mb-4 line-clamp-2 min-h-[40px]">
                                     {task.description}
                                 </p>
@@ -113,6 +132,33 @@ const AuthorityTasks = () => {
                                             <span>Escalated to: {task.escalationLevel}</span>
                                         </div>
                                     )}
+                                </div>
+
+                                <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 pb-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 mb-1 block">Update Status</label>
+                                        <select 
+                                            value={task.status} 
+                                            onChange={(e) => handleUpdateTask(task._id, { status: e.target.value })}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                                        >
+                                            <option value="Submitted">Submitted</option>
+                                            <option value="Verified">Verified</option>
+                                            <option value="Assigned">Assigned</option>
+                                            <option value="In Progress">In Progress</option>
+                                            <option value="Resolved">Resolved</option>
+                                            <option value="Rejected">Rejected</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 mb-1 block">Expected Completion</label>
+                                        <input 
+                                            type="date" 
+                                            value={task.expectedCompletionDate ? new Date(task.expectedCompletionDate).toISOString().split('T')[0] : ''}
+                                            onChange={(e) => handleUpdateTask(task._id, { expectedCompletionDate: e.target.value })}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                                        />
+                                    </div>
                                 </div>
                                 <div className="flex items-center justify-between pt-4 mt-auto border-t border-slate-100">
                                     <button 

@@ -120,3 +120,43 @@ export const escalateTask = asyncHandler(async (req, res) => {
         new ApiResponse(200, complaint, `Complaint successfully escalated to ${nextLevel}`)
     );
 });
+
+export const updateTask = asyncHandler(async (req, res) => {
+    if (req.user.role !== 'Authority' && req.user.role !== 'Admin') {
+        throw new ApiError(403, "Access denied");
+    }
+
+    const { complaintId } = req.params;
+    const { status, expectedCompletionDate } = req.body;
+
+    const complaint = await Complaint.findById(complaintId);
+
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+
+    let updates = [];
+
+    if (status && complaint.status !== status) {
+        complaint.status = status;
+        updates.push(`Status updated to ${status}`);
+    }
+
+    if (expectedCompletionDate) {
+        complaint.expectedCompletionDate = new Date(expectedCompletionDate);
+        updates.push(`Expected completion date set to ${new Date(expectedCompletionDate).toLocaleDateString()}`);
+    }
+
+    if (updates.length > 0) {
+        complaint.lastActivityAt = Date.now();
+        complaint.officialReplies.push({
+            authorityName: req.user.name || "System",
+            content: updates.join('. ') + '.',
+        });
+        await complaint.save();
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, complaint, "Task updated successfully")
+    );
+});
