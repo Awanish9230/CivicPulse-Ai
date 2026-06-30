@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Search, Filter, AlertTriangle, FileText, CheckCircle, Clock, Map } from 'lucide-react';
+import { Search, Filter, AlertTriangle, FileText, CheckCircle, Clock, Map, ShieldAlert } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -118,7 +118,7 @@ const MyComplaints = () => {
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ delay: i * 0.05, type: "spring", stiffness: 300, damping: 24 }}
                                 key={c._id}
-                                className={`group bg-white rounded-[2rem] p-8 transition-all duration-300 relative overflow-hidden ${
+                                className={`group bg-white rounded-3xl p-6 transition-all duration-300 relative overflow-hidden ${
                                     slaRisk 
                                         ? 'border-red-500/30 shadow-[0_8px_30px_rgba(239,68,68,0.08)]' 
                                         : 'border-border/50 shadow-[0_4px_24px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-primary/20'
@@ -129,7 +129,7 @@ const MyComplaints = () => {
                                     isResolved ? 'bg-green-500' : slaRisk ? 'bg-red-500' : 'bg-primary'
                                 }`}></div>
 
-                                <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
+                                <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex flex-wrap items-center gap-3 mb-3">
                                             <span className="text-[10px] font-black tracking-widest text-text/40 bg-surface px-3 py-1.5 rounded-lg border border-border/50">
@@ -145,10 +145,22 @@ const MyComplaints = () => {
                                                     <AlertTriangle size={12} /> SLA BREACHED
                                                 </span>
                                             )}
+                                            {c.expectedCompletionDate && (
+                                                <span className="flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20">
+                                                    <Clock size={12} /> Est: {new Date(c.expectedCompletionDate).toLocaleDateString()}
+                                                </span>
+                                            )}
                                         </div>
                                         
-                                        <h3 className="text-2xl font-black text-text mb-2 line-clamp-1 group-hover:text-primary transition-colors">{c.category} Issue</h3>
-                                        <p className="text-text/60 leading-relaxed mb-4 line-clamp-2 max-w-2xl">{c.description}</p>
+                                        <h3 className="text-2xl font-black text-text mb-4 line-clamp-1 group-hover:text-primary transition-colors">{c.category} Issue</h3>
+                                        
+                                        {(c.imageUrls?.[0] || c.imageUrl) && (
+                                            <div className="mb-4 rounded-xl overflow-hidden border border-border/50 max-w-sm h-40 bg-surface shadow-sm">
+                                                <img src={c.imageUrls?.[0] || c.imageUrl} alt="Issue" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                                            </div>
+                                        )}
+
+                                        <p className="text-text/70 text-sm leading-relaxed mb-4 max-w-2xl">{c.description}</p>
                                         
                                         <div className="flex items-center gap-4 text-xs font-medium text-text/40 mb-4">
                                             <div className="flex items-center gap-1.5"><Clock size={14} /> Reported on {new Date(c.createdAt).toLocaleDateString()}</div>
@@ -191,46 +203,75 @@ const MyComplaints = () => {
                                                 )}
                                             </AnimatePresence>
                                         </div>
+
+                                        {/* Official Replies Section */}
+                                        {c.officialReplies && c.officialReplies.length > 0 && (
+                                            <div className="mt-6 bg-blue-500/5 border border-blue-500/10 rounded-2xl p-5">
+                                                <h4 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-blue-600 mb-4">
+                                                    <ShieldAlert size={16} /> Official Responses
+                                                </h4>
+                                                <div className="space-y-4">
+                                                    {c.officialReplies.map((reply, idx) => (
+                                                        <div key={idx} className="bg-white/60 rounded-xl p-4 shadow-sm border border-blue-500/10">
+                                                            <div className="flex justify-between items-center mb-2">
+                                                                <span className="font-bold text-sm text-text">{reply.authorityName}</span>
+                                                                <span className="text-[10px] text-text/40">{new Date(reply.createdAt).toLocaleDateString()}</span>
+                                                            </div>
+                                                            <p className="text-sm text-text/80 leading-relaxed">{reply.content}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     
                                     {/* Tracking Timeline Component */}
-                                    <div className="w-full lg:w-1/3 shrink-0 bg-surface/50 p-6 rounded-3xl border border-border/50">
-                                        <h4 className="text-[10px] font-black text-text/40 tracking-widest uppercase mb-4 text-center">Resolution Tracker</h4>
-                                        <div className="flex items-center justify-between relative">
+                                    <div className="w-full lg:w-48 shrink-0 bg-surface/50 p-5 rounded-2xl border border-border/50">
+                                        <h4 className="text-[10px] font-black text-text/40 tracking-widest uppercase mb-5 text-center">Status Tracker</h4>
+                                        <div className="flex flex-col relative space-y-6">
                                             {/* Background Track */}
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1.5 bg-white rounded-full"></div>
+                                            <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-white rounded-full"></div>
                                             
                                             {/* Active Progress */}
-                                            <div 
-                                                className={`absolute left-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full transition-all duration-1000 ease-out ${
-                                                    isResolved ? 'bg-green-500' : slaRisk ? 'bg-red-500' : 'bg-primary'
-                                                }`} 
-                                                style={{ width: isResolved ? '100%' : c.status === 'In Progress' ? '50%' : '5%' }}
-                                            ></div>
-                                            
-                                            {/* Nodes */}
-                                            {['Submitted', 'In Progress', 'Resolved'].map((step, idx) => {
-                                                const isInProgress = c.status === 'In Progress';
-                                                let isActive = false;
-                                                if (idx === 0) isActive = true;
-                                                if (idx === 1 && (isInProgress || isResolved)) isActive = true;
-                                                if (idx === 2 && isResolved) isActive = true;
-
+                                            {(() => {
+                                                const steps = ['Submitted', 'Verified', 'Assigned', 'In Progress', 'Resolved'];
+                                                const currentIdx = steps.indexOf(c.status) !== -1 ? steps.indexOf(c.status) : (c.status === 'Closed' ? 4 : 0);
+                                                const isRejected = c.status === 'Rejected';
+                                                
                                                 return (
-                                                    <div key={step} className="flex flex-col items-center relative z-10 group">
-                                                        <div className={`w-6 h-6 rounded-full border-4 mb-2 flex items-center justify-center transition-all duration-300 ${
-                                                            isActive 
-                                                                ? (isResolved ? 'bg-green-500 border-green-200' : slaRisk ? 'bg-red-500 border-red-200' : 'bg-primary border-blue-200 shadow-[0_0_10px_rgba(37,99,235,0.5)]') 
-                                                                : 'bg-surface border-white'
-                                                        }`}>
-                                                            {isActive && idx === 2 && <CheckCircle size={10} className="text-white" />}
-                                                        </div>
-                                                        <span className={`text-[10px] font-bold absolute -bottom-5 whitespace-nowrap transition-colors ${
-                                                            isActive ? 'text-text' : 'text-text/40'
-                                                        }`}>{step}</span>
-                                                    </div>
+                                                    <>
+                                                        <div 
+                                                            className={`absolute left-[11px] top-2 w-0.5 rounded-full transition-all duration-1000 ease-out ${
+                                                                isResolved ? 'bg-green-500' : isRejected ? 'bg-red-500' : slaRisk ? 'bg-red-500' : 'bg-primary'
+                                                            }`} 
+                                                            style={{ height: isRejected ? '100%' : `${(currentIdx / 4) * 100}%` }}
+                                                        ></div>
+                                                        
+                                                        {steps.map((step, idx) => {
+                                                            let isActive = idx <= currentIdx;
+                                                            if (isRejected) isActive = true;
+                                                            let displayStep = step;
+                                                            if (isRejected && idx === 4) displayStep = 'Rejected';
+                                                            if (c.status === 'Closed' && idx === 4) displayStep = 'Closed';
+
+                                                            return (
+                                                                <div key={step} className="flex items-center relative z-10 group pl-0">
+                                                                    <div className={`w-6 h-6 rounded-full border-4 shrink-0 flex items-center justify-center transition-all duration-300 ${
+                                                                        isActive 
+                                                                            ? (isResolved ? 'bg-green-500 border-green-200' : isRejected ? 'bg-red-500 border-red-200' : slaRisk ? 'bg-red-500 border-red-200' : 'bg-primary border-blue-200 shadow-[0_0_10px_rgba(37,99,235,0.5)]') 
+                                                                            : 'bg-surface border-white'
+                                                                    }`}>
+                                                                        {isActive && idx === 4 && <CheckCircle size={10} className="text-white" />}
+                                                                    </div>
+                                                                    <span className={`text-[11px] font-bold ml-3 transition-colors ${
+                                                                        isActive ? 'text-text' : 'text-text/40'
+                                                                    }`}>{displayStep}</span>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </>
                                                 )
-                                            })}
+                                            })()}
                                         </div>
                                     </div>
                                 </div>
