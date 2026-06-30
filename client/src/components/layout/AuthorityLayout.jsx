@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users, MessageSquare } from 'lucide-react';
+import { Search, Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users, MessageSquare, Eye, EyeOff } from 'lucide-react';
 import { useState, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import AuthorityBottomNav from './AuthorityBottomNav';
@@ -68,6 +68,7 @@ const AuthorityLayout = () => {
     const { user, login, logout } = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     
     const isAuthority = user && (user.role === 'Authority' || user.role === 'Admin');
@@ -118,16 +119,23 @@ const AuthorityLayout = () => {
                                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white" 
                             />
                         </div>
-                        <div>
+                        <div className="relative">
                             <label className="block text-sm font-bold text-slate-300 mb-2">Password</label>
                             <input 
-                                type="password" 
+                                type={showPassword ? "text" : "password"} 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••" 
                                 required
-                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white" 
+                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:border-blue-500 transition-colors text-white" 
                             />
+                            <button 
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-10 text-slate-500 hover:text-white transition-colors"
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
                         </div>
                         <button 
                             type="submit"
@@ -151,14 +159,7 @@ const AuthorityLayout = () => {
                     <div className="md:hidden font-black text-2xl tracking-tight text-slate-900">
                         Authority
                     </div>
-                    <div className="hidden md:flex w-full max-w-2xl mx-auto items-center relative group">
-                        <Search className="absolute left-4 text-text/40 group-focus-within:text-blue-600 transition-colors" size={20} />
-                        <input 
-                            type="text" 
-                            placeholder="Search tasks, wards, officers..." 
-                            className="w-full bg-slate-100 border border-transparent rounded-2xl pl-12 pr-4 py-3 focus:outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner"
-                        />
-                    </div>
+
                     <div className="flex items-center gap-3 shrink-0">
                         <NotificationBell />
                     </div>

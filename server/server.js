@@ -35,10 +35,19 @@ startEscalationCron();
 // Security middleware
 app.use(helmet());
 
+// Enable CORS (MUST be before Rate Limiter so 429 errors get CORS headers)
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        return callback(null, origin);
+    },
+    credentials: true,
+}));
+
 // Global Rate Limiting
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'development' ? 5000 : 100, // Higher limit for development
+    max: process.env.NODE_ENV === 'development' ? 5000 : 500, // Increased limit for production dashboards
     message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -50,15 +59,6 @@ app.use(compression());
 
 // Body parser
 app.use(express.json());
-
-// Enable CORS
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        return callback(null, origin);
-    },
-    credentials: true,
-}));
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));

@@ -8,7 +8,7 @@ import {
     BrainCircuit, Bell, Radio, BarChart3, FileText, 
     Activity, ClipboardList, Settings, ShieldAlert, 
     Database, MessageCircle, Webhook, Link as LinkIcon, 
-    History, UserCircle, Search, LogOut, ChevronDown, ChevronRight
+    History, UserCircle, Search, LogOut, ChevronDown, ChevronRight, Eye, EyeOff
 } from 'lucide-react';
 import { NotificationBell } from '../notifications/NotificationBell';
 
@@ -128,6 +128,7 @@ const AdminLayout = () => {
     const location = useLocation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const { user, loading, login, logout } = useContext(AuthContext);
 
@@ -188,16 +189,23 @@ const AdminLayout = () => {
                                 className="w-full bg-orange-950 border border-orange-800 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-400 transition-colors text-white" 
                             />
                         </div>
-                        <div>
+                        <div className="relative">
                             <label className="block text-sm font-bold text-slate-300 mb-2">Password</label>
                             <input 
-                                type="password" 
+                                type={showPassword ? "text" : "password"} 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••" 
                                 required
-                                className="w-full bg-orange-950 border border-orange-800 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-400 transition-colors text-white" 
+                                className="w-full bg-orange-950 border border-orange-800 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:border-orange-400 transition-colors text-white" 
                             />
+                            <button 
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-10 text-orange-700 hover:text-white transition-colors"
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
                         </div>
                         <button 
                             type="submit"

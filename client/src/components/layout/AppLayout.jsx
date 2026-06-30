@@ -21,14 +21,7 @@ const AppLayout = () => {
                             CivicPulse
                         </div>
                     </div>
-                    <div className="hidden md:flex w-full max-w-2xl mx-auto items-center relative group">
-                        <Search className="absolute left-4 text-text/40 group-focus-within:text-primary transition-colors" size={20} />
-                        <input 
-                            type="text" 
-                            placeholder="Search complaints, categories, or locations..." 
-                            className="w-full bg-white/50 border border-border/50 rounded-2xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all shadow-sm"
-                        />
-                    </div>
+
                     <div className="flex items-center gap-3 shrink-0">
                         <NotificationBell />
                     </div>

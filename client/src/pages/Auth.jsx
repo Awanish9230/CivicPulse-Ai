@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, User, Shield, Loader2, Sparkles, Lock } from 'lucide-react';
+import { ArrowRight, User, Shield, Loader2, Sparkles, Lock, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../config/api';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ const Auth = () => {
     // Form state
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     
     // Input focus states for floating labels
@@ -190,12 +191,12 @@ const Auth = () => {
                                         <div className="relative bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-2xl focus-within:border-primary/50 focus-within:bg-slate-800 transition-all duration-300">
                                             <input 
                                                 id="password"
-                                                type="password" 
+                                                type={showPassword ? "text" : "password"} 
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 onFocus={() => setFocusedField('password')}
                                                 onBlur={() => setFocusedField(null)}
-                                                className="w-full bg-transparent px-5 pt-7 pb-3 text-white focus:outline-none peer [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:[-webkit-text-fill-color:white] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
+                                                className="w-full bg-transparent px-5 pt-7 pb-3 pr-12 text-white focus:outline-none peer [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:[-webkit-text-fill-color:white] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
                                                 placeholder=" "
                                                 required
                                             />
@@ -205,7 +206,13 @@ const Auth = () => {
                                             >
                                                 Password
                                             </label>
-                                            <Lock size={20} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 peer-focus:text-primary transition-colors" />
+                                            <button 
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                                            >
+                                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                            </button>
                                         </div>
                                     </div>
 
