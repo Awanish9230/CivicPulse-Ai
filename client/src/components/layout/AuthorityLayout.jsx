@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users, MessageSquare } from 'lucide-react';
 import { useState, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+import AuthorityBottomNav from './AuthorityBottomNav';
 
 const authNavItems = [
     { name: 'Dashboard', path: '/authority', icon: Map },
@@ -174,6 +175,8 @@ const AuthorityLayout = () => {
                     </AnimatePresence>
                 </div>
             </main>
+            
+            <AuthorityBottomNav />
         </div>
     );
 };

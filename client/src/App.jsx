@@ -15,8 +15,8 @@ const MyComplaints = React.lazy(() => import('./pages/MyComplaints'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 
 const AuthorityTasks = React.lazy(() => import('./pages/authority/AuthorityTasks'));
-const AuthorityAnalytics = () => <div className="p-8"><h1 className="text-2xl font-bold">Analytics & Reports</h1></div>;
-const AuthoritySettings = () => <div className="p-8"><h1 className="text-2xl font-bold">Authority Settings</h1></div>;
+const AuthorityAnalytics = React.lazy(() => import('./pages/authority/AuthorityAnalytics'));
+const AuthoritySettings = React.lazy(() => import('./pages/authority/AuthoritySettings'));
 const ManageMembers = React.lazy(() => import('./pages/authority/ManageMembers'));
 const AuthorityChat = React.lazy(() => import('./pages/authority/AuthorityChat'));
 
