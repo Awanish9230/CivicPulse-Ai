@@ -16,6 +16,7 @@ import complainRoutes from './src/routes/complainRoutes.js';
 import notificationRoutes from './src/routes/notificationRoutes.js';
 import messageRoutes from './src/routes/messageRoutes.js';
 import authorityRoutes from './src/routes/authorityRoutes.js';
+import adminRoutes from './src/routes/adminRoutes.js';
 import startEscalationCron from './src/utils/escalationCron.js';
 
 // Connect to database
@@ -72,6 +73,7 @@ app.use("/api/v1/complaint", complainRoutes);
 app.use("/api/v1/notification", notificationRoutes);
 app.use("/api/v1/message", messageRoutes);
 app.use("/api/v1/authority", authorityRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);

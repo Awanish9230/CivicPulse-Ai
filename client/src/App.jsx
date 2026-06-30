@@ -20,11 +20,15 @@ const AuthoritySettings = React.lazy(() => import('./pages/authority/AuthoritySe
 const ManageMembers = React.lazy(() => import('./pages/authority/ManageMembers'));
 const AuthorityChat = React.lazy(() => import('./pages/authority/AuthorityChat'));
 
-// Placeholders for missing Admin Routes
-const AdminMonitor = () => <div className="p-8"><h1 className="text-2xl font-bold">System Monitor</h1></div>;
-const AdminAuthorities = () => <div className="p-8"><h1 className="text-2xl font-bold">Manage Authorities</h1></div>;
-const AdminBroadcasts = () => <div className="p-8"><h1 className="text-2xl font-bold">Global Broadcasts</h1></div>;
-const AdminSettings = () => <div className="p-8"><h1 className="text-2xl font-bold">System Settings</h1></div>;
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const ManageUsers = React.lazy(() => import('./pages/admin/ManageUsers'));
+const ManageAuthorities = React.lazy(() => import('./pages/admin/ManageAuthorities'));
+const ManageComplaints = React.lazy(() => import('./pages/admin/ManageComplaints'));
+const AdminAIDashboard = React.lazy(() => import('./pages/admin/AdminAIDashboard'));
+const AdminAnalytics = React.lazy(() => import('./pages/admin/AdminAnalytics'));
+const AdminBroadcasts = React.lazy(() => import('./pages/admin/AdminBroadcasts'));
+const AdminMonitor = React.lazy(() => import('./pages/admin/AdminMonitor'));
+const AuditLogs = React.lazy(() => import('./pages/admin/AuditLogs'));
 
 // Dynamic Title Component
 const DynamicTitle = () => {
@@ -81,10 +85,17 @@ function App() {
 
           {/* Admin Zone */}
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminMonitor />} />
-            <Route path="authorities" element={<AdminAuthorities />} />
+            <Route index element={<AdminDashboard />} />
+            <Route path="authorities" element={<ManageAuthorities />} />
+            <Route path="citizens" element={<ManageUsers />} />
+            <Route path="complaints" element={<ManageComplaints />} />
+            <Route path="ai" element={<AdminAIDashboard />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="broadcasts" element={<AdminBroadcasts />} />
-            <Route path="settings" element={<AdminSettings />} />
+            <Route path="monitor" element={<AdminMonitor />} />
+            <Route path="audit" element={<AuditLogs />} />
+            {/* The rest of the routes will be added as they are built */}
+            <Route path="*" element={<div className="p-8"><h1 className="text-2xl font-bold">Coming Soon</h1><p>This module is under development.</p></div>} />
           </Route>
 
         </Routes>

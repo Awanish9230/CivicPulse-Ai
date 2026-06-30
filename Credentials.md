@@ -4,8 +4,8 @@ These are the default credentials configured for accessing the different dashboa
 
 ## Super Admin Portal (`/admin`)
 The Super Admin is responsible for system-wide monitoring, managing authority accounts, and sending global broadcasts.
-*   **Username:** `admin`
-*   **Password:** `your_secure_admin_password`
+*   **Username:** `awanish`
+*   **Password:** `awanish@123`
 *(Note: These match the exact values currently set in your `server/.env` file)*
 
 ## Authority Dashboard (`/authority`)
