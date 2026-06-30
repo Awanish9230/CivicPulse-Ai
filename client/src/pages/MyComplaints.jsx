@@ -101,10 +101,10 @@ const MyComplaints = () => {
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none -z-10"></div>
             
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border/50 pb-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200/50 pb-8">
                 <div>
-                    <h1 className="text-4xl font-black text-text tracking-tight mb-2">My Reports</h1>
-                    <p className="text-text/60 font-medium">Track and manage the civic issues you have reported.</p>
+                    <h1 className="text-4xl font-black text-slate-800 tracking-tight mb-2">My Reports</h1>
+                    <p className="text-slate-500 font-medium">Track and manage the civic issues you have reported.</p>
                 </div>
                 
                 <motion.button 
@@ -129,17 +129,17 @@ const MyComplaints = () => {
                 </motion.button>
             </div>
             
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mt-4">
                 {/* Custom Tabs */}
-                <div className="flex bg-surface p-1.5 rounded-2xl shadow-sm border border-border/50">
+                <div className="flex bg-white/40 backdrop-blur-xl p-2 rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-white">
                     {['All', 'Active', 'Resolved'].map(f => (
                         <button 
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all relative ${
+                            className={`px-8 py-3 rounded-2xl text-sm font-bold transition-all relative ${
                                 filter === f 
-                                    ? 'bg-white text-primary shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-border/50' 
-                                    : 'text-text/50 hover:text-text hover:bg-white/50'
+                                    ? 'bg-white text-primary shadow-sm border border-slate-100' 
+                                    : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
                             }`}
                         >
                             {f}
@@ -161,16 +161,16 @@ const MyComplaints = () => {
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg rounded-[3rem] p-16 text-center max-w-2xl mx-auto mt-10"
+                        className="bg-white/80 backdrop-blur-2xl border border-white shadow-xl rounded-[3rem] p-16 text-center max-w-2xl mx-auto mt-10"
                     >
                         <div className="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6 transform rotate-12 transition-transform hover:rotate-0">
                             <FileText size={40} className="text-primary" />
                         </div>
-                        <h2 className="text-2xl font-black text-text mb-3">No Reports Yet</h2>
-                        <p className="text-text/60 mb-8 max-w-md mx-auto leading-relaxed">
+                        <h2 className="text-2xl font-black text-slate-800 mb-3">No Reports Yet</h2>
+                        <p className="text-slate-500 mb-8 max-w-md mx-auto leading-relaxed">
                             You haven't submitted any civic issues in this category yet. Be the change in your community by reporting local problems.
                         </p>
-                        <Link to="/?report=true" className="inline-block bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-8 rounded-2xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] hover:-translate-y-0.5">
+                        <Link to="/?report=true" className="inline-block bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white font-bold py-4 px-10 rounded-2xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] hover:-translate-y-1">
                             Report an Issue Now
                         </Link>
                     </motion.div>
@@ -188,10 +188,10 @@ const MyComplaints = () => {
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ delay: i * 0.05, type: "spring", stiffness: 300, damping: 24 }}
                                 key={c._id}
-                                className={`group bg-white rounded-3xl p-6 transition-all duration-300 relative overflow-hidden ${
+                                className={`group bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-8 transition-all duration-300 relative overflow-hidden border ${
                                     slaRisk 
-                                        ? 'border-red-500/30 shadow-[0_8px_30px_rgba(239,68,68,0.08)]' 
-                                        : 'border-border/50 shadow-[0_4px_24px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-primary/20'
+                                        ? 'border-red-400 shadow-[0_8px_30px_rgba(239,68,68,0.15)]' 
+                                        : 'border-white hover:border-slate-200/60 shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]'
                                 }`}
                             >
                                 {/* Decorative Accent */}
@@ -201,38 +201,38 @@ const MyComplaints = () => {
 
                                 <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex flex-wrap items-center gap-3 mb-3">
-                                            <span className="text-[10px] font-black tracking-widest text-text/40 bg-surface px-3 py-1.5 rounded-lg border border-border/50">
+                                        <div className="flex flex-wrap items-center gap-3 mb-4">
+                                            <span className="text-[10px] font-black tracking-widest text-slate-400 bg-white shadow-sm px-3 py-1.5 rounded-xl border border-slate-100">
                                                 ID: {c._id.slice(-6).toUpperCase()}
                                             </span>
-                                            <span className={`text-[10px] font-black tracking-widest px-3 py-1.5 rounded-lg uppercase ${
-                                                isResolved ? 'bg-green-500/10 text-green-600' : 'bg-blue-500/10 text-blue-600'
+                                            <span className={`text-[10px] font-black tracking-widest px-3 py-1.5 rounded-xl uppercase shadow-sm border ${
+                                                isResolved ? 'bg-green-50/80 border-green-200 text-green-700' : 'bg-blue-50/80 border-blue-200 text-blue-700'
                                             }`}>
                                                 {c.status}
                                             </span>
                                             {slaRisk && (
-                                                <span className="flex items-center gap-1.5 text-[10px] font-bold text-red-600 bg-red-500/10 px-3 py-1.5 rounded-lg animate-pulse border border-red-500/20">
+                                                <span className="flex items-center gap-1.5 text-[10px] font-bold text-red-700 bg-red-50/80 px-3 py-1.5 rounded-xl animate-pulse border border-red-200 shadow-sm">
                                                     <AlertTriangle size={12} /> SLA BREACHED
                                                 </span>
                                             )}
                                             {c.expectedCompletionDate && (
-                                                <span className="flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20">
+                                                <span className="flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50/80 px-3 py-1.5 rounded-xl border border-blue-200 shadow-sm">
                                                     <Clock size={12} /> Est: {new Date(c.expectedCompletionDate).toLocaleDateString()}
                                                 </span>
                                             )}
                                         </div>
                                         
-                                        <h3 className="text-2xl font-black text-text mb-4 line-clamp-1 group-hover:text-primary transition-colors">{c.category} Issue</h3>
+                                        <h3 className="text-2xl font-black text-slate-800 mb-4 line-clamp-1 group-hover:text-primary transition-colors">{c.category} Issue</h3>
                                         
                                         {(c.imageUrls?.[0] || c.imageUrl) && (
-                                            <div className="mb-4 rounded-xl overflow-hidden border border-border/50 max-w-sm h-40 bg-surface shadow-sm">
+                                            <div className="mb-5 rounded-2xl overflow-hidden border border-slate-200/50 max-w-sm h-48 bg-slate-50 shadow-sm">
                                                 <img src={c.imageUrls?.[0] || c.imageUrl} alt="Issue" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                                             </div>
                                         )}
 
-                                        <p className="text-text/70 text-sm leading-relaxed mb-4 max-w-2xl">{c.description}</p>
+                                        <p className="text-slate-600 text-sm leading-relaxed mb-5 max-w-2xl">{c.description}</p>
                                         
-                                        <div className="flex items-center gap-4 text-xs font-medium text-text/40 mb-4">
+                                        <div className="flex items-center gap-4 text-xs font-bold text-slate-400 mb-5">
                                             <div className="flex items-center gap-1.5"><Clock size={14} /> Reported on {new Date(c.createdAt).toLocaleDateString()}</div>
                                         </div>
                                         
@@ -241,13 +241,13 @@ const MyComplaints = () => {
                                             <div className="flex items-center gap-3 mb-4">
                                                 <button 
                                                     onClick={() => setEditingComplaint({ ...c })}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                                                    className="flex items-center gap-1.5 px-4 py-2 bg-white border border-blue-100 text-blue-600 rounded-xl shadow-sm text-xs font-bold hover:bg-blue-50 transition-all hover:shadow-md hover:border-blue-200"
                                                 >
                                                     <Edit2 size={14} /> Edit
                                                 </button>
                                                 <button 
                                                     onClick={() => handleDelete(c._id)}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                                                    className="flex items-center gap-1.5 px-4 py-2 bg-white border border-red-100 text-red-600 rounded-xl shadow-sm text-xs font-bold hover:bg-red-50 transition-all hover:shadow-md hover:border-red-200"
                                                 >
                                                     <Trash2 size={14} /> Delete
                                                 </button>

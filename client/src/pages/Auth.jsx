@@ -170,7 +170,7 @@ const Auth = () => {
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 onFocus={() => setFocusedField('email')}
                                                 onBlur={() => setFocusedField(null)}
-                                                className="w-full bg-transparent px-5 pt-7 pb-3 text-white focus:outline-none peer"
+                                                className="w-full bg-transparent px-5 pt-7 pb-3 text-white focus:outline-none peer [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:[-webkit-text-fill-color:white] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
                                                 placeholder=" "
                                                 required
                                             />
@@ -195,7 +195,7 @@ const Auth = () => {
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 onFocus={() => setFocusedField('password')}
                                                 onBlur={() => setFocusedField(null)}
-                                                className="w-full bg-transparent px-5 pt-7 pb-3 text-white focus:outline-none peer"
+                                                className="w-full bg-transparent px-5 pt-7 pb-3 text-white focus:outline-none peer [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:[-webkit-text-fill-color:white] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
                                                 placeholder=" "
                                                 required
                                             />

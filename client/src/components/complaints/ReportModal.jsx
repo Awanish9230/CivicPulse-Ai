@@ -169,17 +169,17 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
     return (
         <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center">
             <motion.div 
-                initial={{ opacity: 0, y: 100 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 100 }}
-                className="bg-white w-full max-w-lg md:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                initial={{ opacity: 0, y: 100, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 100, scale: 0.95 }}
+                className="bg-white/90 backdrop-blur-3xl w-full max-w-lg md:rounded-[2.5rem] rounded-t-[2.5rem] shadow-[0_20px_60px_rgb(0,0,0,0.15)] border border-white/80 overflow-hidden max-h-[90vh] flex flex-col"
             >
-                <div className="p-6 border-b border-border/50 flex justify-between items-center bg-surface sticky top-0 z-10">
+                <div className="p-8 border-b border-slate-200/50 flex justify-between items-center bg-white/50 backdrop-blur-md sticky top-0 z-20">
                     <div>
-                        <h2 className="text-xl font-black text-text">Finalize Report</h2>
-                        <p className="text-sm text-text/50">Submit your captured issue to authorities.</p>
+                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">Finalize Report</h2>
+                        <p className="text-sm font-medium text-slate-500 mt-1">Submit your captured issue to authorities.</p>
                     </div>
-                    <button onClick={onClose} className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors">
+                    <button onClick={onClose} className="p-2.5 bg-white shadow-sm border border-slate-100 rounded-full hover:bg-slate-50 transition-colors text-slate-500 hover:text-slate-800">
                         <X size={20} />
                     </button>
                 </div>
@@ -197,10 +197,10 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                     <form id="report-form" onSubmit={handleSubmit} className="space-y-5">
                         
                         {/* Interactive Map */}
-                        <div className="bg-surface border border-border/50 rounded-xl overflow-hidden relative">
-                            <div className="bg-slate-50 p-2 flex items-center gap-2 border-b border-border/50">
+                        <div className="bg-slate-50/80 border border-slate-200/60 rounded-2xl overflow-hidden relative shadow-sm">
+                            <div className="bg-white/80 backdrop-blur-md p-3 flex items-center gap-2 border-b border-slate-200/60">
                                 <Navigation size={16} className="text-primary" />
-                                <span className="text-xs font-bold text-slate-600">Adjust pin to exact location</span>
+                                <span className="text-xs font-black uppercase tracking-wider text-slate-500">Adjust pin to exact location</span>
                             </div>
                             <div className="h-48 w-full z-0 relative">
                                 <MapContainer center={position} zoom={16} scrollWheelZoom={true} className="h-full w-full">
@@ -214,13 +214,13 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                         </div>
 
                         {/* Editable Address Fields */}
-                        <div className="bg-surface border border-border/50 rounded-xl p-4">
-                            <label className="block text-sm font-bold text-text mb-3 flex items-center justify-between">
+                        <div className="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 shadow-sm">
+                            <label className="block text-sm font-black text-slate-700 mb-4 flex items-center justify-between">
                                 <span className="flex items-center gap-2">
-                                    <MapPin size={16} className="text-primary" />
+                                    <MapPin size={18} className="text-primary" />
                                     Location Details
                                 </span>
-                                {isFetchingAddress && <Loader2 size={14} className="animate-spin text-primary" />}
+                                {isFetchingAddress && <Loader2 size={16} className="animate-spin text-primary" />}
                             </label>
                             
                             <div className="space-y-3">
@@ -230,7 +230,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                         placeholder="Address Line 1 (Street/Locality)" 
                                         value={address.line1} 
                                         onChange={(e) => setAddress({...address, line1: e.target.value})}
-                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                        className="w-full bg-white border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-sm shadow-sm transition-all font-medium text-slate-700"
                                         required
                                     />
                                 </div>
@@ -240,7 +240,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                         placeholder="Address Line 2 (Landmark - Optional)" 
                                         value={address.line2} 
                                         onChange={(e) => setAddress({...address, line2: e.target.value})}
-                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                        className="w-full bg-white border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-sm shadow-sm transition-all font-medium text-slate-700"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
@@ -249,7 +249,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                         placeholder="District/City" 
                                         value={address.district} 
                                         onChange={(e) => setAddress({...address, district: e.target.value})}
-                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                        className="w-full bg-white border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-sm shadow-sm transition-all font-medium text-slate-700"
                                         required
                                     />
                                     <input 
@@ -257,7 +257,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                         placeholder="State" 
                                         value={address.state} 
                                         onChange={(e) => setAddress({...address, state: e.target.value})}
-                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                        className="w-full bg-white border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-sm shadow-sm transition-all font-medium text-slate-700"
                                         required
                                     />
                                 </div>
@@ -267,7 +267,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                         placeholder="Pin Code" 
                                         value={address.pinCode} 
                                         onChange={(e) => setAddress({...address, pinCode: e.target.value})}
-                                        className="w-full bg-white border border-border/50 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                                        className="w-full bg-white border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-sm shadow-sm transition-all font-medium text-slate-700"
                                         required
                                     />
                                 </div>
@@ -275,11 +275,11 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-text/70 mb-1.5">Category</label>
+                            <label className="block text-sm font-black text-slate-700 mb-2">Category</label>
                             <select 
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full bg-white border border-border/50 rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm appearance-none"
+                                className="w-full bg-white border border-slate-200 rounded-xl p-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm shadow-sm font-medium text-slate-700 appearance-none"
                                 required
                             >
                                 <option value="" disabled>Select the type of issue...</option>
@@ -290,25 +290,25 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-text/70 mb-1.5">Description</label>
+                            <label className="block text-sm font-black text-slate-700 mb-2">Description</label>
                             <textarea 
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Describe the issue in detail..."
                                 rows="3"
-                                className="w-full bg-white border border-border/50 rounded-xl p-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm resize-none"
+                                className="w-full bg-white border border-slate-200 rounded-xl p-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm shadow-sm font-medium text-slate-700 resize-none"
                                 required
                             ></textarea>
                         </div>
                     </form>
                 </div>
 
-                <div className="p-6 border-t border-border/50 bg-white sticky bottom-0 z-10">
+                <div className="p-6 border-t border-slate-200/50 bg-white/50 backdrop-blur-md sticky bottom-0 z-10">
                     <button 
                         type="submit"
                         form="report-form"
                         disabled={isSubmitting || isFetchingAddress}
-                        className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] disabled:opacity-50 disabled:shadow-none flex justify-center items-center gap-2"
+                        className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white font-black py-4 rounded-xl transition-all shadow-[0_4px_20px_0_rgba(37,99,235,0.3)] hover:shadow-[0_8px_30px_rgba(37,99,235,0.4)] hover:-translate-y-0.5 disabled:opacity-50 disabled:shadow-none disabled:transform-none flex justify-center items-center gap-2"
                     >
                         {isSubmitting ? (
                             <><Loader2 size={18} className="animate-spin" /> Submitting securely...</>

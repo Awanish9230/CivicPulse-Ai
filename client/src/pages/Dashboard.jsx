@@ -266,15 +266,15 @@ const Dashboard = () => {
                 >
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h2 className="font-black text-2xl text-text">Nearby Issues Feed</h2>
-                            <p className="text-sm font-medium text-text/50">Recent complaints reported around your location</p>
+                            <h2 className="font-black text-2xl text-slate-800 tracking-tight">Live Issue Feed</h2>
+                            <p className="text-sm font-medium text-slate-500 mt-1">Real-time reports awaiting authority action</p>
                         </div>
-                        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/60">
                             {['All', 'Pending', 'Critical'].map(f => (
                                 <button 
                                     key={f}
                                     onClick={() => setFilter(f)}
-                                    className={`px-6 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${filter === f ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-white border border-border/50 text-text/60 hover:bg-surface hover:text-text'}`}
+                                    className={`px-6 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${filter === f ? 'bg-white text-primary shadow-sm border border-slate-100' : 'text-slate-500 hover:bg-white/50 hover:text-slate-700'}`}
                                 >
                                     {f}
                                 </button>
@@ -284,12 +284,12 @@ const Dashboard = () => {
                     
                     <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-6 w-full pt-2 pb-6">
                         {filteredComplaints.length === 0 && (
-                            <div className="text-center text-text/40 py-20 bg-white rounded-[2rem] border border-border/50 w-full col-span-full">
-                                <div className="bg-surface w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <CheckCircle size={32} className="opacity-50" />
+                            <div className="text-center text-slate-500 py-24 bg-white/60 backdrop-blur-xl rounded-[3rem] border border-slate-200/60 w-full col-span-full shadow-sm">
+                                <div className="bg-primary/5 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+                                    <CheckCircle size={40} className="text-primary opacity-80" />
                                 </div>
-                                <p className="font-bold text-lg">Inbox Zero</p>
-                                <p className="text-sm">No active complaints found matching the filter.</p>
+                                <p className="font-black text-2xl text-slate-800 mb-2">Inbox Zero</p>
+                                <p className="text-sm font-medium">No active complaints found matching the filter.</p>
                             </div>
                         )}
                         {filteredComplaints.map((c, i) => (
@@ -298,67 +298,67 @@ const Dashboard = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
                                 key={c._id} 
-                                className="bg-white rounded-[2rem] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-primary/30 transition-colors w-full flex flex-col"
+                                className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-5 shadow-sm border border-slate-200/60 group hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300 w-full flex flex-col"
                             >
                                 {/* Image */}
-                                <div className="w-full h-48 rounded-2xl overflow-hidden relative bg-surface mb-4 shrink-0">
+                                <div className="w-full h-52 rounded-[2rem] overflow-hidden relative bg-slate-50 mb-5 shrink-0 border border-slate-100">
                                     {(c.imageUrls?.[0] || c.imageUrl) ? (
                                         <img 
                                             src={c.imageUrls?.[0] || c.imageUrl} 
                                             alt={c.description} 
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-text/30">No Image</div>
+                                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium">No Image Provided</div>
                                     )}
-                                    <div className="absolute top-3 left-3 glass-dark text-white px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5">
+                                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-white text-slate-800 shadow-sm px-4 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-2 tracking-wide uppercase">
                                         <div className={`w-2 h-2 rounded-full animate-pulse ${
                                             c.status === 'Resolved' || c.status === 'Closed' ? 'bg-green-500' :
                                             c.status === 'In Progress' ? 'bg-blue-500' : 'bg-orange-500'
                                         }`}></div>
                                         {c.status}
                                     </div>
-                                    <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${
-                                        c.priority === 'Critical' ? 'bg-red-500 text-white' :
-                                        c.priority === 'High' ? 'bg-orange-500 text-white' :
-                                        'bg-white text-text'
+                                    <div className={`absolute top-4 right-4 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-sm border ${
+                                        c.priority === 'Critical' ? 'bg-red-500 text-white border-red-400' :
+                                        c.priority === 'High' ? 'bg-orange-500 text-white border-orange-400' :
+                                        'bg-white text-slate-700 border-white'
                                     }`}>
                                         {c.priority}
                                     </div>
                                 </div>
 
                                 {/* Content */}
-                                <div className="flex-1 flex flex-col justify-between">
+                                <div className="flex-1 flex flex-col justify-between px-1">
                                     <div>
-                                        <div className="flex justify-between items-start mb-2">
-                                            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg uppercase tracking-wider">
                                                 {c.category}
                                             </span>
-                                            <div className="flex items-center text-text/40 text-xs font-medium">
-                                                <Clock size={12} className="mr-1" />
+                                            <div className="flex items-center text-slate-400 text-xs font-bold">
+                                                <Clock size={12} className="mr-1.5" />
                                                 {getTimeAgo(c.createdAt)}
                                             </div>
                                         </div>
-                                        <h3 className="text-base font-black text-text mb-2 leading-tight line-clamp-2">{c.description}</h3>
-                                        <div className="flex items-center text-text/60 text-xs mb-4 font-medium line-clamp-1">
-                                            <MapPin size={14} className="mr-1 text-primary shrink-0" />
+                                        <h3 className="text-lg font-black text-slate-800 mb-2 leading-tight line-clamp-2">{c.description}</h3>
+                                        <div className="flex items-center text-slate-500 text-xs mb-5 font-bold line-clamp-1">
+                                            <MapPin size={14} className="mr-1.5 text-primary shrink-0" />
                                             <span className="truncate">{c.address?.ward ? `${c.address.ward}, ${c.address.district}` : 'Location Attached'}</span>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                                            <button className="flex items-center gap-1.5 text-text/60 hover:text-primary transition-colors font-bold text-xs">
+                                        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                                            <button className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-bold text-xs bg-slate-50 hover:bg-primary/5 px-3 py-1.5 rounded-xl">
                                                 <ThumbsUp size={16} />
                                                 <span>{c.supportCount || 0}</span>
                                             </button>
                                             
                                             <button 
                                                 onClick={() => setActiveReplyId(activeReplyId === c._id ? null : c._id)}
-                                                className="flex items-center gap-1.5 text-text/60 hover:text-primary transition-colors font-bold text-xs bg-surface px-3 py-1.5 rounded-lg"
+                                                className="flex items-center gap-2 text-slate-600 hover:text-primary transition-colors font-bold text-xs bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-primary hover:shadow-md"
                                             >
                                                 <MessageSquare size={16} />
-                                                <span>Update</span>
+                                                <span>Add Update</span>
                                             </button>
                                         </div>
                                         

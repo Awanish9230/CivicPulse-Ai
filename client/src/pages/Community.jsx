@@ -203,18 +203,18 @@ const Community = () => {
     ];
 
     return (
-        <div className="flex h-[calc(100vh-6rem)] max-w-6xl mx-auto bg-white rounded-3xl border border-border/50 shadow-sm overflow-hidden mb-8">
+        <div className="flex h-[calc(100vh-6rem)] max-w-6xl mx-auto bg-white/70 backdrop-blur-2xl rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden mb-8 relative z-10">
             
             {/* Left Sidebar - Channels */}
-            <div className="w-64 bg-surface/50 border-r border-border/50 flex flex-col hidden md:flex shrink-0">
-                <div className="p-6 border-b border-border/50">
-                    <h2 className="text-xl font-black text-text tracking-tight">Community Hub</h2>
-                    <p className="text-xs text-text/50 mt-1">Within 5km radius</p>
+            <div className="w-72 bg-white/40 border-r border-white/50 flex flex-col hidden md:flex shrink-0 backdrop-blur-xl">
+                <div className="p-6 border-b border-white/50">
+                    <h2 className="text-xl font-black text-slate-800 tracking-tight">Community Hub</h2>
+                    <p className="text-xs text-slate-500 mt-1 font-medium">Within 5km radius</p>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col justify-between">
                     <div className="space-y-1">
-                        <div className="text-xs font-bold text-text/40 uppercase tracking-wider mb-2 px-3">Channels</div>
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-3">Channels</div>
                         {channels.map(channel => {
                             const Icon = channel.icon;
                             const isActive = activeChannel === channel.id;
@@ -222,12 +222,14 @@ const Community = () => {
                                 <button
                                     key={channel.id}
                                     onClick={() => setActiveChannel(channel.id)}
-                                    className={`w-full flex flex-col items-start px-3 py-2 rounded-xl transition-all ${
-                                        isActive ? 'bg-primary/10 text-primary' : 'hover:bg-black/5 text-text/70'
+                                    className={`w-full flex flex-col items-start px-4 py-3 rounded-2xl transition-all ${
+                                        isActive ? 'bg-white shadow-sm border border-slate-100 text-primary font-bold' : 'hover:bg-white/50 text-slate-500 font-medium'
                                     }`}
                                 >
-                                    <div className="flex items-center gap-2 font-bold">
-                                        <Hash size={16} />
+                                    <div className="flex items-center gap-3">
+                                        <div className={`p-1.5 rounded-lg ${isActive ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}>
+                                            <Icon size={16} />
+                                        </div>
                                         <span>{channel.name}</span>
                                     </div>
                                 </button>
@@ -236,37 +238,42 @@ const Community = () => {
                     </div>
 
                     {/* Trending Widget */}
-                    <div className="mt-8 bg-white border border-border/50 rounded-2xl p-4 shadow-sm">
-                        <div className="flex items-center gap-2 text-primary font-bold mb-3">
+                    <div className="mt-8 bg-white/60 border border-white/80 rounded-3xl p-5 shadow-sm backdrop-blur-md">
+                        <div className="flex items-center gap-2 text-primary font-black mb-4">
                             <TrendingUp size={16} />
-                            <span className="text-sm">Trending Issues</span>
+                            <span className="text-sm tracking-tight">Trending Issues</span>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {feed.slice(0, 3).map(item => (
-                                <div key={item._id} className="text-xs">
-                                    <div className="font-bold text-text line-clamp-1">{item.description}</div>
-                                    <div className="text-text/50 flex items-center gap-1 mt-0.5">
-                                        <MapPin size={10} /> {item.supportCount || 0} affected
+                                <div key={item._id} className="text-xs group cursor-pointer">
+                                    <div className="font-bold text-slate-800 line-clamp-1 group-hover:text-primary transition-colors">{item.description}</div>
+                                    <div className="text-slate-500 font-medium flex items-center gap-1 mt-1">
+                                        <MapPin size={10} className="text-slate-400" /> {item.supportCount || 0} affected
                                     </div>
                                 </div>
                             ))}
-                            {feed.length === 0 && <div className="text-xs text-text/50">No trending issues yet.</div>}
+                            {feed.length === 0 && <div className="text-xs text-slate-400">No trending issues yet.</div>}
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Right Main Area */}
-            <div className="flex-1 flex flex-col min-w-0 bg-white relative">
+            <div className="flex-1 flex flex-col min-w-0 bg-slate-50/30 relative">
                 
                 {/* Header */}
-                <div className="h-16 border-b border-border/50 flex items-center justify-between px-6 glass sticky top-0 z-10 shrink-0">
+                <div className="h-[72px] border-b border-white bg-white/40 backdrop-blur-xl flex items-center justify-between px-8 sticky top-0 z-20 shrink-0 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
                     <div className="flex items-center">
-                        <div className="flex items-center gap-2">
-                            <Hash size={20} className="text-text/40" />
-                            <h2 className="font-bold text-text text-lg">{activeChannel}</h2>
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-primary">
+                                {(() => {
+                                    const Icon = channels.find(c => c.id === activeChannel)?.icon || Hash;
+                                    return <Icon size={20} />;
+                                })()}
+                            </div>
+                            <h2 className="font-black text-slate-800 text-xl tracking-tight capitalize">{channels.find(c => c.id === activeChannel)?.name || activeChannel}</h2>
                         </div>
-                        <div className="ml-4 pl-4 border-l border-border/50 text-sm text-text/50 hidden sm:block">
+                        <div className="ml-5 pl-5 border-l border-slate-200 text-sm font-medium text-slate-500 hidden sm:block">
                             {channels.find(c => c.id === activeChannel)?.desc}
                         </div>
                     </div>
@@ -284,11 +291,18 @@ const Community = () => {
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-auto bg-[#F8FAFC]/50" ref={chatContainerRef}>
-                    
+                <div className="flex-1 overflow-y-scroll bg-[#F8FAFC]/50" ref={chatContainerRef}>
+                    <AnimatePresence mode="wait">
                     {/* Channel: #issue */}
-                    {activeChannel === 'issue' && (
-                        <div className="p-6 max-w-4xl mx-auto space-y-6">
+                    {activeChannel === 'issue' ? (
+                        <motion.div 
+                            key="issue"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="p-4 sm:p-6 max-w-4xl mx-auto space-y-4"
+                        >
                             {loading && <div className="text-center py-10">Loading issues...</div>}
                             {!loading && feed.length === 0 && (
                                 <div className="text-center py-12 text-text/50">No issues reported in your area.</div>
@@ -297,61 +311,52 @@ const Community = () => {
                                 <motion.div 
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.05 }}
+                                    transition={{ delay: index * 0.03 }}
                                     key={item._id} 
-                                    className="bg-white rounded-2xl p-5 shadow-sm border border-border/50 hover:border-primary/30 transition-colors relative overflow-hidden"
+                                    className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-slate-300 transition-all relative overflow-hidden group hover:-translate-y-0.5"
                                 >
-                                    <div className="flex gap-4 relative z-10">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                            <span className="text-primary font-bold text-sm">AC</span>
+                                    <div className="flex gap-3 relative z-10">
+                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                            <span className="text-primary font-bold text-xs">AC</span>
                                         </div>
                                         
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex items-baseline gap-2 mb-1">
-                                                <span className="font-bold text-text">Anonymous Citizen</span>
-                                                <span className="text-xs text-text/40">{getTimeAgo(item.createdAt)}</span>
-                                            </div>
-                                            
-                                            <div className="flex flex-wrap gap-2 mb-3">
-                                                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">
+                                            <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                                                <span className="font-bold text-sm text-slate-800">Anonymous Citizen</span>
+                                                <span className="text-[10px] text-slate-400 font-medium">{getTimeAgo(item.createdAt)}</span>
+                                                <span className="text-[9px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded uppercase tracking-wider ml-auto">
                                                     {item.category}
                                                 </span>
-                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${item.status === 'Resolved' ? 'bg-green-500/10 text-green-600' : 'bg-orange-500/10 text-orange-600'}`}>
+                                                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${item.status === 'Resolved' ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
                                                     {item.status}
                                                 </span>
-                                                {item.expectedCompletionDate && (
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-blue-500/10 text-blue-600 flex items-center gap-1">
-                                                        <Clock size={10} />
-                                                        Est: {new Date(item.expectedCompletionDate).toLocaleDateString()}
-                                                    </span>
-                                                )}
                                             </div>
                                             
-                                            <p className="text-text/80 text-sm leading-relaxed mb-3">
+                                            <p className="text-slate-600 text-sm leading-relaxed mb-3 line-clamp-2">
                                                 {item.description}
                                             </p>
                                             {(item.imageUrls?.[0] || item.imageUrl) && (
-                                                <div className="mt-2 mb-4 rounded-xl overflow-hidden border border-border/50 max-w-md h-48 bg-surface">
-                                                    <img src={item.imageUrls?.[0] || item.imageUrl} alt="Issue" className="w-full h-full object-cover" />
+                                                <div className="mb-3 rounded-xl overflow-hidden border border-slate-200 max-w-sm max-h-40 bg-slate-50">
+                                                    <img src={item.imageUrls?.[0] || item.imageUrl} alt="Issue" loading="lazy" className="w-full h-full object-cover" />
                                                 </div>
                                             )}
                                             
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
                                                 <button 
                                                     onClick={() => handleUpvote(item._id)}
-                                                    className="group flex items-center gap-2 text-xs font-bold text-primary transition-colors bg-primary/10 hover:bg-primary hover:text-white px-4 py-2 rounded-xl"
+                                                    className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-primary transition-colors hover:bg-primary/5 px-2 py-1.5 rounded-lg"
                                                 >
-                                                    <ThumbsUp size={16} />
-                                                    {item.upvotes || 0} Upvotes
+                                                    <ThumbsUp size={14} />
+                                                    {item.supportCount || item.upvotes || 0}
                                                 </button>
                                                 
                                                 {user?.role === 'Authority' && item.status !== 'Resolved' && (
                                                     <button 
                                                         onClick={() => handleResolve(item._id)}
-                                                        className="ml-auto flex items-center gap-2 text-white bg-green-500 hover:bg-green-600 px-4 py-1.5 rounded-lg transition-colors font-bold text-xs shadow-md"
+                                                        className="ml-auto flex items-center gap-1.5 text-slate-600 bg-white border border-slate-200 hover:border-green-400 hover:text-green-600 px-3 py-1.5 rounded-lg transition-colors font-bold text-[10px] uppercase tracking-wider shadow-sm"
                                                     >
-                                                        <Shield size={14} />
-                                                        Mark Resolved
+                                                        <Shield size={12} />
+                                                        Resolve
                                                     </button>
                                                 )}
                                             </div>
@@ -378,12 +383,16 @@ const Community = () => {
                                     <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[50px] rounded-full pointer-events-none" />
                                 </motion.div>
                             ))}
-                        </div>
-                    )}
-
-                    {/* Channels: #general or #ask-authority */}
-                    {(activeChannel === 'general' || activeChannel === 'ask-authority') && (
-                        <div className="flex flex-col min-h-full justify-end p-6">
+                        </motion.div>
+                    ) : (
+                        <motion.div 
+                            key="chat"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="flex flex-col min-h-full justify-end p-6"
+                        >
                             <div className="space-y-6">
                                 {/* Welcome Message */}
                                 <div className="text-center py-8">
@@ -405,12 +414,12 @@ const Community = () => {
 
                                     return (
                                         <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
                                             key={msg.id} 
                                             className={`flex gap-4 group ${isMe ? 'flex-row-reverse text-right' : ''}`}
                                         >
-                                            <div className={`w-10 h-10 rounded-full border flex items-center justify-center shrink-0 mt-1 ${isAuthority ? 'bg-yellow-500/10 border-yellow-500 text-yellow-600' : 'bg-surface border-border/50 text-text/60'}`}>
+                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-1 shadow-sm border ${isAuthority ? 'bg-gradient-to-br from-yellow-400 to-amber-500 border-amber-300 text-white shadow-amber-500/30' : 'bg-white border-slate-100 text-slate-500'}`}>
                                                 {isAuthority ? <ShieldAlert size={18} /> : <span className="font-bold text-sm">{msg.sender.substring(0,2).toUpperCase()}</span>}
                                             </div>
                                             
@@ -432,7 +441,7 @@ const Community = () => {
                                                         </div>
                                                     )}
 
-                                                    <div className={`px-4 py-2.5 rounded-2xl text-sm break-words flex flex-col ${isMe ? 'bg-primary text-white rounded-tr-sm' : isAuthority ? 'bg-yellow-50 border border-yellow-200 text-yellow-900 rounded-tl-sm shadow-sm' : 'bg-white border border-border/50 text-text rounded-tl-sm shadow-sm'}`}>
+                                                    <div className={`px-4 py-3 rounded-2xl text-sm break-words flex flex-col shadow-sm border ${isMe ? 'bg-gradient-to-r from-primary to-blue-600 text-white rounded-tr-sm border-blue-500/50 shadow-primary/20' : isAuthority ? 'bg-yellow-50/90 backdrop-blur-md border-yellow-200 text-yellow-900 rounded-tl-sm shadow-amber-500/10' : 'bg-white/90 backdrop-blur-md border-white text-slate-700 rounded-tl-sm shadow-[0_4px_20px_rgb(0,0,0,0.03)]'}`}>
                                                         {renderMessageContent(msg.text)}
                                                     </div>
                                                 </div>
@@ -450,8 +459,9 @@ const Community = () => {
                                     );
                                 })}
                             </div>
-                        </div>
+                        </motion.div>
                     )}
+                    </AnimatePresence>
                 </div>
 
                 {/* Chat Input */}
@@ -485,7 +495,7 @@ const Community = () => {
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
                                         placeholder={`Message #${activeChannel}...`}
-                                        className={`w-full bg-surface border border-border/50 pl-4 pr-12 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm ${replyingTo ? 'rounded-b-xl border-t-0' : 'rounded-xl'}`}
+                                        className={`w-full bg-slate-50/80 backdrop-blur-md border border-slate-200 pl-5 pr-14 py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all text-sm shadow-inner ${replyingTo ? 'rounded-b-2xl border-t-0' : 'rounded-2xl'}`}
                                     />
                                     <button 
                                         type="submit" 
