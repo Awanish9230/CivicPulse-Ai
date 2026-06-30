@@ -1,17 +1,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Search, Filter, AlertTriangle, FileText, CheckCircle, Clock, Map, ShieldAlert } from 'lucide-react';
+import { Search, Filter, AlertTriangle, FileText, CheckCircle, Clock, Map, ShieldAlert, Edit2, Trash2, X, Camera } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import CameraCapture from '../components/complaints/CameraCapture';
+import ReportModal from '../components/complaints/ReportModal';
 
 const MyComplaints = () => {
     const [filter, setFilter] = useState('All');
     const [complaints, setComplaints] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedMapId, setExpandedMapId] = useState(null);
+    const [editingComplaint, setEditingComplaint] = useState(null); // Holds the complaint being edited
+    const [isHoveringCamera, setIsHoveringCamera] = useState(false);
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [captureData, setCaptureData] = useState(null); // Holds { photos, gps }
 
     const fetchMyComplaints = async () => {
         try {
@@ -31,6 +37,37 @@ const MyComplaints = () => {
         fetchMyComplaints();
     }, []);
 
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this complaint? This cannot be undone.")) return;
+        try {
+            await axios.delete(`http://localhost:5000/api/v1/complaint/${id}`, {
+                withCredentials: true
+            });
+            toast.success("Complaint deleted successfully");
+            fetchMyComplaints();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to delete complaint");
+        }
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.patch(`http://localhost:5000/api/v1/complaint/${editingComplaint._id}`, 
+                {
+                    category: editingComplaint.category,
+                    description: editingComplaint.description
+                }, 
+                { withCredentials: true }
+            );
+            toast.success("Complaint updated successfully");
+            setEditingComplaint(null);
+            fetchMyComplaints();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to update complaint");
+        }
+    };
+
     const filteredComplaints = complaints.filter(c => {
         if (filter === 'All') return true;
         if (filter === 'Active') return c.status !== 'Resolved' && c.status !== 'Closed';
@@ -42,6 +79,16 @@ const MyComplaints = () => {
         if (status === 'Resolved' || status === 'Closed') return false;
         const diffInHours = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60);
         return diffInHours > 48; // SLA breach if not resolved in 48h
+    };
+
+    const handlePhotoCaptured = (data) => {
+        setCaptureData(data);
+        setIsCameraOpen(false); // Close camera, open modal
+    };
+
+    const handleReportSuccess = () => {
+        setCaptureData(null);
+        fetchMyComplaints(); // Refresh the list
     };
 
     return (
@@ -60,6 +107,29 @@ const MyComplaints = () => {
                     <p className="text-text/60 font-medium">Track and manage the civic issues you have reported.</p>
                 </div>
                 
+                <motion.button 
+                    onClick={() => setIsCameraOpen(true)}
+                    onHoverStart={() => setIsHoveringCamera(true)}
+                    onHoverEnd={() => setIsHoveringCamera(false)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="group relative bg-gradient-to-r from-primary to-blue-600 p-1 rounded-2xl shadow-lg shadow-primary/30 w-full md:w-auto"
+                >
+                    <div className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-xl flex items-center justify-center gap-3">
+                        <Camera className="text-white" size={20} />
+                        <span className="text-white font-bold text-base">Raise Complaint</span>
+                    </div>
+                    {/* Animated Glow on Hover */}
+                    {isHoveringCamera && (
+                        <motion.div 
+                            layoutId="glow"
+                            className="absolute -inset-2 bg-gradient-to-r from-primary to-blue-600 rounded-3xl blur-xl opacity-40 -z-10"
+                        />
+                    )}
+                </motion.button>
+            </div>
+            
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 {/* Custom Tabs */}
                 <div className="flex bg-surface p-1.5 rounded-2xl shadow-sm border border-border/50">
                     {['All', 'Active', 'Resolved'].map(f => (
@@ -165,6 +235,24 @@ const MyComplaints = () => {
                                         <div className="flex items-center gap-4 text-xs font-medium text-text/40 mb-4">
                                             <div className="flex items-center gap-1.5"><Clock size={14} /> Reported on {new Date(c.createdAt).toLocaleDateString()}</div>
                                         </div>
+                                        
+                                        {/* Actions for Active complaints */}
+                                        {(c.status !== 'Resolved' && c.status !== 'Closed') && (
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <button 
+                                                    onClick={() => setEditingComplaint({ ...c })}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                                                >
+                                                    <Edit2 size={14} /> Edit
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDelete(c._id)}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                                                >
+                                                    <Trash2 size={14} /> Delete
+                                                </button>
+                                            </div>
+                                        )}
                                         
                                         <div className="mt-2 border-t border-border/30 pt-4">
                                             <button 
@@ -280,6 +368,106 @@ const MyComplaints = () => {
                     })}
                 </AnimatePresence>
             </div>
+
+            {/* Edit Modal */}
+            <AnimatePresence>
+                {editingComplaint && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative"
+                        >
+                            <button 
+                                onClick={() => setEditingComplaint(null)}
+                                className="absolute top-4 right-4 text-text/40 hover:text-red-500 transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                            <h2 className="text-2xl font-black text-text mb-6">Edit Complaint</h2>
+                            
+                            <form onSubmit={handleEditSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-text/70 mb-1">Category</label>
+                                    <select 
+                                        value={editingComplaint.category}
+                                        onChange={(e) => setEditingComplaint({...editingComplaint, category: e.target.value})}
+                                        className="w-full px-4 py-3 rounded-xl border border-border/50 bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-medium"
+                                        required
+                                    >
+                                        <option value="Pothole">Pothole</option>
+                                        <option value="Garbage">Garbage / Waste</option>
+                                        <option value="Water Leak">Water Leak</option>
+                                        <option value="Streetlight">Streetlight</option>
+                                        <option value="Noise">Noise</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-bold text-text/70 mb-1">Description</label>
+                                    <textarea 
+                                        value={editingComplaint.description}
+                                        onChange={(e) => setEditingComplaint({...editingComplaint, description: e.target.value})}
+                                        className="w-full px-4 py-3 rounded-xl border border-border/50 bg-surface focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-medium h-32 resize-none"
+                                        required
+                                    ></textarea>
+                                </div>
+                                
+                                <div className="flex gap-3 pt-4">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setEditingComplaint(null)}
+                                        className="flex-1 px-4 py-3 bg-surface hover:bg-slate-200 text-text rounded-xl font-bold transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        className="flex-1 px-4 py-3 bg-primary hover:bg-blue-700 text-white rounded-xl font-bold transition-colors"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Camera Overlay Modal */}
+            <AnimatePresence>
+                {isCameraOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 100 }}
+                        className="fixed inset-0 z-[100]"
+                    >
+                        <CameraCapture 
+                            onClose={() => setIsCameraOpen(false)}
+                            onCapture={handlePhotoCaptured}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Report Submission Modal */}
+            <AnimatePresence>
+                {captureData && (
+                    <ReportModal 
+                        captureData={captureData}
+                        onClose={() => setCaptureData(null)}
+                        onSuccess={handleReportSuccess}
+                    />
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };

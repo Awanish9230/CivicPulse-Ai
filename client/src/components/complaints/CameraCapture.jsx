@@ -4,33 +4,60 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const CameraCapture = ({ onClose, onCapture }) => {
     const videoRef = useRef(null);
-    const [stream, setStream] = useState(null);
+    const streamRef = useRef(null);
     const [error, setError] = useState('');
     const [photos, setPhotos] = useState([]);
     const [gps, setGps] = useState(null);
 
     useEffect(() => {
+        let isMounted = true;
+
+        const startCamera = async () => {
+            try {
+                const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } 
+                });
+                if (!isMounted) {
+                    mediaStream.getTracks().forEach(track => {
+                        track.stop();
+                    });
+                    return;
+                }
+                streamRef.current = mediaStream;
+                if (videoRef.current) {
+                    videoRef.current.srcObject = mediaStream;
+                }
+            } catch (err) {
+                if (isMounted) {
+                    setError('Camera access denied or unavailable. This is required to ensure real-time reporting authenticity.');
+                }
+            }
+        };
+
         startCamera();
-        return () => stopCamera();
+
+        return () => {
+            isMounted = false;
+            stopCamera();
+        };
     }, []);
 
-    const startCamera = async () => {
-        try {
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment' } 
-            });
-            setStream(mediaStream);
-            if (videoRef.current) {
-                videoRef.current.srcObject = mediaStream;
-            }
-        } catch (err) {
-            setError('Camera access denied or unavailable. This is required to ensure real-time reporting authenticity.');
-        }
-    };
-
     const stopCamera = () => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
+        if (videoRef.current && videoRef.current.srcObject) {
+            const tracks = videoRef.current.srcObject.getTracks();
+            tracks.forEach(track => {
+                track.stop();
+                videoRef.current.srcObject.removeTrack(track);
+            });
+            videoRef.current.srcObject = null;
+        }
+        if (streamRef.current) {
+            const tracks = streamRef.current.getTracks();
+            tracks.forEach(track => {
+                track.stop();
+                streamRef.current.removeTrack(track);
+            });
+            streamRef.current = null;
         }
     };
 

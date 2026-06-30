@@ -8,7 +8,9 @@ import {
     getAllComplaints,
     upvoteComplaint,
     resolveComplaint,
-    addOfficialReply
+    addOfficialReply,
+    editComplaint,
+    deleteComplaint
 } from "../controllers/complainController.js";
 
 const router = Router();
@@ -38,6 +40,9 @@ router.get(
     verifyJWT,
     getMyComplaints
 );
+
+router.patch("/:complaintId", verifyJWT, editComplaint);
+router.delete("/:complaintId", verifyJWT, deleteComplaint);
 
 // Authority Routes (can add role middleware later)
 router.get(

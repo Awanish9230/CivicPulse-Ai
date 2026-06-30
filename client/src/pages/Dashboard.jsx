@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, MessageSquare } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, MessageSquare, ThumbsUp, Shield, MapPin } from 'lucide-react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -69,6 +69,17 @@ const Dashboard = () => {
         setStats({ today: tCount, pending: pCount, critical: cCount, resolved: rCount });
     };
 
+    const getTimeAgo = (dateStr) => {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+        return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    };
+
     useEffect(() => {
         fetchComplaints();
 
@@ -115,7 +126,7 @@ const Dashboard = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border/50 pb-6">
                 <div>
-                    <h1 className="text-3xl font-black text-text tracking-tight mb-1">Authority Command Center</h1>
+                    <h1 className="text-3xl font-black text-text tracking-tight mb-1">Civic Dashboard</h1>
                     <p className="text-text/50 font-medium">Real-time overview of civic issues and SLA metrics.</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -181,19 +192,17 @@ const Dashboard = () => {
                     <p className="text-4xl font-black text-text relative z-10">{stats.resolved}</p>
                 </motion.div>
 
-            </motion.div>
-
-            {/* Main Content Area */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-1">
+            </motion.div>            {/* Main Content Area */}
+            <div className="flex flex-col gap-8 flex-1">
                 
                 {/* Map Area Placeholder */}
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="xl:col-span-2 bg-white rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 flex flex-col overflow-hidden min-h-[500px]"
+                    className="w-full bg-white rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 flex flex-col overflow-hidden h-[500px]"
                 >
-                    <div className="p-6 border-b border-border/50 flex justify-between items-center">
+                    <div className="p-6 border-b border-border/50 flex justify-between items-center bg-white z-10">
                         <div>
                             <h2 className="font-black text-xl text-text">Live Operations Map</h2>
                             <p className="text-xs font-medium text-text/50">Tracking active incidents across the city</p>
@@ -248,24 +257,24 @@ const Dashboard = () => {
                     </div>
                 </motion.div>
 
-                {/* Complaint Feed */}
+                {/* Complaint Feed (Cards) */}
                 <motion.div 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="bg-white rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 flex flex-col max-h-[600px] xl:max-h-full"
+                    className="w-full flex flex-col"
                 >
-                    <div className="p-6 border-b border-border/50">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="font-black text-xl text-text">Incident Feed</h2>
-                            <Filter size={18} className="text-text/40" />
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 className="font-black text-2xl text-text">Nearby Issues Feed</h2>
+                            <p className="text-sm font-medium text-text/50">Recent complaints reported around your location</p>
                         </div>
                         <div className="flex gap-2 overflow-x-auto no-scrollbar">
                             {['All', 'Pending', 'Critical'].map(f => (
                                 <button 
                                     key={f}
                                     onClick={() => setFilter(f)}
-                                    className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${filter === f ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-surface border border-border/50 text-text/60 hover:bg-surface/80 hover:text-text'}`}
+                                    className={`px-6 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${filter === f ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-white border border-border/50 text-text/60 hover:bg-surface hover:text-text'}`}
                                 >
                                     {f}
                                 </button>
@@ -273,83 +282,128 @@ const Dashboard = () => {
                         </div>
                     </div>
                     
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    <div className="space-y-6">
                         {filteredComplaints.length === 0 && (
-                            <div className="text-center text-text/40 mt-10">
-                                <div className="bg-surface w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <CheckCircle size={24} className="opacity-50" />
+                            <div className="text-center text-text/40 py-20 bg-white rounded-[2rem] border border-border/50">
+                                <div className="bg-surface w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <CheckCircle size={32} className="opacity-50" />
                                 </div>
-                                <p className="font-bold text-sm">Inbox Zero</p>
-                                <p className="text-xs">No active complaints found.</p>
+                                <p className="font-bold text-lg">Inbox Zero</p>
+                                <p className="text-sm">No active complaints found matching the filter.</p>
                             </div>
                         )}
                         {filteredComplaints.map((c, i) => (
                             <motion.div 
-                                initial={{ opacity: 0, y: 10 }}
+                                initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
                                 key={c._id} 
-                                className="p-4 rounded-2xl bg-surface/50 border border-border/50 hover:border-primary/30 transition-colors cursor-pointer group"
+                                className="bg-white rounded-[2rem] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-primary/30 transition-colors"
                             >
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className="font-bold text-sm text-text bg-white px-2.5 py-1 rounded-lg border border-border/50 shadow-sm">{c.category}</span>
-                                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider ${
-                                        c.priority === 'Critical' ? 'bg-red-500/10 text-red-600' :
-                                        c.priority === 'High' ? 'bg-orange-500/10 text-orange-600' :
-                                        'bg-primary/10 text-primary'
-                                    }`}>
-                                        {c.priority}
-                                    </span>
-                                </div>
-                                <h4 className="font-bold text-text text-sm mb-1 leading-snug line-clamp-2">{c.description}</h4>
-                                <div className="text-[11px] text-text/50 font-medium mb-3">{c.address?.ward || 'Unknown location'} • {new Date(c.createdAt).toLocaleDateString()}</div>
-                                <div className="flex items-center gap-2 pt-3 border-t border-border/50">
-                                    <span className="relative flex h-2.5 w-2.5">
-                                        {(c.status === 'Submitted' || c.status === 'In Progress') && (
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    {/* Image */}
+                                    <div className="w-full md:w-1/3 h-48 md:h-64 rounded-2xl overflow-hidden relative bg-surface">
+                                        {(c.imageUrls?.[0] || c.imageUrl) ? (
+                                            <img 
+                                                src={c.imageUrls?.[0] || c.imageUrl} 
+                                                alt={c.description} 
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-text/30">No Image Available</div>
                                         )}
-                                        <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                                            c.status === 'Resolved' || c.status === 'Closed' ? 'bg-green-500' :
-                                            c.status === 'In Progress' ? 'bg-blue-500' : 'bg-orange-500'
-                                        }`}></span>
-                                    </span>
-                                    <span className="text-xs font-bold text-text/70">{c.status}</span>
-                                    
-                                    <button 
-                                        onClick={() => setActiveReplyId(activeReplyId === c._id ? null : c._id)}
-                                        className="ml-auto flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors bg-primary/10 px-3 py-1 rounded-lg"
-                                    >
-                                        <MessageSquare size={12} />
-                                        Reply
-                                    </button>
-                                </div>
-                                
-                                {activeReplyId === c._id && (
-                                    <div className="mt-3 pt-3 border-t border-border/50 flex gap-2">
-                                        <input 
-                                            type="text" 
-                                            value={replyContent}
-                                            onChange={(e) => setReplyContent(e.target.value)}
-                                            placeholder="Type official update..."
-                                            className="flex-1 bg-white border border-border/50 text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') handleReply(c._id);
-                                            }}
-                                        />
-                                        <button 
-                                            onClick={() => handleReply(c._id)}
-                                            disabled={replying || !replyContent.trim()}
-                                            className="bg-primary text-white p-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-                                        >
-                                            <Send size={14} />
-                                        </button>
+                                        <div className="absolute top-3 left-3 glass-dark text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+                                            <div className={`w-2 h-2 rounded-full animate-pulse ${
+                                                c.status === 'Resolved' || c.status === 'Closed' ? 'bg-green-500' :
+                                                c.status === 'In Progress' ? 'bg-blue-500' : 'bg-orange-500'
+                                            }`}></div>
+                                            {c.status}
+                                        </div>
+                                        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${
+                                            c.priority === 'Critical' ? 'bg-red-500 text-white' :
+                                            c.priority === 'High' ? 'bg-orange-500 text-white' :
+                                            'bg-white text-text'
+                                        }`}>
+                                            {c.priority}
+                                        </div>
                                     </div>
-                                )}
+
+                                    {/* Content */}
+                                    <div className="flex-1 py-2 pr-2 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full uppercase tracking-wider">
+                                                    {c.category}
+                                                </span>
+                                                <div className="flex items-center text-text/40 text-sm font-medium">
+                                                    <Clock size={14} className="mr-1.5" />
+                                                    {getTimeAgo(c.createdAt)}
+                                                </div>
+                                            </div>
+                                            <h3 className="text-xl font-black text-text mb-3 leading-tight">{c.description}</h3>
+                                            <div className="flex items-center text-text/60 text-sm mb-4 font-medium">
+                                                <MapPin size={16} className="mr-1.5 text-primary" />
+                                                {c.address?.ward ? `${c.address.ward}, ${c.address.district}` : 'Location Coordinates Attached'}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div className="flex items-center gap-4 pt-4 border-t border-border/50 flex-wrap">
+                                                <button className="flex items-center gap-2 text-text/60 hover:text-primary transition-colors font-bold text-sm">
+                                                    <ThumbsUp size={18} />
+                                                    <span>{c.supportCount || 0} Supports</span>
+                                                </button>
+                                                
+                                                <button 
+                                                    onClick={() => setActiveReplyId(activeReplyId === c._id ? null : c._id)}
+                                                    className="flex items-center gap-2 text-text/60 hover:text-primary transition-colors font-bold text-sm"
+                                                >
+                                                    <MessageSquare size={18} />
+                                                    <span>Reply / Update</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <AnimatePresence>
+                                                {activeReplyId === c._id && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: 'auto' }}
+                                                        exit={{ opacity: 0, height: 0 }}
+                                                        className="mt-4 pt-4 border-t border-border/30 overflow-hidden"
+                                                    >
+                                                        <div className="flex flex-col gap-3">
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+                                                                    <User size={14} className="text-primary" />
+                                                                </div>
+                                                                <textarea 
+                                                                    value={replyContent}
+                                                                    onChange={(e) => setReplyContent(e.target.value)}
+                                                                    placeholder="Type an official update or response to this issue..."
+                                                                    className="flex-1 bg-surface border border-border/50 text-sm px-4 py-3 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[80px] resize-none"
+                                                                />
+                                                            </div>
+                                                            <div className="flex justify-end">
+                                                                <button 
+                                                                    onClick={() => handleReply(c._id)}
+                                                                    disabled={replying || !replyContent.trim()}
+                                                                    className="bg-primary text-white px-5 py-2 rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                                                >
+                                                                    <Send size={14} />
+                                                                    {replying ? 'Posting...' : 'Post Update'}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    </div>
+                                </div>
                             </motion.div>
                         ))}
                     </div>
                 </motion.div>
-
             </div>
         </motion.div>
     );
