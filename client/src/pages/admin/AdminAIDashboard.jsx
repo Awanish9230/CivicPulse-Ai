@@ -5,8 +5,8 @@ import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 
 const AdminAIDashboard = () => {
-    const [insights, setInsights] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [insights, setInsights] = useState("Click 'Regenerate Analysis' to fetch the latest AI insights from the server.");
+    const [loading, setLoading] = useState(false);
 
     const fetchInsights = async () => {
         setLoading(true);
@@ -21,9 +21,7 @@ const AdminAIDashboard = () => {
         }
     };
 
-    useEffect(() => {
-        fetchInsights();
-    }, []);
+    // Removed auto-fetch useEffect to save Gemini API quotas
 
     return (
         <div className="space-y-6">

@@ -29,7 +29,20 @@ const AdminAnalytics = React.lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminBroadcasts = React.lazy(() => import('./pages/admin/AdminBroadcasts'));
 const AdminMonitor = React.lazy(() => import('./pages/admin/AdminMonitor'));
 const AuditLogs = React.lazy(() => import('./pages/admin/AuditLogs'));
-
+const ManageDepartments = React.lazy(() => import('./pages/admin/ManageDepartments'));
+const ManageLocations = React.lazy(() => import('./pages/admin/ManageLocations'));
+const ManageCategories = React.lazy(() => import('./pages/admin/ManageCategories'));
+const AdminTasks = React.lazy(() => import('./pages/admin/AdminTasks'));
+const AdminCommunity = React.lazy(() => import('./pages/admin/AdminCommunity'));
+const AdminFeedback = React.lazy(() => import('./pages/admin/AdminFeedback'));
+const AdminNotifications = React.lazy(() => import('./pages/admin/AdminNotifications'));
+const AdminReports = React.lazy(() => import('./pages/admin/AdminReports'));
+const SecurityCenter = React.lazy(() => import('./pages/admin/SecurityCenter'));
+const DatabaseManager = React.lazy(() => import('./pages/admin/DatabaseManager'));
+const APIManager = React.lazy(() => import('./pages/admin/APIManager'));
+const Integrations = React.lazy(() => import('./pages/admin/Integrations'));
+const Backups = React.lazy(() => import('./pages/admin/Backups'));
+const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
 // Dynamic Title Component
 const DynamicTitle = () => {
   const location = useLocation();
@@ -94,6 +107,20 @@ function App() {
             <Route path="broadcasts" element={<AdminBroadcasts />} />
             <Route path="monitor" element={<AdminMonitor />} />
             <Route path="audit" element={<AuditLogs />} />
+            <Route path="departments" element={<ManageDepartments />} />
+            <Route path="locations" element={<ManageLocations />} />
+            <Route path="categories" element={<ManageCategories />} />
+            <Route path="tasks" element={<AdminTasks />} />
+            <Route path="community" element={<AdminCommunity />} />
+            <Route path="feedback" element={<AdminFeedback />} />
+            <Route path="notifications" element={<AdminNotifications />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="security" element={<SecurityCenter />} />
+            <Route path="database" element={<DatabaseManager />} />
+            <Route path="api" element={<APIManager />} />
+            <Route path="integrations" element={<Integrations />} />
+            <Route path="backups" element={<Backups />} />
+            <Route path="settings" element={<AdminSettings />} />
             {/* The rest of the routes will be added as they are built */}
             <Route path="*" element={<div className="p-8"><h1 className="text-2xl font-bold">Coming Soon</h1><p>This module is under development.</p></div>} />
           </Route>
