@@ -1,159 +1,183 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, CheckCircle2, FileWarning, Check, Inbox } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, Trash2, Filter, Inbox } from 'lucide-react';
+import { NotificationCard } from '../components/notifications/NotificationCard';
+import { NotificationContext } from '../context/NotificationContext';
 import toast from 'react-hot-toast';
+import PageLoader from '../components/common/PageLoader';
 
 const Notifications = () => {
+    const { markAllAsRead, markAsRead, fetchUnreadCount, unreadCount } = useContext(NotificationContext);
+    
     const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const fetchNotifications = async () => {
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [filterType, setFilterType] = useState('All'); // All, Unread
+    
+    const observer = useRef();
+    
+    const fetchNotifications = useCallback(async (pageNum, filter, append = false) => {
+        setLoading(true);
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/notification', {
-                withCredentials: true
-            });
-            setNotifications(data.data || []);
+            const endpoint = `http://localhost:5000/api/v1/notification?page=${pageNum}&limit=10${filter === 'Unread' ? '&unread=true' : ''}`;
+            const { data } = await axios.get(endpoint, { withCredentials: true });
+            
+            const newNotifs = data.data.notifications;
+            
+            if (append) {
+                setNotifications(prev => {
+                    // Prevent duplicates when appending
+                    const existingIds = new Set(prev.map(n => n._id));
+                    const uniqueNew = newNotifs.filter(n => !existingIds.has(n._id));
+                    return [...prev, ...uniqueNew];
+                });
+            } else {
+                setNotifications(newNotifs);
+            }
+            
+            setHasMore(data.data.currentPage < data.data.totalPages);
         } catch (error) {
-            toast.error("Failed to fetch notifications");
+            console.error("Failed to fetch notifications", error);
+            toast.error("Failed to load notifications");
         } finally {
             setLoading(false);
         }
-    };
-
-    const markAsRead = async () => {
-        try {
-            await axios.post('http://localhost:5000/api/v1/notification/mark-read', {}, {
-                withCredentials: true
-            });
-            fetchNotifications(); // Refresh list to reflect read status
-            toast.success("All notifications marked as read");
-        } catch (error) {
-            toast.error("Failed to mark notifications as read");
-        }
-    };
-
-    useEffect(() => {
-        fetchNotifications();
     }, []);
 
-    const getTimeAgo = (dateStr) => {
-        const date = new Date(dateStr);
-        const now = new Date();
-        const diffInSeconds = Math.floor((now - date) / 1000);
-        
-        if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-        return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    useEffect(() => {
+        setPage(1);
+        setNotifications([]);
+        fetchNotifications(1, filterType, false);
+    }, [filterType, fetchNotifications]);
+
+    // Infinite scrolling
+    const lastNotificationRef = useCallback(node => {
+        if (loading) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                setPage(prevPage => {
+                    const nextPage = prevPage + 1;
+                    fetchNotifications(nextPage, filterType, true);
+                    return nextPage;
+                });
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [loading, hasMore, fetchNotifications, filterType]);
+
+    const handleMarkAllRead = async () => {
+        await markAllAsRead();
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     };
 
-    const getIcon = (iconName) => {
-        switch (iconName) {
-            case 'CheckCircle2': return CheckCircle2;
-            case 'FileWarning': return FileWarning;
-            default: return Bell;
+    const handleClearAll = async () => {
+        try {
+            await axios.delete('http://localhost:5000/api/v1/notification', { withCredentials: true });
+            setNotifications([]);
+            setHasMore(false);
+            fetchUnreadCount();
+            toast.success("Notifications cleared");
+        } catch (error) {
+            toast.error("Failed to clear notifications");
         }
     };
 
-    const unreadCount = notifications.filter(n => n.unread).length;
+    const handleRead = (id) => {
+        markAsRead(id);
+        setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+    };
 
     return (
-        <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            className="max-w-3xl mx-auto space-y-8 pb-20 relative"
-        >
-            {/* Ambient background */}
-            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px] pointer-events-none -z-10"></div>
-
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border/50 pb-6">
+        <div className="max-w-3xl mx-auto py-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <h1 className="text-4xl font-black text-text tracking-tight">Inbox</h1>
+                    <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        Notifications
                         {unreadCount > 0 && (
-                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-bounce">
-                                {unreadCount} New
+                            <span className="bg-primary text-white text-xs px-2.5 py-0.5 rounded-full font-medium">
+                                {unreadCount}
                             </span>
                         )}
-                    </div>
-                    <p className="text-text/60 font-medium">Stay updated on your civic impact and community alerts.</p>
+                    </h1>
+                    <p className="text-slate-500 text-sm mt-1">Stay updated with your latest activity</p>
                 </div>
                 
-                <button 
-                    onClick={markAsRead}
-                    disabled={unreadCount === 0}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all bg-surface border border-border/50 text-text/60 hover:text-primary hover:border-primary/30 disabled:opacity-50 disabled:hover:text-text/60 disabled:hover:border-border/50"
-                >
-                    <Check size={16} /> Mark all as read
-                </button>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <select 
+                        className="bg-white border border-slate-200 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-primary cursor-pointer text-slate-700"
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                    >
+                        <option value="All">All Notifications</option>
+                        <option value="Unread">Unread Only</option>
+                    </select>
+
+                    <button 
+                        onClick={handleMarkAllRead}
+                        className="p-2 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-colors tooltip-trigger"
+                        title="Mark all as read"
+                    >
+                        <Check size={20} />
+                    </button>
+
+                    <button 
+                        onClick={handleClearAll}
+                        className="p-2 text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors tooltip-trigger"
+                        title="Clear all"
+                    >
+                        <Trash2 size={20} />
+                    </button>
+                </div>
             </div>
 
-            <div className="space-y-4">
-                {loading && (
-                    <div className="flex flex-col items-center justify-center py-20 text-primary">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                        <p className="font-bold">Fetching alerts...</p>
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-2 md:p-6 min-h-[500px]">
+                {notifications.length === 0 && !loading ? (
+                    <div className="flex flex-col items-center justify-center h-[400px] text-slate-400">
+                        <Inbox className="w-16 h-16 mb-4 text-slate-300" />
+                        <p className="text-lg font-medium text-slate-600 mb-1">No notifications yet</p>
+                        <p className="text-sm">When you get notifications, they'll show up here</p>
+                    </div>
+                ) : (
+                    <div className="space-y-1">
+                        <AnimatePresence>
+                            {notifications.map((notification, index) => {
+                                if (notifications.length === index + 1) {
+                                    return (
+                                        <motion.div 
+                                            key={notification._id}
+                                            ref={lastNotificationRef}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                        >
+                                            <NotificationCard notification={notification} onRead={handleRead} />
+                                        </motion.div>
+                                    );
+                                }
+                                return (
+                                    <motion.div 
+                                        key={notification._id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                    >
+                                        <NotificationCard notification={notification} onRead={handleRead} />
+                                    </motion.div>
+                                );
+                            })}
+                        </AnimatePresence>
+                        {loading && (
+                            <div className="py-6 flex justify-center">
+                                <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                            </div>
+                        )}
                     </div>
                 )}
-                
-                {/* Beautiful Empty State */}
-                {!loading && notifications.length === 0 && (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg rounded-[3rem] p-16 text-center max-w-xl mx-auto mt-10"
-                    >
-                        <div className="w-24 h-24 bg-surface rounded-full flex items-center justify-center mx-auto mb-6 border border-border/50">
-                            <Inbox size={40} className="text-text/30" />
-                        </div>
-                        <h2 className="text-2xl font-black text-text mb-2">All Caught Up!</h2>
-                        <p className="text-text/60 mb-0 max-w-sm mx-auto leading-relaxed">
-                            You have no new notifications right now. We'll alert you here when there are updates to your reported issues.
-                        </p>
-                    </motion.div>
-                )}
-                
-                <AnimatePresence>
-                    {!loading && notifications.map((notif, i) => {
-                        const Icon = getIcon(notif.icon);
-                        return (
-                            <motion.div 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                transition={{ delay: i * 0.05 }}
-                                key={notif._id}
-                                className={`p-6 rounded-[2rem] border transition-all cursor-pointer group relative overflow-hidden ${
-                                    notif.unread 
-                                        ? 'bg-white border-primary/20 shadow-[0_8px_30px_rgba(37,99,235,0.08)] hover:border-primary/40' 
-                                        : 'bg-surface/50 border-border/50 hover:bg-white hover:shadow-sm'
-                                }`}
-                            >
-                                {/* Unread indicator dot */}
-                                {notif.unread && (
-                                    <div className="absolute top-6 right-6 w-3 h-3 bg-primary rounded-full shadow-[0_0_10px_rgba(37,99,235,0.8)]"></div>
-                                )}
-
-                                <div className="flex gap-5">
-                                    <div className={`w-14 h-14 rounded-2xl ${notif.bg} flex items-center justify-center shrink-0 shadow-sm`}>
-                                        <Icon className={notif.color} size={24} />
-                                    </div>
-                                    <div className="flex-1 min-w-0 pr-8">
-                                        <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 mb-1.5">
-                                            <h3 className={`text-lg font-black truncate ${notif.unread ? 'text-text' : 'text-text/70'}`}>{notif.title}</h3>
-                                            <span className="text-xs font-bold text-text/40">{getTimeAgo(notif.createdAt)}</span>
-                                        </div>
-                                        <p className={`text-sm leading-relaxed ${notif.unread ? 'text-text/80 font-medium' : 'text-text/60'}`}>{notif.message}</p>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        );
-                    })}
-                </AnimatePresence>
             </div>
-        </motion.div>
+        </div>
     );
 };
 

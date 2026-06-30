@@ -3,6 +3,7 @@ import Complaint from "../models/Complaint.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asynchandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import notificationService from "../services/notificationService.js";
 
 // Middleware-like check, can be extracted to auth.middleware.js if needed
 const checkSuperOfficer = (req) => {
@@ -115,6 +116,21 @@ export const escalateTask = asyncHandler(async (req, res) => {
     });
 
     await complaint.save();
+    
+    try {
+        await notificationService.createNotification({
+            recipient: complaint.reportedBy,
+            sender: req.user._id,
+            title: 'Complaint Escalated',
+            message: `Your complaint has been escalated to ${nextLevel} level for faster resolution.`,
+            type: 'Complaint Escalated',
+            priority: 'Medium',
+            complaint: complaint._id,
+            actionUrl: `/complaints/${complaint._id}`
+        });
+    } catch (error) {
+        console.error("Notification error on escalation", error);
+    }
 
     return res.status(200).json(
         new ApiResponse(200, complaint, `Complaint successfully escalated to ${nextLevel}`)

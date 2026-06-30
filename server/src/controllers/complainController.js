@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asynchandler.js";
 import uploadOnCloudinary, { deleteFromCloudinary } from "../utils/cloudinary.js";
+import notificationService from "../services/notificationService.js";
 
 export const resolveComplaint = asyncHandler(async (req, res) => {
     const { complaintId } = req.params;
@@ -38,8 +39,19 @@ export const resolveComplaint = asyncHandler(async (req, res) => {
 
     // Broadcast to users that it's resolved
     try {
-        const { getIO } = await import('../config/socket.js');
-        getIO().emit('complaint_status_update', complaint);
+        const { getIo } = await import('../config/socket.js');
+        getIo().emit('complaint_status_update', complaint);
+        
+        await notificationService.createNotification({
+            recipient: complaint.reportedBy,
+            sender: req.user._id,
+            title: 'Complaint Resolved',
+            message: `Your complaint regarding ${complaint.category} has been marked as resolved.`,
+            type: 'Complaint Resolved',
+            priority: 'Medium',
+            complaint: complaint._id,
+            actionUrl: `/complaints/${complaint._id}`
+        });
     } catch (e) {
         console.error("Socket error on resolve complaint", e);
     }
@@ -72,6 +84,21 @@ export const addOfficialReply = asyncHandler(async (req, res) => {
     });
     
     await complaint.save();
+    
+    try {
+        await notificationService.createNotification({
+            recipient: complaint.reportedBy,
+            sender: req.user._id,
+            title: 'Authority Commented',
+            message: `An official replied: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+            type: 'Authority Commented',
+            priority: 'Medium',
+            complaint: complaint._id,
+            actionUrl: `/complaints/${complaint._id}`
+        });
+    } catch (error) {
+        console.error("Notification error on official reply", error);
+    }
     
     res.status(200).json(new ApiResponse(200, complaint, "Official reply added"));
 });
@@ -165,8 +192,18 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
     // Fetch complaint with populated data if necessary, or just emit it
     try {
-        const { getIO } = await import('../config/socket.js');
-        getIO().emit('new_complaint', complaint);
+        const { getIo } = await import('../config/socket.js');
+        getIo().emit('new_complaint', complaint);
+        
+        await notificationService.createNotification({
+            recipient: req.user._id,
+            title: 'Complaint Submitted',
+            message: `Your complaint regarding ${complaint.category} has been submitted successfully.`,
+            type: 'Complaint Submitted',
+            priority: 'Low',
+            complaint: complaint._id,
+            actionUrl: `/complaints/${complaint._id}`
+        });
     } catch (e) {
         console.error("Socket error on create complaint", e);
     }

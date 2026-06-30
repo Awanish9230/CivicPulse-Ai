@@ -3,6 +3,7 @@ import { Home, FileText, Users, Bell, User, Map, LogOut, Menu } from 'lucide-rea
 import { motion } from 'framer-motion';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+import { NotificationContext } from '../../context/NotificationContext';
 
 const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -17,6 +18,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
+    const { unreadCount } = useContext(NotificationContext);
 
     const handleLogout = async (e) => {
         e.preventDefault();
@@ -56,7 +58,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                                 />
                             )}
                             <div className={`relative flex items-center p-3 rounded-xl transition-colors ${isOpen ? 'flex-row' : 'flex-col justify-center'} ${isActive ? 'text-primary' : 'text-text/70 hover:text-primary hover:bg-surface/50'}`}>
-                                <Icon size={24} className={`transition-transform duration-200 ${isOpen ? 'mr-4' : 'mb-1'} ${isActive ? 'scale-110' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                                <div className="relative">
+                                    <Icon size={24} className={`transition-transform duration-200 ${isOpen ? 'mr-4' : 'mb-1'} ${isActive ? 'scale-110' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                                    {item.name === 'Notifications' && unreadCount > 0 && (
+                                        <span className={`absolute ${isOpen ? '-top-1 right-3' : '-top-1 -right-1'} w-3 h-3 bg-rose-500 rounded-full border-2 border-white`}></span>
+                                    )}
+                                </div>
                                 <span className={`transition-all ${isOpen ? 'text-[15px]' : 'text-[10px]'} ${isActive ? 'font-bold' : 'font-medium'}`}>
                                     {item.name}
                                 </span>

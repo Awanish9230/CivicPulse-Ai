@@ -1,10 +1,15 @@
 import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema({
-    user: {
+    recipient: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+        index: true
+    },
+    sender: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     title: {
         type: String,
@@ -14,21 +19,42 @@ const notificationSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    icon: {
-        type: String, // lucide-react icon name as a string (e.g., 'CheckCircle2', 'FileWarning')
-        default: 'Bell',
+    type: {
+        type: String,
+        required: true,
+        enum: [
+            'Complaint Submitted', 'Complaint Verified', 'Complaint Assigned', 'Complaint Rejected',
+            'Complaint Resolved', 'Complaint Escalated', 'Task Assigned', 'Task Completed',
+            'Authority Commented', 'Admin Announcement', 'Community Chat Mention', 'Community Chat Reply',
+            'Like Received', 'Complaint Upvoted', 'Reminder', 'System Notification', 'Security Alert',
+            'Account Update', 'Profile Approved', 'Profile Rejected', 'Password Changed', 'Login from New Device'
+        ],
+        index: true
     },
-    color: {
-        type: String, // text color class (e.g., 'text-secondary')
-        default: 'text-primary',
+    priority: {
+        type: String,
+        enum: ['Low', 'Medium', 'High', 'Critical'],
+        default: 'Low'
     },
-    bg: {
-        type: String, // background color class (e.g., 'bg-secondary/10')
-        default: 'bg-primary/10',
+    complaint: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Complaint'
     },
-    unread: {
+    task: {
+        type: mongoose.Schema.Types.ObjectId, // Can refer to Complaint if tasks are complaints, or specific task model
+        ref: 'Complaint'
+    },
+    chat: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Message'
+    },
+    isRead: {
         type: Boolean,
-        default: true,
+        default: false,
+        index: true
+    },
+    actionUrl: {
+        type: String
     }
 }, {
     timestamps: true,

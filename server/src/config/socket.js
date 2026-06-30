@@ -4,6 +4,13 @@ import Message from '../models/Message.js';
 
 let io;
 
+export const getIo = () => {
+    if (!io) {
+        throw new Error('Socket.io is not initialized');
+    }
+    return io;
+};
+
 export const initSocket = (server) => {
     io = new Server(server, {
         cors: {
@@ -24,6 +31,14 @@ export const initSocket = (server) => {
             const clients = io.sockets.adapter.rooms.get(room);
             const numClients = clients ? clients.size : 0;
             io.to(room).emit('roomData', { room, onlineCount: numClients });
+        });
+
+        // Join personal user room for real-time notifications
+        socket.on('join', (userId) => {
+            if (userId) {
+                socket.join(userId);
+                logger.info(`Socket ${socket.id} joined personal room ${userId}`);
+            }
         });
 
         // Handle incoming messages

@@ -4,6 +4,7 @@ import { Search, Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users, Mess
 import { useState, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import AuthorityBottomNav from './AuthorityBottomNav';
+import { NotificationBell } from '../notifications/NotificationBell';
 
 const authNavItems = [
     { name: 'Dashboard', path: '/authority', icon: Map },
@@ -146,7 +147,7 @@ const AuthorityLayout = () => {
             <AuthoritySidebar onLogout={() => logout()} />
             
             <main className="flex-1 min-w-0 pb-16 md:pb-0 md:ml-20 lg:ml-64 transition-all duration-300 relative z-0">
-                <header className="h-20 border-b border-border/50 bg-white flex items-center px-6 md:px-10 justify-between sticky top-0 z-40 shadow-sm">
+                <header className="h-20 border-b border-border/50 bg-white flex items-center px-6 md:px-10 justify-between sticky top-0 z-40 shadow-sm gap-4">
                     <div className="md:hidden font-black text-2xl tracking-tight text-slate-900">
                         Authority
                     </div>
@@ -157,6 +158,9 @@ const AuthorityLayout = () => {
                             placeholder="Search tasks, wards, officers..." 
                             className="w-full bg-slate-100 border border-transparent rounded-2xl pl-12 pr-4 py-3 focus:outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner"
                         />
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                        <NotificationBell />
                     </div>
                 </header>
 

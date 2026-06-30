@@ -73,7 +73,8 @@ const CameraCapture = ({ onClose, onCapture }) => {
                 (err) => {
                     setError('GPS location is required to submit a complaint.');
                     reject(err);
-                }
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
             );
         });
     };
