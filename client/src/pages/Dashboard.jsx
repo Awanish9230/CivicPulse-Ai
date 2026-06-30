@@ -121,7 +121,7 @@ const Dashboard = () => {
     return (
         <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
-            className="flex flex-col h-full max-w-7xl mx-auto space-y-8 pb-12"
+            className="flex flex-col h-full max-w-7xl mx-auto space-y-8 pb-12 w-full overflow-x-hidden"
         >
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border/50 pb-6">
@@ -282,9 +282,9 @@ const Dashboard = () => {
                         </div>
                     </div>
                     
-                    <div className="space-y-6">
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-6 w-full pt-2 pb-6">
                         {filteredComplaints.length === 0 && (
-                            <div className="text-center text-text/40 py-20 bg-white rounded-[2rem] border border-border/50">
+                            <div className="text-center text-text/40 py-20 bg-white rounded-[2rem] border border-border/50 w-full col-span-full">
                                 <div className="bg-surface w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <CheckCircle size={32} className="opacity-50" />
                                 </div>
@@ -298,106 +298,97 @@ const Dashboard = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
                                 key={c._id} 
-                                className="bg-white rounded-[2rem] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-primary/30 transition-colors"
+                                className="bg-white rounded-[2rem] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-primary/30 transition-colors w-full flex flex-col"
                             >
-                                <div className="flex flex-col md:flex-row gap-6">
-                                    {/* Image */}
-                                    <div className="w-full md:w-1/3 h-48 md:h-64 rounded-2xl overflow-hidden relative bg-surface">
-                                        {(c.imageUrls?.[0] || c.imageUrl) ? (
-                                            <img 
-                                                src={c.imageUrls?.[0] || c.imageUrl} 
-                                                alt={c.description} 
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-text/30">No Image Available</div>
-                                        )}
-                                        <div className="absolute top-3 left-3 glass-dark text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
-                                            <div className={`w-2 h-2 rounded-full animate-pulse ${
-                                                c.status === 'Resolved' || c.status === 'Closed' ? 'bg-green-500' :
-                                                c.status === 'In Progress' ? 'bg-blue-500' : 'bg-orange-500'
-                                            }`}></div>
-                                            {c.status}
+                                {/* Image */}
+                                <div className="w-full h-48 rounded-2xl overflow-hidden relative bg-surface mb-4 shrink-0">
+                                    {(c.imageUrls?.[0] || c.imageUrl) ? (
+                                        <img 
+                                            src={c.imageUrls?.[0] || c.imageUrl} 
+                                            alt={c.description} 
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-text/30">No Image</div>
+                                    )}
+                                    <div className="absolute top-3 left-3 glass-dark text-white px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5">
+                                        <div className={`w-2 h-2 rounded-full animate-pulse ${
+                                            c.status === 'Resolved' || c.status === 'Closed' ? 'bg-green-500' :
+                                            c.status === 'In Progress' ? 'bg-blue-500' : 'bg-orange-500'
+                                        }`}></div>
+                                        {c.status}
+                                    </div>
+                                    <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${
+                                        c.priority === 'Critical' ? 'bg-red-500 text-white' :
+                                        c.priority === 'High' ? 'bg-orange-500 text-white' :
+                                        'bg-white text-text'
+                                    }`}>
+                                        {c.priority}
+                                    </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                                {c.category}
+                                            </span>
+                                            <div className="flex items-center text-text/40 text-xs font-medium">
+                                                <Clock size={12} className="mr-1" />
+                                                {getTimeAgo(c.createdAt)}
+                                            </div>
                                         </div>
-                                        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${
-                                            c.priority === 'Critical' ? 'bg-red-500 text-white' :
-                                            c.priority === 'High' ? 'bg-orange-500 text-white' :
-                                            'bg-white text-text'
-                                        }`}>
-                                            {c.priority}
+                                        <h3 className="text-base font-black text-text mb-2 leading-tight line-clamp-2">{c.description}</h3>
+                                        <div className="flex items-center text-text/60 text-xs mb-4 font-medium line-clamp-1">
+                                            <MapPin size={14} className="mr-1 text-primary shrink-0" />
+                                            <span className="truncate">{c.address?.ward ? `${c.address.ward}, ${c.address.district}` : 'Location Attached'}</span>
                                         </div>
                                     </div>
 
-                                    {/* Content */}
-                                    <div className="flex-1 py-2 pr-2 flex flex-col justify-between">
-                                        <div>
-                                            <div className="flex justify-between items-start mb-3">
-                                                <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                                                    {c.category}
-                                                </span>
-                                                <div className="flex items-center text-text/40 text-sm font-medium">
-                                                    <Clock size={14} className="mr-1.5" />
-                                                    {getTimeAgo(c.createdAt)}
-                                                </div>
-                                            </div>
-                                            <h3 className="text-xl font-black text-text mb-3 leading-tight">{c.description}</h3>
-                                            <div className="flex items-center text-text/60 text-sm mb-4 font-medium">
-                                                <MapPin size={16} className="mr-1.5 text-primary" />
-                                                {c.address?.ward ? `${c.address.ward}, ${c.address.district}` : 'Location Coordinates Attached'}
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div className="flex items-center gap-4 pt-4 border-t border-border/50 flex-wrap">
-                                                <button className="flex items-center gap-2 text-text/60 hover:text-primary transition-colors font-bold text-sm">
-                                                    <ThumbsUp size={18} />
-                                                    <span>{c.supportCount || 0} Supports</span>
-                                                </button>
-                                                
-                                                <button 
-                                                    onClick={() => setActiveReplyId(activeReplyId === c._id ? null : c._id)}
-                                                    className="flex items-center gap-2 text-text/60 hover:text-primary transition-colors font-bold text-sm"
-                                                >
-                                                    <MessageSquare size={18} />
-                                                    <span>Reply / Update</span>
-                                                </button>
-                                            </div>
+                                    <div>
+                                        <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                                            <button className="flex items-center gap-1.5 text-text/60 hover:text-primary transition-colors font-bold text-xs">
+                                                <ThumbsUp size={16} />
+                                                <span>{c.supportCount || 0}</span>
+                                            </button>
                                             
-                                            <AnimatePresence>
-                                                {activeReplyId === c._id && (
-                                                    <motion.div 
-                                                        initial={{ opacity: 0, height: 0 }}
-                                                        animate={{ opacity: 1, height: 'auto' }}
-                                                        exit={{ opacity: 0, height: 0 }}
-                                                        className="mt-4 pt-4 border-t border-border/30 overflow-hidden"
-                                                    >
-                                                        <div className="flex flex-col gap-3">
-                                                            <div className="flex items-start gap-3">
-                                                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
-                                                                    <User size={14} className="text-primary" />
-                                                                </div>
-                                                                <textarea 
-                                                                    value={replyContent}
-                                                                    onChange={(e) => setReplyContent(e.target.value)}
-                                                                    placeholder="Type an official update or response to this issue..."
-                                                                    className="flex-1 bg-surface border border-border/50 text-sm px-4 py-3 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[80px] resize-none"
-                                                                />
-                                                            </div>
-                                                            <div className="flex justify-end">
-                                                                <button 
-                                                                    onClick={() => handleReply(c._id)}
-                                                                    disabled={replying || !replyContent.trim()}
-                                                                    className="bg-primary text-white px-5 py-2 rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                                                                >
-                                                                    <Send size={14} />
-                                                                    {replying ? 'Posting...' : 'Post Update'}
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
+                                            <button 
+                                                onClick={() => setActiveReplyId(activeReplyId === c._id ? null : c._id)}
+                                                className="flex items-center gap-1.5 text-text/60 hover:text-primary transition-colors font-bold text-xs bg-surface px-3 py-1.5 rounded-lg"
+                                            >
+                                                <MessageSquare size={16} />
+                                                <span>Update</span>
+                                            </button>
                                         </div>
+                                        
+                                        <AnimatePresence>
+                                            {activeReplyId === c._id && (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    className="mt-3 pt-3 border-t border-border/30 overflow-hidden"
+                                                >
+                                                    <div className="flex flex-col gap-2">
+                                                        <textarea 
+                                                            value={replyContent}
+                                                            onChange={(e) => setReplyContent(e.target.value)}
+                                                            placeholder="Official update..."
+                                                            className="w-full bg-surface border border-border/50 text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 min-h-[60px] resize-none"
+                                                        />
+                                                        <button 
+                                                            onClick={() => handleReply(c._id)}
+                                                            disabled={replying || !replyContent.trim()}
+                                                            className="bg-primary text-white px-3 py-2 rounded-xl font-bold text-xs hover:bg-blue-700 transition-colors disabled:opacity-50 w-full flex items-center justify-center gap-2"
+                                                        >
+                                                            <Send size={12} />
+                                                            {replying ? 'Posting...' : 'Post Update'}
+                                                        </button>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
                                 </div>
                             </motion.div>

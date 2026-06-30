@@ -13,7 +13,7 @@ const AppLayout = () => {
         <div className="flex min-h-screen bg-[#F8FAFC]">
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
-            <main className={`flex-1 pb-16 md:pb-0 transition-all duration-300 relative z-0 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
+            <main className={`flex-1 min-w-0 pb-16 md:pb-0 transition-all duration-300 relative z-0 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
                 <header className="h-20 border-b border-border/50 glass flex items-center px-6 md:px-10 justify-between sticky top-0 z-40 gap-4">
                     <div className="flex items-center gap-4">
                         <div className="md:hidden font-black text-2xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 tracking-tight">
