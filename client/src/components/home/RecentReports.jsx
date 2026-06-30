@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../config/api';
 import { ArrowUp, MapPin, Clock, MessageSquare } from 'lucide-react';
 
 const RecentReports = () => {
@@ -8,7 +8,7 @@ const RecentReports = () => {
     useEffect(() => {
         const fetchRecent = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/v1/public/recent');
+                const { data } = await api.get('/public/recent');
                 if (data.success) {
                     setReports(data.data);
                 }

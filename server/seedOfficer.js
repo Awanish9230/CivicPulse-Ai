@@ -10,15 +10,18 @@ const seedOfficer = async () => {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to MongoDB');
 
-        const existingOfficer = await User.findOne({ email: 'officer@city.gov' });
+        const officerEmail = process.env.OFFICER_EMAIL || 'officer@city.gov';
+        const officerPassword = process.env.OFFICER_PASSWORD || 'password123';
+
+        const existingOfficer = await User.findOne({ email: officerEmail });
         if (existingOfficer) {
-            console.log('Officer already exists!');
+            console.log(`Officer already exists! Email: ${officerEmail}`);
             process.exit(0);
         }
 
         await User.create({
-            email: 'officer@city.gov',
-            password: 'password123',
+            email: officerEmail,
+            password: officerPassword,
             name: 'Chief Officer',
             role: 'Admin',
             authorityLevel: 'HOD',
@@ -26,7 +29,7 @@ const seedOfficer = async () => {
             anonymousId: User.generateAnonymousId()
         });
 
-        console.log('Successfully created officer@city.gov with password "password123"');
+        console.log(`Successfully created ${officerEmail} with password "${officerPassword}"`);
         process.exit(0);
     } catch (error) {
         console.error('Error seeding officer:', error);

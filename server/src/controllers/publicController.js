@@ -1,7 +1,7 @@
-import { asynchandler } from '../utils/asynchandler.js';
-import { ApiResponse } from '../utils/ApiResponse.js';
-import { Complaint } from '../models/Complaint.js';
-import { User } from '../models/User.js';
+import asynchandler from '../utils/asynchandler.js';
+import ApiResponse from '../utils/ApiResponse.js';
+import Complaint from '../models/Complaint.js';
+import User from '../models/User.js';
 
 // 1. Get Platform Stats (TrustedStats.jsx)
 export const getPlatformStats = asynchandler(async (req, res) => {

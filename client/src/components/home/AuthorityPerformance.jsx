@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../config/api';
 import { Trophy, TrendingUp, Minus } from 'lucide-react';
 
 const AuthorityPerformance = () => {
@@ -8,7 +8,7 @@ const AuthorityPerformance = () => {
     useEffect(() => {
         const fetchLeaderboard = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/v1/public/leaderboard');
+                const { data } = await api.get('/public/leaderboard');
                 if (data.success) {
                     setLeaderboard(data.data);
                 }

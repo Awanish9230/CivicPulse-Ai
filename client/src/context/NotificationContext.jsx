@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
+import api, { SOCKET_URL } from '../config/api';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { AuthContext } from './AuthContext';
@@ -15,9 +16,7 @@ export const NotificationProvider = ({ children }) => {
     const fetchUnreadCount = useCallback(async () => {
         if (!isAuthenticated) return;
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/notification/unread-count', {
-                withCredentials: true
-            });
+            const { data } = await api.get('/notification/unread-count');
             setUnreadCount(data.data.count);
         } catch (error) {
             console.error('Failed to fetch unread count', error);
@@ -27,9 +26,7 @@ export const NotificationProvider = ({ children }) => {
     const fetchInitialNotifications = useCallback(async () => {
         if (!isAuthenticated) return;
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/notification?limit=10', {
-                withCredentials: true
-            });
+            const { data } = await api.get('/notification?limit=10');
             setNotifications(data.data.notifications || []);
         } catch (error) {
             console.error('Failed to fetch initial notifications', error);
@@ -53,7 +50,7 @@ export const NotificationProvider = ({ children }) => {
             requestBrowserPermission();
 
             // Initialize socket
-            const newSocket = io('http://localhost:5000');
+            const newSocket = io(SOCKET_URL);
             setSocket(newSocket);
 
             newSocket.on('connect', () => {
@@ -95,7 +92,7 @@ export const NotificationProvider = ({ children }) => {
 
     const markAsRead = async (id) => {
         try {
-            await axios.patch(`http://localhost:5000/api/v1/notification/${id}/read`, {}, { withCredentials: true });
+            await api.patch(`/notification/${id}/read`);
             setUnreadCount(prev => Math.max(0, prev - 1));
             setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
         } catch (error) {
@@ -105,7 +102,7 @@ export const NotificationProvider = ({ children }) => {
 
     const markAllAsRead = async () => {
         try {
-            await axios.patch('http://localhost:5000/api/v1/notification/read-all', {}, { withCredentials: true });
+            await api.patch('/notification/read-all');
             setUnreadCount(0);
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         } catch (error) {

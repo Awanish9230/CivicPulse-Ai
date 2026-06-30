@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import api from '../config/api';
 import toast from 'react-hot-toast';
 
 export const AuthContext = createContext();
@@ -12,9 +13,7 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/v1/user/me', {
-                withCredentials: true
-            });
+            const { data } = await api.get('/user/me');
             setUser(data.data);
         } catch (error) {
             setUser(null);
@@ -62,9 +61,7 @@ export const AuthProvider = ({ children }) => {
 
         const rotateIdentity = async () => {
             try {
-                await axios.post('http://localhost:5000/api/v1/user/rotate-anonymous-id', {}, {
-                    withCredentials: true
-                });
+                await api.post('/user/rotate-anonymous-id');
                 await fetchUser(); // Refresh user info to get new ID
                 toast.success("Identity rotated successfully for security.", { icon: '🔄', id: 'rotation-toast' });
                 
@@ -99,9 +96,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post('http://localhost:5000/api/v1/user/logout', {}, {
-                withCredentials: true
-            });
+            await api.post('/user/logout');
             setUser(null);
             toast.success("Logged out successfully");
         } catch (error) {

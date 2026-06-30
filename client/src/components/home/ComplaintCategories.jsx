@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../config/api';
 import { Truck, Lightbulb, Trash2, Droplets, Zap, Waves, Car, ShieldAlert, Ban, Volume2, TreePine, Stethoscope, GraduationCap, Bus } from 'lucide-react';
 
 const baseCategories = [
@@ -25,7 +25,7 @@ const ComplaintCategories = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/v1/public/categories');
+                const { data } = await api.get('/public/categories');
                 if (data.success) {
                     setCounts(data.data);
                 }

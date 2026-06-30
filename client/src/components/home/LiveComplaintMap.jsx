@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../config/api';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin } from 'lucide-react';
@@ -19,7 +19,7 @@ const LiveComplaintMap = () => {
     useEffect(() => {
         const fetchMapData = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/v1/public/map');
+                const { data } = await api.get('/public/map');
                 if (data.success) {
                     setReports(data.data);
                 }

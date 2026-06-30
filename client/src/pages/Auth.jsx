@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, User, Shield, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import api from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
@@ -30,13 +30,9 @@ const Auth = () => {
         const endpoint = isLogin ? '/api/v1/user/login' : '/api/v1/user/register';
 
         try {
-            // Using absolute URL for now or relative if proxy is set. Assuming server runs on 5000 and proxy might not be configured, wait, let's use full URL if proxy isn't there, or just /api. Let's assume standard Vite proxy or absolute URL. 
-            // We should use `http://localhost:5000` just in case.
-            const response = await axios.post(`http://localhost:5000${endpoint}`, {
+            const response = await api.post(isLogin ? '/user/login' : '/user/register', {
                 email,
                 password
-            }, {
-                withCredentials: true // to set cookies
             });
 
             if (isLogin) {
