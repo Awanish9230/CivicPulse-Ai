@@ -159,7 +159,7 @@ const AuthorityLayout = () => {
         <div className="flex min-h-screen bg-slate-50">
             <AuthoritySidebar onLogout={() => logout()} />
             
-            <main className="flex-1 min-w-0 pb-16 md:pb-0 md:ml-20 lg:ml-64 transition-all duration-300 relative z-0">
+            <main className="flex-1 min-w-0 pb-16 md:pb-0 md:ml-20 lg:ml-64 transition-all duration-300">
                 <header className="h-20 border-b border-border/50 bg-white flex items-center px-6 md:px-10 justify-between sticky top-0 z-40 shadow-sm gap-4">
                     <div className="md:hidden font-black text-2xl tracking-tight text-slate-900">
                         Authority
