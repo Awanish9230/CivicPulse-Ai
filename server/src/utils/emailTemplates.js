@@ -94,7 +94,7 @@ export const passwordResetTemplate = (resetUrl) => `
             <h1>Reset Your Password</h1>
             <p>We received a request to reset the password for your CivicPulse AI account. Click the button below to choose a new password.</p>
             
-            <a href="${resetUrl}" class="btn">Reset Password</a>
+            <a href="${resetUrl}" class="btn" style="color: #ffffff; text-decoration: none;">Reset Password</a>
             
             <div>
                 <div class="expiry-notice">⏱️ This link will expire in 15 minutes</div>
