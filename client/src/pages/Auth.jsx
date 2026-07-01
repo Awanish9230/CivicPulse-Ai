@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, User, Shield, Loader2, Sparkles, Lock, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../config/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
@@ -57,7 +57,7 @@ const Auth = () => {
     };
 
     return (
-        <div className="min-h-screen relative overflow-hidden bg-[#0F172A] flex items-center justify-center p-4 sm:p-8">
+        <div className="min-h-screen relative overflow-hidden bg-[#0F172A] flex items-center justify-center p-2 sm:p-4 md:p-8">
             {/* Immersive Animated Background */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <motion.div 
@@ -85,7 +85,7 @@ const Auth = () => {
                 className="w-full max-w-5xl bg-slate-900/40 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-3xl overflow-hidden flex flex-col md:flex-row relative z-10"
             >
                 {/* Left Side: Branding & Dynamic Info */}
-                <div className="w-full md:w-5/12 bg-gradient-to-br from-primary/80 to-blue-900/80 p-10 md:p-14 flex flex-col justify-between text-white relative overflow-hidden">
+                <div className="w-full md:w-5/12 bg-gradient-to-br from-primary/80 to-blue-900/80 p-5 sm:p-6 md:p-14 flex flex-col justify-between text-white relative overflow-hidden">
                     <div className="absolute inset-0 bg-black/20 mix-blend-overlay"></div>
                     
                     <div className="relative z-10">
@@ -103,7 +103,7 @@ const Auth = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3, duration: 0.5 }}
-                            className="text-5xl font-black mb-4 tracking-tight leading-tight"
+                            className="text-3xl md:text-5xl font-black mb-1 md:mb-4 tracking-tight leading-tight"
                         >
                             CivicPulse.
                         </motion.h1>
@@ -117,20 +117,20 @@ const Auth = () => {
                         </motion.p>
                     </div>
                     
-                    <div className="relative z-10 mt-16 md:mt-0">
+                    <div className="relative z-10 mt-6 md:mt-0">
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.5, duration: 0.5 }}
-                            className="space-y-6"
+                            className="space-y-4 md:space-y-6"
                         >
-                            <div className="flex items-start gap-5 bg-white/5 p-5 rounded-2xl backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors">
-                                <div className="bg-primary/40 p-3 rounded-xl shadow-inner">
-                                    <Shield size={24} className="text-white" />
+                            <div className="flex items-start gap-4 md:gap-5 bg-white/5 p-4 md:p-5 rounded-2xl backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors">
+                                <div className="bg-primary/40 p-2 md:p-3 rounded-xl shadow-inner">
+                                    <Shield className="w-5 h-5 md:w-6 md:h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg text-white mb-1">100% Anonymous</h3>
-                                    <p className="text-blue-200 text-sm leading-relaxed">
+                                    <h3 className="font-bold text-base md:text-lg text-white mb-1">100% Anonymous</h3>
+                                    <p className="text-blue-200 text-xs md:text-sm leading-relaxed">
                                         Your identity is never exposed. We rotate your Citizen ID securely every 30 minutes.
                                     </p>
                                 </div>
@@ -140,8 +140,8 @@ const Auth = () => {
                 </div>
 
                 {/* Right Side: Glassmorphism Auth Forms */}
-                <div className="w-full md:w-7/12 p-8 md:p-14 bg-slate-900/50 relative flex items-center">
-                    <div className="w-full max-w-md mx-auto">
+                <div className="w-full md:w-7/12 p-5 sm:p-6 md:p-14 bg-slate-900/50 relative flex items-center">
+                    <div className="w-full max-w-md mx-auto min-h-[450px] md:min-h-[500px] flex flex-col justify-center">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={isLogin ? "login" : "signup"}
@@ -150,16 +150,16 @@ const Auth = () => {
                                 exit={{ opacity: 0, x: -20, filter: "blur(10px)" }}
                                 transition={{ duration: 0.4, ease: "easeOut" }}
                             >
-                                <div className="mb-10 text-center md:text-left">
-                                    <h2 className="text-3xl font-black text-white mb-3">
+                                <div className="mb-4 md:mb-10 text-center md:text-left">
+                                    <h2 className="text-2xl md:text-3xl font-black text-white mb-2 md:mb-3">
                                         {isLogin ? "Welcome Back" : "Join Anonymously"}
                                     </h2>
-                                    <p className="text-slate-400 text-base">
+                                    <p className="text-slate-400 text-xs md:text-base">
                                         {isLogin ? "Login to access your citizen dashboard." : "Verify your email to prevent spam. We'll assign you a secure, rotating identity."}
                                     </p>
                                 </div>
 
-                                <form onSubmit={handleCitizenSubmit} className="space-y-6">
+                                <form onSubmit={handleCitizenSubmit} className="space-y-4 md:space-y-6">
                                     {/* Email Field */}
                                     <div className="relative">
                                         <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${focusedField === 'email' ? 'bg-primary/20 blur-md' : 'opacity-0'}`}></div>
@@ -216,12 +216,20 @@ const Auth = () => {
                                         </div>
                                     </div>
 
+                                    {isLogin && (
+                                        <div className="flex justify-end mt-2">
+                                            <Link to="/forgot-password" className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors z-10 relative">
+                                                Forgot Password?
+                                            </Link>
+                                        </div>
+                                    )}
+
                                     <motion.button 
                                         type="submit" 
                                         disabled={loading}
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
-                                        className="relative w-full bg-primary hover:bg-blue-600 text-white font-bold py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] flex items-center justify-center gap-2 group mt-4 overflow-hidden disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                                        className="relative w-full bg-primary hover:bg-blue-600 text-white font-bold py-3 md:py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] flex items-center justify-center gap-2 group mt-2 md:mt-4 overflow-hidden disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed"
                                     >
                                         <motion.span 
                                             animate={{ x: ["-100%", "200%"] }}

@@ -5,7 +5,9 @@ import {
     loginUser,
     logoutUser,
     rotateAnonymousId,
-    getMe
+    getMe,
+    forgotPassword,
+    resetPassword
 } from "../controllers/userContoller.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -20,9 +22,19 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+const passwordResetLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 password reset requests per windowMs
+    message: { success: false, message: 'Too many password reset requests from this IP, please try again after 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 // Public Routes
 router.post("/register", authLimiter, registerUser);
 router.post("/login", authLimiter, loginUser);
+router.post("/forgot-password", passwordResetLimiter, forgotPassword);
+router.post("/reset-password/:token", passwordResetLimiter, resetPassword);
 
 // Protected Routes
 router.post("/logout", verifyJWT, logoutUser);

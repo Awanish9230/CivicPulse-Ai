@@ -7,6 +7,8 @@ import AdminLayout from './components/layout/AdminLayout';
 import PageLoader from './components/common/PageLoader';
 
 const Auth = React.lazy(() => import('./pages/Auth'));
+const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('./pages/ResetPassword'));
 const Home = React.lazy(() => import('./pages/Home'));
 const Community = React.lazy(() => import('./pages/Community'));
 const Profile = React.lazy(() => import('./pages/Profile'));
@@ -75,6 +77,8 @@ function App() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           
           {/* Citizen Zone */}
           <Route path="/" element={<AppLayout />}>
