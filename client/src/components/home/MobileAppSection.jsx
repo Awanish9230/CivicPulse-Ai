@@ -1,7 +1,10 @@
 import React from 'react';
-import { Smartphone, QrCode, Apple, Play } from 'lucide-react';
+import { Smartphone, QrCode, Apple, Play, Download } from 'lucide-react';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 const MobileAppSection = () => {
+    const { isInstallable, handleInstallClick } = usePWAInstall();
+
     return (
         <section className="py-24">
             <div className="bg-slate-50/50 rounded-[40px] p-8 md:p-16 border border-slate-100 overflow-hidden relative">
@@ -13,25 +16,29 @@ const MobileAppSection = () => {
                         <p className="text-lg text-slate-500 font-medium leading-relaxed">
                             Report issues on the go with our mobile-optimized progressive web app. Snap a photo, tag the location, and submit—all in under 30 seconds.
                         </p>
-
                         <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                            <button className="flex items-center gap-3 px-6 py-4 bg-white border border-slate-200 text-slate-900 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all">
+                            <button 
+                                onClick={handleInstallClick}
+                                className="flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all font-bold shadow-lg shadow-indigo-200"
+                            >
+                                <Download size={24} />
+                                Install Web App
+                            </button>
+                            <button 
+                                onClick={() => alert("iOS Users: Tap the Share icon at the bottom of Safari, then tap 'Add to Home Screen'.")}
+                                className="flex items-center gap-3 w-full sm:w-auto px-6 py-4 bg-white border border-slate-200 text-slate-900 rounded-2xl hover:bg-slate-50 transition-all"
+                            >
                                 <Apple size={24} className="text-slate-700" />
                                 <div className="text-left">
-                                    <div className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Download on</div>
-                                    <div className="font-bold text-sm">App Store</div>
-                                </div>
-                            </button>
-                            <button className="flex items-center gap-3 px-6 py-4 bg-white border border-slate-200 text-slate-900 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all">
-                                <Play size={24} className="text-slate-700" />
-                                <div className="text-left">
-                                    <div className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Get it on</div>
-                                    <div className="font-bold text-sm">Google Play</div>
+                                    <div className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">iOS Instructions</div>
+                                    <div className="font-bold text-sm">Add to Home</div>
                                 </div>
                             </button>
                         </div>
 
-                        <p className="text-xs text-slate-400 pt-4 font-medium">* Mobile apps coming soon. Currently available as a Progressive Web App.</p>
+                        <p className="text-xs text-slate-400 pt-4 font-medium">
+                            * Tap Install to add CivicPulse to your device. On iOS Safari, tap 'Share' then 'Add to Home Screen'.
+                        </p>
                     </div>
 
                     <div className="hidden md:flex w-full md:w-1/2 justify-center relative">

@@ -7,6 +7,8 @@ import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import { NotificationBell } from '../notifications/NotificationBell';
 
+import InstallPromptBanner from './InstallPromptBanner';
+
 const AppLayout = () => {
     const location = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -51,6 +53,7 @@ const AppLayout = () => {
             </main>
             
             <BottomNav />
+            <InstallPromptBanner />
         </div>
     );
 };
