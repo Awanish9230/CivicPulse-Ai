@@ -71,8 +71,9 @@ const complaintSchema = new mongoose.Schema({
         default: null,
     },
     assignedTo: {
-        department: String,
-        officer: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
     },
     escalationLevel: {
         type: String,

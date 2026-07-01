@@ -340,10 +340,24 @@ const Dashboard = () => {
                                             </div>
                                         </div>
                                         <h3 className="text-lg font-black text-slate-800 mb-2 leading-tight line-clamp-2">{c.description}</h3>
-                                        <div className="flex items-center text-slate-500 text-xs mb-5 font-bold line-clamp-1">
+                                        <div className="flex items-center text-slate-500 text-xs mb-4 font-bold line-clamp-1">
                                             <MapPin size={14} className="mr-1.5 text-primary shrink-0" />
                                             <span className="truncate">{c.address?.ward ? `${c.address.ward}, ${c.address.district}` : 'Location Attached'}</span>
                                         </div>
+                                        {c.assignedTo && (
+                                            <div className="mb-2 bg-indigo-50/50 rounded-lg p-2 border border-indigo-100/50 flex items-center gap-2">
+                                                <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-black shrink-0">
+                                                    {c.assignedTo.name.substring(0,2).toUpperCase()}
+                                                </div>
+                                                <div className="flex items-center text-xs">
+                                                    <span className="text-slate-500 font-medium mr-1">Handling:</span>
+                                                    <span className="font-bold text-indigo-700">{c.assignedTo.name}</span>
+                                                    <span className="text-[9px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded ml-1 font-bold">
+                                                        {c.assignedTo.authorityLevel}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div>

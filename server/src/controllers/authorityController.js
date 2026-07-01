@@ -72,7 +72,10 @@ export const getTasks = asyncHandler(async (req, res) => {
         filter.escalationLevel = level;
     }
 
-    const complaints = await Complaint.find(filter).sort({ createdAt: -1 }).populate('reportedBy', 'anonymousId');
+    const complaints = await Complaint.find(filter)
+        .sort({ createdAt: -1 })
+        .populate('reportedBy', 'anonymousId')
+        .populate('assignedTo', 'name authorityLevel department');
 
     return res.status(200).json(
         new ApiResponse(200, complaints, "Tasks fetched successfully")
@@ -174,5 +177,130 @@ export const updateTask = asyncHandler(async (req, res) => {
 
     return res.status(200).json(
         new ApiResponse(200, complaint, "Task updated successfully")
+    );
+});
+
+export const assignTask = asyncHandler(async (req, res) => {
+    if (req.user.role !== 'Authority' && req.user.role !== 'Admin') {
+        throw new ApiError(403, "Access denied");
+    }
+
+    // Must be Senior or HOD
+    if (req.user.role === 'Authority' && req.user.authorityLevel === 'Junior') {
+        throw new ApiError(403, "Juniors cannot assign tasks");
+    }
+
+    const { complaintId } = req.params;
+    const { assigneeId } = req.body;
+
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) throw new ApiError(404, "Complaint not found");
+
+    const assignee = await User.findById(assigneeId);
+    if (!assignee || assignee.role !== 'Authority') {
+        throw new ApiError(404, "Assignee not found or is not an authority member");
+    }
+
+    // Must be in the same department (unless Admin)
+    if (req.user.role !== 'Admin' && req.user.department !== assignee.department) {
+        throw new ApiError(403, "Cannot assign tasks outside your department");
+    }
+
+    // HOD can assign to Senior/Junior. Senior can assign to Junior (or another Senior maybe?).
+    if (req.user.role !== 'Admin') {
+        const levelMap = { 'Junior': 1, 'Senior': 2, 'HOD': 3 };
+        if (levelMap[assignee.authorityLevel] > levelMap[req.user.authorityLevel]) {
+             throw new ApiError(403, "Cannot assign tasks to a higher ranking official");
+        }
+    }
+
+    complaint.assignedTo = assignee._id;
+    if (complaint.status === 'Submitted' || complaint.status === 'Verified') {
+        complaint.status = 'Assigned';
+    }
+    complaint.lastActivityAt = Date.now();
+    complaint.officialReplies.push({
+        authorityName: req.user.name || "System",
+        content: `Task assigned to ${assignee.name} (${assignee.authorityLevel}).`
+    });
+
+    await complaint.save();
+
+    return res.status(200).json(
+        new ApiResponse(200, complaint, "Task assigned successfully")
+    );
+});
+
+export const getDepartmentMembers = asyncHandler(async (req, res) => {
+    if (req.user.role !== 'Authority' && req.user.role !== 'Admin') {
+        throw new ApiError(403, "Access denied");
+    }
+
+    let filter = { role: "Authority" };
+    if (req.user.role !== 'Admin') {
+        filter.department = req.user.department;
+    }
+
+    const members = await User.find(filter).select("-password -refreshToken");
+
+    // Get stats for each
+    const memberStats = await Promise.all(members.map(async (m) => {
+        const activeCount = await Complaint.countDocuments({ 
+            assignedTo: m._id, 
+            status: { $nin: ['Resolved', 'Closed', 'Rejected'] } 
+        });
+        const completedCount = await Complaint.countDocuments({ 
+            assignedTo: m._id, 
+            status: { $in: ['Resolved', 'Closed'] } 
+        });
+
+        return {
+            ...m.toObject(),
+            activeTasks: activeCount,
+            completedTasks: completedCount
+        };
+    }));
+
+    return res.status(200).json(
+        new ApiResponse(200, memberStats, "Department members fetched successfully")
+    );
+});
+
+export const getEmployeeReport = asyncHandler(async (req, res) => {
+    if (req.user.role !== 'Authority' && req.user.role !== 'Admin') {
+        throw new ApiError(403, "Access denied");
+    }
+
+    const { employeeId } = req.params;
+    const employee = await User.findById(employeeId).select("-password -refreshToken");
+
+    if (!employee || employee.role !== 'Authority') {
+        throw new ApiError(404, "Employee not found");
+    }
+
+    if (req.user.role !== 'Admin' && req.user.department !== employee.department) {
+        throw new ApiError(403, "Can only view reports for employees in your department");
+    }
+
+    const activeTasks = await Complaint.find({ 
+        assignedTo: employeeId, 
+        status: { $nin: ['Resolved', 'Closed', 'Rejected'] } 
+    }).sort({ priority: -1, createdAt: -1 });
+
+    const completedTasks = await Complaint.find({ 
+        assignedTo: employeeId, 
+        status: { $in: ['Resolved', 'Closed'] } 
+    }).sort({ updatedAt: -1 }).limit(50); // Get last 50 completed tasks
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            employee,
+            activeTasks,
+            completedTasks,
+            stats: {
+                activeCount: activeTasks.length,
+                completedCount: completedTasks.length
+            }
+        }, "Employee report generated")
     );
 });

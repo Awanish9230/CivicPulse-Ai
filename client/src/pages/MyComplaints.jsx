@@ -255,6 +255,24 @@ const MyComplaints = () => {
                                         {c.expectedCompletionDate && <span className="flex items-center gap-1 text-blue-600"><CheckCircle size={12} /> ETA: {new Date(c.expectedCompletionDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>}
                                     </div>
 
+                                    {/* Assigned Official */}
+                                    {c.assignedTo && (
+                                        <div className="mb-4 bg-indigo-50 rounded-xl p-3 border border-indigo-100 flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-indigo-200 text-indigo-700 flex items-center justify-center text-xs font-black border border-indigo-300 shrink-0">
+                                                {c.assignedTo.name.substring(0,2).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-0.5">Assigned Official</div>
+                                                <div className="text-sm font-bold text-indigo-700 flex items-center gap-1">
+                                                    {c.assignedTo.name} 
+                                                    <span className="text-[10px] bg-indigo-100 px-1.5 py-0.5 rounded text-indigo-600 font-bold ml-1">
+                                                        {c.assignedTo.authorityLevel}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Status Progress */}
                                     <div className="mb-4 bg-slate-50 rounded-xl p-3 border border-slate-100">
                                         {renderStatusDots(c.status, isRejected, slaRisk)}

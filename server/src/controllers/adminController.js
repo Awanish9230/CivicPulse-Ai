@@ -152,3 +152,50 @@ export const getAiInsights = asynchandler(async (req, res) => {
         return res.status(500).json(new ApiResponse(500, null, "Failed to generate AI insights"));
     }
 });
+
+// Member Details (Admin)
+export const getMemberDetails = asynchandler(async (req, res) => {
+    const { memberId } = req.params;
+
+    const member = await User.findById(memberId).select('-password');
+    if (!member) {
+        throw new ApiError(404, "Member not found");
+    }
+
+    let activeTasks = [];
+    let completedTasks = [];
+
+    if (member.role === 'Authority' || member.role === 'Admin') {
+        activeTasks = await Complaint.find({ 
+            assignedTo: memberId, 
+            status: { $nin: ['Resolved', 'Closed', 'Rejected'] } 
+        }).sort({ createdAt: -1 });
+
+        completedTasks = await Complaint.find({ 
+            assignedTo: memberId, 
+            status: { $in: ['Resolved', 'Closed'] } 
+        }).sort({ updatedAt: -1 }).limit(100);
+    } else {
+        activeTasks = await Complaint.find({ 
+            reportedBy: memberId, 
+            status: { $nin: ['Resolved', 'Closed', 'Rejected'] } 
+        }).sort({ createdAt: -1 });
+
+        completedTasks = await Complaint.find({ 
+            reportedBy: memberId, 
+            status: { $in: ['Resolved', 'Closed'] } 
+        }).sort({ updatedAt: -1 }).limit(100);
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            member,
+            activeTasks,
+            completedTasks,
+            stats: {
+                activeCount: activeTasks.length,
+                completedCount: completedTasks.length
+            }
+        }, "Member details fetched successfully")
+    );
+});

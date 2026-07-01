@@ -5,7 +5,8 @@ import {
     getAllCitizens, 
     getAllAuthorities, 
     getAllComplaints,
-    getAiInsights
+    getAiInsights,
+    getMemberDetails
 } from '../controllers/adminController.js';
 
 const router = express.Router();
@@ -20,6 +21,7 @@ router.route('/stats').get(getDashboardStats);
 // Entities
 router.route('/citizens').get(getAllCitizens);
 router.route('/authorities').get(getAllAuthorities);
+router.route('/members/:memberId').get(getMemberDetails);
 router.route('/complaints').get(getAllComplaints);
 
 // AI

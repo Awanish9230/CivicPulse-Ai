@@ -226,7 +226,7 @@ export const getMyComplaints = asyncHandler(async (req, res) => {
         reportedBy: req.user._id,
     }).sort({
         createdAt: -1,                  //sort them in newset to oldest
-    });
+    }).populate('assignedTo', 'name authorityLevel department');
 
     return res.status(200).json(
         new ApiResponse(
@@ -291,7 +291,7 @@ export const getAllComplaints = asyncHandler(async (req, res) => {
     // Fetch all complaints
     const complaints = await Complaint.find().sort({
         createdAt: -1,
-    });
+    }).populate('assignedTo', 'name authorityLevel department');
 
     return res.status(200).json(
         new ApiResponse(

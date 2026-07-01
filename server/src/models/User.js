@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema({
     department: {
         type: String,
         trim: true,
+        enum: ['Public Works', 'Water & Sanitation', 'Power', 'Traffic & Safety', 'Animal Control', 'General Administration', 'Master Admin'],
     },
     // anonymousIdLastRotated: {
     //     type: Date,

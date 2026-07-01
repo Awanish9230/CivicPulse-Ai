@@ -165,6 +165,15 @@ const AuthorityLayout = () => {
                         Authority
                     </div>
 
+                    <div className="hidden md:flex flex-col">
+                        <span className="font-black text-slate-900 text-lg">Welcome, {user?.name || 'Authority'}</span>
+                        <span className="text-sm font-bold text-emerald-600 flex items-center gap-1">
+                            <span className="bg-emerald-100 px-2 py-0.5 rounded-md">{user?.authorityLevel || 'Member'}</span>
+                            <span className="text-slate-400">•</span>
+                            <span className="text-slate-500">{user?.department || 'Department'}</span>
+                        </span>
+                    </div>
+
                     <div className="flex items-center gap-3 shrink-0">
                         <NotificationBell />
                     </div>
