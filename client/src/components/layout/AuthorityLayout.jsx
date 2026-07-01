@@ -19,9 +19,9 @@ const AuthoritySidebar = ({ onLogout }) => {
     const location = useLocation();
 
     return (
-        <aside className="hidden md:flex flex-col w-20 lg:w-64 h-screen bg-slate-900 border-r border-slate-800 fixed left-0 top-0 transition-all duration-300 z-50 text-white">
-            <div className="p-6 flex items-center justify-center lg:justify-start h-20 border-b border-slate-800">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-xl shadow-lg">
+        <aside className="hidden md:flex flex-col w-20 lg:w-64 h-screen bg-emerald-950 border-r border-emerald-900 fixed left-0 top-0 transition-all duration-300 z-50 text-white">
+            <div className="p-6 flex items-center justify-center lg:justify-start h-20 border-b border-emerald-900">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-black text-xl shadow-lg shadow-emerald-500/30">
                     A
                 </div>
                 <span className="hidden lg:block ml-3 font-black text-2xl tracking-tight">
@@ -38,11 +38,11 @@ const AuthoritySidebar = ({ onLogout }) => {
                             {isExact && (
                                 <motion.div 
                                     layoutId="auth-sidebar-active"
-                                    className="absolute inset-0 bg-blue-500/20 rounded-xl border border-blue-500/30"
+                                    className="absolute inset-0 bg-emerald-500/20 rounded-xl border border-emerald-500/30"
                                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                 />
                             )}
-                            <div className={`relative flex flex-col lg:flex-row items-center p-3 rounded-xl transition-colors ${isExact ? 'text-blue-400' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                            <div className={`relative flex flex-col lg:flex-row items-center p-3 rounded-xl transition-colors ${isExact ? 'text-emerald-400' : 'text-emerald-200/70 hover:text-white hover:bg-emerald-900/50'}`}>
                                 <Icon size={24} className={`mb-1 lg:mb-0 lg:mr-4 ${isExact ? 'scale-110' : ''}`} strokeWidth={isExact ? 2.5 : 2} />
                                 <span className={`text-[10px] lg:text-[15px] ${isExact ? 'font-bold' : 'font-medium'}`}>
                                     {item.name}
@@ -53,8 +53,8 @@ const AuthoritySidebar = ({ onLogout }) => {
                 })}
             </nav>
 
-            <div className="p-4 border-t border-slate-800">
-                <button onClick={onLogout} className="w-full flex items-center justify-center lg:justify-start p-3 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+            <div className="p-4 border-t border-emerald-900">
+                <button onClick={onLogout} className="w-full flex items-center justify-center lg:justify-start p-3 rounded-xl text-emerald-200/70 hover:text-red-400 hover:bg-red-500/10 transition-colors">
                     <LogOut size={20} />
                     <span className="hidden lg:block ml-3 font-bold text-sm">Logout</span>
                 </button>
@@ -95,52 +95,57 @@ const AuthorityLayout = () => {
 
     if (!isAuthority) {
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-emerald-950 flex items-center justify-center p-4">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="w-full max-w-md bg-slate-800 rounded-3xl p-8 border border-slate-700 shadow-2xl text-white"
+                    className="w-full max-w-md bg-emerald-900 rounded-3xl p-8 border border-emerald-800 shadow-2xl text-white"
                 >
-                    <div className="w-16 h-16 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mb-6 text-blue-400">
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-6 text-emerald-400">
                         <Lock size={32} />
                     </div>
                     <h1 className="text-3xl font-black mb-2">Authority Login</h1>
-                    <p className="text-slate-400 mb-8">Access restricted to authorized personnel.</p>
+                    <p className="text-emerald-200/70 mb-8">Access restricted to authorized personnel.</p>
 
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-300 mb-2">Official Email</label>
+                            <label className="block text-sm font-bold text-emerald-300 mb-2">Official Email</label>
                             <input 
                                 type="email" 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="officer@city.gov" 
                                 required
-                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-white" 
+                                className="w-full bg-emerald-950 border border-emerald-800 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors text-white" 
                             />
                         </div>
                         <div className="relative">
-                            <label className="block text-sm font-bold text-slate-300 mb-2">Password</label>
+                            <label className="block text-sm font-bold text-emerald-300 mb-2">Password</label>
                             <input 
                                 type={showPassword ? "text" : "password"} 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••" 
                                 required
-                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:border-blue-500 transition-colors text-white" 
+                                className="w-full bg-emerald-950 border border-emerald-800 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:border-emerald-500 transition-colors text-white" 
                             />
                             <button 
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-4 top-10 text-slate-500 hover:text-white transition-colors"
+                                className="absolute right-4 top-10 text-emerald-500 hover:text-white transition-colors"
                             >
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
                         </div>
+                        <div className="flex justify-end mt-2">
+                            <Link to="/forgot-password?role=authority" className="text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors">
+                                Forgot Password?
+                            </Link>
+                        </div>
                         <button 
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg mt-4 disabled:opacity-50"
+                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg mt-4 disabled:opacity-50 shadow-emerald-600/20"
                         >
                             {loading ? 'Authenticating...' : 'Secure Login'}
                         </button>

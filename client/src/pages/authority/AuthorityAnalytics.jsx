@@ -59,7 +59,7 @@ const AuthorityAnalytics = () => {
     if (loading) {
         return (
             <div className="flex h-full items-center justify-center min-h-[400px]">
-                <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
             </div>
         );
     }
@@ -74,7 +74,7 @@ const AuthorityAnalytics = () => {
                 <p className="text-slate-500 mb-6">{error}</p>
                 <button 
                     onClick={fetchData}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                    className="px-6 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors"
                 >
                     Try Again
                 </button>
@@ -103,7 +103,7 @@ const AuthorityAnalytics = () => {
             <div className="flex justify-between items-end mb-8">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        <BarChart className="text-blue-600" size={32} />
+                        <BarChart className="text-emerald-600" size={32} />
                         Analytics & Reports
                     </h1>
                     <p className="text-slate-500 font-medium mt-1">System-wide performance and incident metrics</p>
@@ -117,7 +117,7 @@ const AuthorityAnalytics = () => {
                     className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm"
                 >
                     <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
                             <Activity size={24} />
                         </div>
                         <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">TOTAL</span>
@@ -193,7 +193,7 @@ const AuthorityAnalytics = () => {
                                             initial={{ width: 0 }}
                                             animate={{ width: `${cat.percentage}%` }}
                                             transition={{ duration: 1, delay: 0.5 + (idx * 0.1) }}
-                                            className="h-full bg-blue-500 rounded-full"
+                                            className="h-full bg-emerald-500 rounded-full"
                                         ></motion.div>
                                     </div>
                                 </div>
@@ -211,7 +211,7 @@ const AuthorityAnalytics = () => {
                     initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }}
                     className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-xl flex flex-col relative overflow-hidden"
                 >
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
                     
                     <h2 className="text-xl font-black mb-8 relative z-10">Resolution Pipeline</h2>
@@ -225,7 +225,7 @@ const AuthorityAnalytics = () => {
                                     <div className="flex flex-col items-center">
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
                                             status === 'Resolved' ? 'bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]' :
-                                            status === 'In Progress' ? 'bg-blue-500 text-white' :
+                                            status === 'In Progress' ? 'bg-emerald-500 text-white' :
                                             'bg-slate-800 text-slate-400 border border-slate-700'
                                         }`}>
                                             {count}
@@ -234,10 +234,10 @@ const AuthorityAnalytics = () => {
                                     </div>
                                     <div className={`flex-1 p-4 rounded-2xl border ${
                                         status === 'Resolved' ? 'border-green-500/30 bg-green-500/5' :
-                                        status === 'In Progress' ? 'border-blue-500/30 bg-blue-500/5' :
+                                        status === 'In Progress' ? 'border-emerald-500/30 bg-emerald-500/5' :
                                         'border-slate-800 bg-slate-800/30'
                                     }`}>
-                                        <h4 className={`font-bold ${status === 'Resolved' ? 'text-green-400' : status === 'In Progress' ? 'text-blue-400' : 'text-slate-300'}`}>
+                                        <h4 className={`font-bold ${status === 'Resolved' ? 'text-green-400' : status === 'In Progress' ? 'text-emerald-400' : 'text-slate-300'}`}>
                                             {status}
                                         </h4>
                                         <p className="text-xs font-medium text-slate-500 mt-1">

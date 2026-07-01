@@ -45,8 +45,9 @@ export const sendWelcomeEmail = async (email, name, role) => {
  * @param {string} email - Recipient email
  * @param {string} resetToken - The raw reset token
  */
-export const sendPasswordResetEmail = async (email, resetToken) => {
-    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+export const sendPasswordResetEmail = async (email, resetToken, role = 'Citizen') => {
+    const roleParam = role.toLowerCase();
+    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetToken}?role=${roleParam}`;
     const html = passwordResetTemplate(resetUrl);
     await sendEmail({
         email,

@@ -61,7 +61,7 @@ const ManageMembers = () => {
                 </div>
                 <button 
                     onClick={() => setShowModal(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
                 >
                     <Plus size={20} />
                     Add Member
@@ -70,7 +70,7 @@ const ManageMembers = () => {
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
                 </div>
             ) : (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -96,7 +96,7 @@ const ManageMembers = () => {
                                     members.map((member) => (
                                         <tr key={member._id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                                             <td className="px-6 py-4 font-medium text-slate-900 flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs">
                                                     {member.name ? member.name.substring(0,2).toUpperCase() : 'A'}
                                                 </div>
                                                 {member.name || 'N/A'}
@@ -148,7 +148,7 @@ const ManageMembers = () => {
                                     value={formData.name}
                                     onChange={handleChange}
                                     required
-                                    className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" 
+                                    className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" 
                                     placeholder="John Doe" 
                                 />
                             </div>
@@ -161,7 +161,7 @@ const ManageMembers = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
-                                    className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" 
+                                    className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" 
                                     placeholder="officer@domain.gov" 
                                 />
                             </div>
@@ -174,7 +174,7 @@ const ManageMembers = () => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     required
-                                    className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200" 
+                                    className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" 
                                     placeholder="Secure password" 
                                 />
                             </div>
@@ -186,7 +186,7 @@ const ManageMembers = () => {
                                         name="authorityLevel"
                                         value={formData.authorityLevel}
                                         onChange={handleChange}
-                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
                                     >
                                         <option value="Junior">Junior</option>
                                         <option value="Senior">Senior</option>
@@ -199,7 +199,7 @@ const ManageMembers = () => {
                                         name="department"
                                         value={formData.department}
                                         onChange={handleChange}
-                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
                                     >
                                         <option value="General">General / Master Admin</option>
                                         <option value="Sanitation">Sanitation & Garbage</option>
@@ -221,7 +221,7 @@ const ManageMembers = () => {
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-md"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-md"
                                 >
                                     Create Member
                                 </button>

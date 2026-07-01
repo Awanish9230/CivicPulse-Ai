@@ -194,7 +194,7 @@ const AuthorityChat = () => {
                                                 {isMe ? 'You' : (msg.senderName || msg.sender)}
                                             </span>
                                             {isAuthority && (
-                                                <span className="flex items-center text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-black uppercase">
+                                                <span className="flex items-center text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-black uppercase">
                                                     <ShieldAlert size={10} className="mr-1" /> Official
                                                 </span>
                                             )}
@@ -215,7 +215,7 @@ const AuthorityChat = () => {
                                             isMe 
                                                 ? 'bg-indigo-600 text-white rounded-tr-sm shadow-md' 
                                                 : isAuthority 
-                                                    ? 'bg-blue-50 border border-blue-200 text-blue-900 rounded-tl-sm shadow-sm'
+                                                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-tl-sm shadow-sm'
                                                     : 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm'
                                         }`}>
                                             <p className="text-[15px] leading-relaxed">{msg.text || msg.content}</p>

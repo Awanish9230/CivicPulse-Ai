@@ -73,7 +73,7 @@ const AuthorityTasks = () => {
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
                 </div>
             ) : tasks.length === 0 ? (
                 <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
@@ -119,7 +119,7 @@ const AuthorityTasks = () => {
 
                                 <div className="space-y-2 mb-6">
                                     <div className="flex items-center text-slate-500 text-sm">
-                                        <MapPin size={16} className="mr-2 text-blue-500" />
+                                        <MapPin size={16} className="mr-2 text-emerald-500" />
                                         <span className="line-clamp-1">{task.address?.fullAddress || 'Location provided via GPS'}</span>
                                     </div>
                                     <div className="flex items-center text-slate-500 text-sm">
@@ -140,7 +140,7 @@ const AuthorityTasks = () => {
                                         <select 
                                             value={task.status} 
                                             onChange={(e) => handleUpdateTask(task._id, { status: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
                                         >
                                             <option value="Submitted">Submitted</option>
                                             <option value="Verified">Verified</option>
@@ -156,14 +156,14 @@ const AuthorityTasks = () => {
                                             type="date" 
                                             value={task.expectedCompletionDate ? new Date(task.expectedCompletionDate).toISOString().split('T')[0] : ''}
                                             onChange={(e) => handleUpdateTask(task._id, { expectedCompletionDate: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
                                         />
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between pt-4 mt-auto border-t border-slate-100">
                                     <button 
                                         onClick={() => setExpandedMapId(expandedMapId === task._id ? null : task._id)}
-                                        className="text-blue-600 font-bold text-sm hover:text-blue-700 transition-colors flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg"
+                                        className="text-emerald-600 font-bold text-sm hover:text-emerald-700 transition-colors flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-lg"
                                     >
                                         <Map size={14} />
                                         {expandedMapId === task._id ? 'Hide Map' : 'View Location'}

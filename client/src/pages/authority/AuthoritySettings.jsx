@@ -39,7 +39,7 @@ const AuthoritySettings = () => {
             <div className="flex justify-between items-end mb-8">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        <Settings className="text-blue-600" size={32} />
+                        <Settings className="text-emerald-600" size={32} />
                         Authority Settings
                     </h1>
                     <p className="text-slate-500 font-medium mt-1">Manage your official profile and system preferences</p>
@@ -47,7 +47,7 @@ const AuthoritySettings = () => {
                 <button 
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 disabled:opacity-70"
+                    className="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-70"
                 >
                     <Save size={18} />
                     {saving ? 'Saving...' : 'Save Changes'}
@@ -60,12 +60,12 @@ const AuthoritySettings = () => {
                 className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden"
             >
                 <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-                    <User className="text-blue-600" size={24} />
+                    <User className="text-emerald-600" size={24} />
                     <h2 className="text-xl font-black text-slate-900">Official Profile</h2>
                 </div>
                 <div className="p-8">
                     <div className="flex flex-col md:flex-row gap-8 items-start">
-                        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-3xl text-white shadow-xl shadow-blue-500/20 shrink-0">
+                        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-indigo-600 flex items-center justify-center font-black text-3xl text-white shadow-xl shadow-emerald-500/20 shrink-0">
                             {user?.name?.charAt(0) || 'A'}
                         </div>
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
@@ -84,7 +84,7 @@ const AuthoritySettings = () => {
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Role / Designation</label>
-                                <div className="text-blue-600 font-bold bg-blue-50 px-4 py-3 rounded-xl border border-blue-100 flex items-center gap-2">
+                                <div className="text-emerald-600 font-bold bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-100 flex items-center gap-2">
                                     <Shield size={16} />
                                     {user?.role || 'Authority'}
                                 </div>
@@ -107,7 +107,7 @@ const AuthoritySettings = () => {
                 className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden"
             >
                 <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-                    <Bell className="text-blue-600" size={24} />
+                    <Bell className="text-emerald-600" size={24} />
                     <h2 className="text-xl font-black text-slate-900">Notification Preferences</h2>
                 </div>
                 <div className="p-8 space-y-6">
@@ -118,7 +118,7 @@ const AuthoritySettings = () => {
                         </div>
                         <button 
                             onClick={() => togglePreference('emailAlerts')}
-                            className={`w-14 h-8 rounded-full transition-colors relative ${preferences.emailAlerts ? 'bg-blue-500' : 'bg-slate-200'}`}
+                            className={`w-14 h-8 rounded-full transition-colors relative ${preferences.emailAlerts ? 'bg-emerald-500' : 'bg-slate-200'}`}
                         >
                             <div className={`w-6 h-6 bg-white rounded-full absolute top-1 transition-all shadow-sm ${preferences.emailAlerts ? 'left-7' : 'left-1'}`}></div>
                         </button>
@@ -132,7 +132,7 @@ const AuthoritySettings = () => {
                         </div>
                         <button 
                             onClick={() => togglePreference('pushNotifications')}
-                            className={`w-14 h-8 rounded-full transition-colors relative ${preferences.pushNotifications ? 'bg-blue-500' : 'bg-slate-200'}`}
+                            className={`w-14 h-8 rounded-full transition-colors relative ${preferences.pushNotifications ? 'bg-emerald-500' : 'bg-slate-200'}`}
                         >
                             <div className={`w-6 h-6 bg-white rounded-full absolute top-1 transition-all shadow-sm ${preferences.pushNotifications ? 'left-7' : 'left-1'}`}></div>
                         </button>
@@ -146,7 +146,7 @@ const AuthoritySettings = () => {
                         </div>
                         <button 
                             onClick={() => togglePreference('dailySummary')}
-                            className={`w-14 h-8 rounded-full transition-colors relative ${preferences.dailySummary ? 'bg-blue-500' : 'bg-slate-200'}`}
+                            className={`w-14 h-8 rounded-full transition-colors relative ${preferences.dailySummary ? 'bg-emerald-500' : 'bg-slate-200'}`}
                         >
                             <div className={`w-6 h-6 bg-white rounded-full absolute top-1 transition-all shadow-sm ${preferences.dailySummary ? 'left-7' : 'left-1'}`}></div>
                         </button>

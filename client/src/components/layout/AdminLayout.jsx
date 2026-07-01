@@ -207,6 +207,11 @@ const AdminLayout = () => {
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
                         </div>
+                        <div className="flex justify-end mt-2">
+                            <Link to="/forgot-password?role=admin" className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors">
+                                Forgot Password?
+                            </Link>
+                        </div>
                         <button 
                             type="submit"
                             disabled={isLoggingIn}

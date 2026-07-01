@@ -235,7 +235,7 @@ export const forgotPassword = asynchandler(async (req, res) => {
 
     // Send email
     try {
-        await sendPasswordResetEmail(user.email, resetToken);
+        await sendPasswordResetEmail(user.email, resetToken, user.role);
         return res.status(200).json(new ApiResponse(200, {}, "If that email address is in our database, we will send you an email to reset your password."));
     } catch (err) {
         user.resetPasswordToken = undefined;
