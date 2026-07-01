@@ -10,7 +10,8 @@ import {
     resolveComplaint,
     addOfficialReply,
     editComplaint,
-    deleteComplaint
+    deleteComplaint,
+    submitResolutionFeedback
 } from "../controllers/complainController.js";
 
 const router = Router();
@@ -27,6 +28,7 @@ const uploadLimiter = rateLimit({
 router.post("/:complaintId/upvote", verifyJWT, upvoteComplaint);
 router.post("/:complaintId/resolve", verifyJWT, resolveComplaint);
 router.post("/:complaintId/reply", verifyJWT, addOfficialReply);
+router.post("/:complaintId/feedback", verifyJWT, submitResolutionFeedback);
 router.post(
     "/create",
     verifyJWT,

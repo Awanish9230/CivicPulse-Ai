@@ -351,3 +351,63 @@ export const editComplaint = asyncHandler(async (req, res) => {
         new ApiResponse(200, complaint, "Complaint updated successfully")
     );
 });
+export const submitResolutionFeedback = asyncHandler(async (req, res) => {
+    const { complaintId } = req.params;
+    const { action, comment } = req.body;
+
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) {
+        throw new ApiError(404, 'Complaint not found');
+    }
+
+    if (complaint.reportedBy.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, 'Only the reporter can provide feedback');
+    }
+
+    if (complaint.status !== 'Resolved') {
+        throw new ApiError(400, 'Complaint is not in Resolved status');
+    }
+
+    if (action === 'Accept') {
+        complaint.resolutionFeedback = {
+            status: 'Accepted',
+            comment,
+            updatedAt: Date.now()
+        };
+        complaint.status = 'Closed'; // Permanently closed
+        complaint.officialReplies.push({
+            authorityName: req.user.name || 'Citizen',
+            content: 'Resolution Accepted by Citizen.' + (comment ? ' Comment: ' + comment : '')
+        });
+    } else if (action === 'Reject') {
+        complaint.resolutionFeedback = {
+            status: 'Rejected',
+            comment,
+            updatedAt: Date.now()
+        };
+        complaint.status = 'In Progress'; // Reopen
+
+        // Escalate
+        const currentLevel = complaint.escalationLevel;
+        let nextLevel = 'Senior'; // Default to Senior if Junior
+        if (currentLevel === 'Senior') nextLevel = 'HOD';
+        else if (currentLevel === 'HOD') nextLevel = 'HOD'; // Max level
+
+        complaint.escalationLevel = nextLevel;
+
+        complaint.officialReplies.push({
+            authorityName: req.user.name || 'Citizen',
+            content: 'Resolution REJECTED by Citizen. Task re-opened and escalated to ' + nextLevel + '.' + (comment ? ' Reason: ' + comment : '')
+        });
+    } else {
+        throw new ApiError(400, 'Invalid action');
+    }
+
+    complaint.lastActivityAt = Date.now();
+    await complaint.save();
+
+    return res.status(200).json(
+        new ApiResponse(200, complaint, 'Feedback submitted successfully')
+    );
+});
+

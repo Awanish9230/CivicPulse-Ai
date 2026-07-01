@@ -4,6 +4,7 @@ import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asynchandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import notificationService from "../services/notificationService.js";
+import uploadOnCloudinary from "../utils/cloudinary.js";
 
 // Middleware-like check, can be extracted to auth.middleware.js if needed
 const checkSuperOfficer = (req) => {
@@ -156,6 +157,29 @@ export const updateTask = asyncHandler(async (req, res) => {
 
     let updates = [];
 
+    // Resolution enforcement
+    if (status === 'Resolved' && complaint.status !== 'Resolved') {
+        if (!req.files || req.files.length < 2) {
+            throw new ApiError(400, "At least 2 resolution images are required to mark a task as Resolved.");
+        }
+
+        const uploadedImages = [];
+        for (const file of req.files) {
+            const uploaded = await uploadOnCloudinary(file.path);
+            if (uploaded) {
+                uploadedImages.push(uploaded.secure_url);
+            }
+        }
+
+        if (uploadedImages.length < 2) {
+            throw new ApiError(500, "Failed to upload resolution images to Cloudinary");
+        }
+
+        complaint.resolutionImages = uploadedImages;
+        complaint.resolutionFeedback.status = 'Pending';
+        updates.push(`Uploaded ${uploadedImages.length} resolution images`);
+    }
+
     if (status && complaint.status !== status) {
         complaint.status = status;
         updates.push(`Status updated to ${status}`);
@@ -304,3 +328,36 @@ export const getEmployeeReport = asyncHandler(async (req, res) => {
         }, "Employee report generated")
     );
 });
+
+export const getAnalytics = asyncHandler(async (req, res) => {
+    if (req.user.role !== 'Authority' && req.user.role !== 'Admin') {
+        throw new ApiError(403, 'Access denied');
+    }
+
+    let filter = {};
+
+    if (req.user.role !== 'Admin') {
+        // Map department back to categories
+        const department = req.user.department;
+        let categories = [];
+        
+        if (department === 'Public Works') categories = ['Road', 'Construction'];
+        else if (department === 'Power') categories = ['Electricity', 'Street Light'];
+        else if (department === 'Water & Sanitation') categories = ['Garbage', 'Water', 'Drainage', 'Illegal Dumping'];
+        else if (department === 'Traffic & Safety') categories = ['Traffic'];
+        else if (department === 'Animal Control') categories = ['Animal'];
+        else categories = ['Others']; // General Administration
+
+        filter.category = { $in: categories };
+    }
+
+    const complaints = await Complaint.find(filter)
+        .sort({ createdAt: -1 })
+        .populate('reportedBy', 'anonymousId')
+        .populate('assignedTo', 'name authorityLevel department');
+
+    return res.status(200).json(
+        new ApiResponse(200, complaints, 'Analytics data fetched successfully')
+    );
+});
+

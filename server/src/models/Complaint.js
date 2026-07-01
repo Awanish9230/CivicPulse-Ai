@@ -88,7 +88,25 @@ const complaintSchema = new mongoose.Schema({
         authorityName: { type: String, required: true },
         content: { type: String, required: true },
         createdAt: { type: Date, default: Date.now }
-    }]
+    }],
+    resolutionImages: {
+        type: [String],
+        default: [],
+        validate: [arrayLimit, 'Exceeds the limit of 5 photos']
+    },
+    resolutionFeedback: {
+        status: {
+            type: String,
+            enum: ['Pending', 'Accepted', 'Rejected'],
+            default: 'Pending',
+        },
+        comment: {
+            type: String,
+        },
+        updatedAt: {
+            type: Date,
+        }
+    }
 }, {
     timestamps: true,
 });

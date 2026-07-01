@@ -17,7 +17,7 @@ const AuthorityAnalytics = () => {
         try {
             setLoading(true);
             setError(null);
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/authority/tasks`, {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/authority/analytics`, {
                 withCredentials: true
             });
             if (data.success || data.data) {

@@ -43,6 +43,35 @@ const MyComplaints = () => {
         fetchMyComplaints();
     }, []);
 
+    const handleFeedback = async (id, action) => {
+        let comment = '';
+        const userPrompt = action === 'Accept' 
+            ? "Any optional comments for accepting this resolution?" 
+            : "Please provide a reason for rejecting this resolution. This will reopen the issue and escalate it.";
+            
+        comment = window.prompt(userPrompt);
+        
+        if (action === 'Reject' && (!comment || comment.trim() === '')) {
+            toast.error("You must provide a reason to reject the resolution.");
+            return;
+        }
+
+        if (comment === null) return; // User cancelled prompt
+
+        try {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/${id}/feedback`, {
+                action,
+                comment
+            }, {
+                withCredentials: true
+            });
+            toast.success(`Resolution ${action.toLowerCase()}ed successfully`);
+            fetchMyComplaints();
+        } catch (error) {
+            toast.error(error.response?.data?.message || `Failed to ${action.toLowerCase()} resolution`);
+        }
+    };
+
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this complaint? This cannot be undone.")) return;
         try {
@@ -277,6 +306,46 @@ const MyComplaints = () => {
                                     <div className="mb-4 bg-slate-50 rounded-xl p-3 border border-slate-100">
                                         {renderStatusDots(c.status, isRejected, slaRisk)}
                                     </div>
+
+                                    {/* Resolution Verification Block */}
+                                    {c.status === 'Resolved' && c.resolutionFeedback && c.resolutionFeedback.status === 'Pending' && (
+                                        <div className="mb-4 bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+                                            <h4 className="font-bold text-emerald-800 text-sm mb-2 flex items-center gap-2">
+                                                <CheckCircle size={16} /> Resolution Verification Needed
+                                            </h4>
+                                            <p className="text-xs text-emerald-700 mb-3">
+                                                The authority has marked this issue as resolved and provided proof. Please verify and accept or reject the resolution.
+                                            </p>
+                                            
+                                            {c.resolutionImages && c.resolutionImages.length > 0 && (
+                                                <div className="flex gap-2 overflow-x-auto pb-3 snap-x no-scrollbar">
+                                                    {c.resolutionImages.map((img, idx) => (
+                                                        <img 
+                                                            key={idx} 
+                                                            src={img} 
+                                                            alt={`Resolution ${idx + 1}`} 
+                                                            className="w-24 h-24 object-cover rounded-lg shrink-0 snap-start border border-emerald-200"
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div className="flex gap-2 mt-2">
+                                                <button 
+                                                    onClick={() => handleFeedback(c._id, 'Accept')}
+                                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors"
+                                                >
+                                                    Accept Resolution
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleFeedback(c._id, 'Reject')}
+                                                    className="flex-1 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 font-bold py-2 px-3 rounded-lg text-xs transition-colors"
+                                                >
+                                                    Reject & Reopen
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Official Responses Accordion */}
                                     {c.officialReplies && c.officialReplies.length > 0 && (
