@@ -15,39 +15,46 @@ const PlatformScreenshots = () => {
     const s = screenshots[current];
 
     return (
-        <section className="py-20">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-black text-slate-800">Platform Showcase</h2>
-                <p className="text-slate-500 mt-3 text-lg">Explore CivicPulse AI's powerful dashboards.</p>
+        <section className="py-24">
+            <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Platform Showcase</h2>
+                <p className="text-slate-500 mt-4 text-lg font-medium">Explore CivicPulse AI's powerful dashboards.</p>
             </div>
 
-            <div className={`relative bg-gradient-to-br ${s.bg} rounded-[40px] p-8 md:p-16 text-white overflow-hidden`}>
-                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/10 blur-[100px] rounded-full pointer-events-none" />
+            <div className={`relative bg-slate-900 rounded-[40px] p-8 md:p-16 text-white overflow-hidden border border-slate-800 shadow-2xl`}>
+                <div className={`absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br ${s.bg} opacity-10 blur-[120px] rounded-full pointer-events-none transition-colors duration-700`} />
                 
-                <div className="relative z-10 flex flex-col md:flex-row items-center gap-12">
-                    <div className="w-full md:w-1/2 space-y-6">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-white font-bold text-sm backdrop-blur-sm">
+                <div className="relative z-10 flex flex-col md:flex-row items-center gap-12 md:gap-24">
+                    <div className="w-full md:w-1/2 space-y-8">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 font-bold text-sm backdrop-blur-sm">
                             <Monitor size={16} /> {current + 1} / {screenshots.length}
                         </div>
-                        <h3 className="text-3xl md:text-4xl font-black">{s.title}</h3>
-                        <p className="text-lg text-white/80 leading-relaxed">{s.desc}</p>
+                        <div>
+                            <h3 className={`text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r ${s.bg} mb-4 tracking-tight`}>
+                                {s.title}
+                            </h3>
+                            <p className="text-lg text-slate-400 leading-relaxed font-medium">{s.desc}</p>
+                        </div>
                         
-                        <div className="flex gap-3 pt-4">
-                            <button onClick={prev} className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
+                        <div className="flex gap-4 pt-4">
+                            <button onClick={prev} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/10 hover:text-white transition-all text-slate-400">
                                 <ChevronLeft size={20} />
                             </button>
-                            <button onClick={next} className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
+                            <button onClick={next} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/10 hover:text-white transition-all text-slate-400">
                                 <ChevronRight size={20} />
                             </button>
                         </div>
                     </div>
 
                     <div className="w-full md:w-1/2">
-                        <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 p-8 h-[300px] flex items-center justify-center">
-                            <div className="text-center space-y-4">
-                                <Monitor size={64} className="mx-auto text-white/40" />
-                                <p className="text-sm text-white/60 font-bold">Live Preview Available</p>
-                                <p className="text-xs text-white/40">Navigate to the actual dashboard to experience it</p>
+                        <div className="bg-slate-800/50 backdrop-blur-xl rounded-[32px] border border-white/5 p-8 h-[360px] flex items-center justify-center shadow-inner relative overflow-hidden group">
+                            <div className={`absolute inset-0 bg-gradient-to-br ${s.bg} opacity-5 group-hover:opacity-10 transition-opacity duration-500`} />
+                            <div className="text-center space-y-5 relative z-10">
+                                <div className="w-20 h-20 mx-auto rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 mb-2">
+                                    <Monitor size={32} className="text-slate-400" />
+                                </div>
+                                <p className="text-base text-slate-300 font-bold tracking-wide">Live Preview Available</p>
+                                <p className="text-sm text-slate-500 font-medium">Navigate to the actual dashboard to experience it</p>
                             </div>
                         </div>
                     </div>

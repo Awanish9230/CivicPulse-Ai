@@ -36,22 +36,22 @@ const ComplaintCategories = () => {
         fetchCategories();
     }, []);
     return (
-        <section className="py-20">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-black text-slate-800">Explore by Category</h2>
-                <p className="text-slate-500 mt-3 text-lg">Browse issues affecting your neighborhood.</p>
+        <section className="py-24">
+            <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Explore by Category</h2>
+                <p className="text-slate-500 mt-4 text-lg font-medium">Browse issues affecting your neighborhood.</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-x-4 gap-y-12">
                 {baseCategories.map((cat, idx) => {
                     const count = counts[cat.name] || 0;
                     return (
-                        <div key={idx} className="group cursor-pointer bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col items-center justify-center text-center">
-                            <div className="w-14 h-14 rounded-2xl bg-slate-50 group-hover:bg-indigo-50 text-slate-500 group-hover:text-indigo-600 flex items-center justify-center mb-4 transition-colors">
+                        <div key={idx} className="group cursor-pointer flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1">
+                            <div className="w-16 h-16 rounded-2xl bg-slate-50 group-hover:bg-slate-900 text-slate-500 group-hover:text-white flex items-center justify-center mb-5 transition-all duration-300">
                                 <cat.icon size={28} strokeWidth={1.5} />
                             </div>
-                            <h3 className="text-sm font-bold text-slate-700 group-hover:text-indigo-700">{cat.name}</h3>
-                            <p className="text-xs text-slate-400 mt-1 font-medium">{count} reports</p>
+                            <h3 className="text-sm font-bold text-slate-800 transition-colors">{cat.name}</h3>
+                            <p className="text-xs text-slate-400 mt-1.5 font-medium">{count} reports</p>
                         </div>
                     );
                 })}

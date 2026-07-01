@@ -46,31 +46,37 @@ const Home = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
                 {/* Phase 1: Core */}
                 <HeroSection />
-                <TrustedStats />
+                <div className="hidden md:block"><TrustedStats /></div>
                 <HowItWorks />
                 <KeyFeatures />
                 
                 {/* Phase 2: Interactive Modules */}
-                <ComplaintCategories />
+                <div className="hidden md:block"><ComplaintCategories /></div>
                 <LiveComplaintMap />
                 <RecentReports />
-                <AIFeatures />
-                <AuthorityPerformance />
-                <LiveActivityFeed />
+                <div className="hidden md:block">
+                    <AIFeatures />
+                    <AuthorityPerformance />
+                    <LiveActivityFeed />
+                </div>
 
                 {/* Phase 3: Social Proof & Trust */}
-                <SuccessStories />
-                <Testimonials />
-                <PlatformScreenshots />
+                <div className="hidden md:block">
+                    <SuccessStories />
+                    <Testimonials />
+                    <PlatformScreenshots />
+                </div>
                 <MobileAppSection />
-                <SecurityPrivacy />
-                <PartnersSection />
-                <AwardsRecognition />
+                <div className="hidden md:block">
+                    <SecurityPrivacy />
+                    <PartnersSection />
+                    <AwardsRecognition />
+                </div>
 
                 {/* Phase 4: Engagement */}
-                <FAQSection />
+                <div className="hidden md:block"><FAQSection /></div>
                 <CallToAction />
-                <Newsletter />
+                <div className="hidden md:block"><Newsletter /></div>
             </div>
 
             {/* Floating Buttons */}
