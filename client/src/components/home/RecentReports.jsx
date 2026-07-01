@@ -40,21 +40,21 @@ const RecentReports = () => {
                 {reports.map((report) => (
                     <div key={report._id} className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
                         <div className="h-48 overflow-hidden relative">
-                            <img src={report.imageUrl || "https://images.unsplash.com/photo-1519782508688-6934c9c585c5?q=80&w=400&h=300&auto=format&fit=crop"} alt={report.title || "Report"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <img src={report.imageUrl || (report.imageUrls && report.imageUrls[0]) || "https://images.unsplash.com/photo-1519782508688-6934c9c585c5?q=80&w=400&h=300&auto=format&fit=crop"} alt={report.category || "Report"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(report.status)}`}>
                                 {report.status || "Pending"}
                             </div>
                         </div>
                         <div className="p-6">
-                            <h3 className="text-xl font-bold text-slate-800 mb-2 truncate">{report.title || "Untitled"}</h3>
+                            <h3 className="text-xl font-bold text-slate-800 mb-2 truncate">{report.category ? `${report.category} Issue` : "Untitled"}</h3>
                             <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
-                                <MapPin size={16} /> <span className="truncate">{report.address?.fullAddress || 'Location Hidden'}</span>
+                                <MapPin size={16} /> <span className="truncate">{report.address?.fullAddress || report.address?.ward || report.address?.district || 'Location Hidden'}</span>
                             </div>
                             
                             <div className="flex justify-between items-center pt-4 border-t border-slate-100">
                                 <div className="flex items-center gap-4 text-slate-500">
                                     <div className="flex items-center gap-1 font-bold text-slate-700">
-                                        <ArrowUp size={18} className="text-indigo-500" /> {report.upvotes?.length || 0}
+                                        <ArrowUp size={18} className="text-indigo-500" /> {report.supportCount || 0}
                                     </div>
                                     <div className="flex items-center gap-1 text-sm">
                                         <MessageSquare size={16} /> 0

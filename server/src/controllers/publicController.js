@@ -60,7 +60,7 @@ export const getCategoryStats = asynchandler(async (req, res) => {
 export const getPublicMapData = asynchandler(async (req, res) => {
     // Only return recent or open complaints for map to prevent huge payloads
     const complaints = await Complaint.find({ location: { $exists: true } })
-        .select('title status location')
+        .select('category description status location')
         .limit(100);
         
     return res.status(200).json(
@@ -73,7 +73,7 @@ export const getRecentReports = asynchandler(async (req, res) => {
     const recent = await Complaint.find()
         .sort({ createdAt: -1 })
         .limit(3)
-        .select('title address status createdAt images upvotes');
+        .select('category description address status createdAt imageUrl imageUrls supportCount');
         
     return res.status(200).json(
         new ApiResponse(200, recent, "Recent reports fetched successfully")
