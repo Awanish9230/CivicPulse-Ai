@@ -24,6 +24,10 @@ import startEscalationCron from './src/utils/escalationCron.js';
 connectDB();
  
 const app = express();
+
+// Trust reverse proxies (like Render) to fix express-rate-limit IP issues
+app.set('trust proxy', 1);
+
 const server = http.createServer(app);
 
 // Initialize Socket.io
