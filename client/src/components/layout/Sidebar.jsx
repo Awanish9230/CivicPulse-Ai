@@ -44,7 +44,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 </div>
             </div>
             
-            <nav className="flex-1 mt-6 px-3 space-y-2 overflow-y-auto no-scrollbar">
+            <nav className={`flex-1 mt-6 ${isOpen ? 'px-3' : 'px-2'} space-y-2 overflow-y-auto no-scrollbar`}>
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
                     const Icon = item.icon;
@@ -57,14 +57,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                 />
                             )}
-                            <div className={`relative flex items-center p-3 rounded-xl transition-colors duration-150 ${isOpen ? 'flex-row' : 'flex-col justify-center'} ${isActive ? 'text-primary' : 'text-text/70 hover:text-primary hover:bg-surface/50'}`}>
+                            <div className={`relative flex items-center rounded-xl transition-colors duration-150 ${isOpen ? 'p-3 flex-row' : 'py-3 px-1 flex-col justify-center'} ${isActive ? 'text-primary' : 'text-text/70 hover:text-primary hover:bg-surface/50'}`}>
                                 <div className="relative">
-                                    <Icon size={24} className={`transition-transform duration-200 ${isOpen ? 'mr-4' : 'mb-1'} ${isActive ? 'scale-110' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                                    <Icon size={isOpen ? 24 : 22} className={`transition-transform duration-200 ${isOpen ? 'mr-4' : 'mb-1'} ${isActive ? 'scale-110' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                                     {item.name === 'Notifications' && unreadCount > 0 && (
                                         <span className={`absolute ${isOpen ? '-top-1 right-3' : '-top-1 -right-1'} w-3 h-3 bg-rose-500 rounded-full border-2 border-white`}></span>
                                     )}
                                 </div>
-                                <span className={`transition-all ${isOpen ? 'text-[15px]' : 'text-[10px]'} ${isActive ? 'font-bold' : 'font-medium'}`}>
+                                <span className={`transition-all truncate ${isOpen ? 'text-[15px] flex-1 text-left' : 'w-full text-center text-[9px]'} ${isActive ? 'font-bold' : 'font-medium'}`}>
                                     {item.name}
                                 </span>
                             </div>

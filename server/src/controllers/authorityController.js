@@ -197,6 +197,21 @@ export const updateTask = asyncHandler(async (req, res) => {
             content: updates.join('. ') + '.',
         });
         await complaint.save();
+
+        try {
+            await notificationService.createNotification({
+                recipient: complaint.reportedBy,
+                sender: req.user._id,
+                title: 'Complaint Updated',
+                message: `An authority updated your complaint: ${updates.join('. ')}.`,
+                type: 'System Notification',
+                priority: 'Low',
+                complaint: complaint._id,
+                actionUrl: `/complaints/${complaint._id}`
+            });
+        } catch (error) {
+            console.error("Notification error on task update", error);
+        }
     }
 
     return res.status(200).json(
@@ -249,6 +264,21 @@ export const assignTask = asyncHandler(async (req, res) => {
     });
 
     await complaint.save();
+
+    try {
+        await notificationService.createNotification({
+            recipient: assignee._id,
+            sender: req.user._id,
+            title: 'New Task Assigned',
+            message: `You have been assigned a new task: ${complaint.category}.`,
+            type: 'Task Assigned',
+            priority: 'High',
+            complaint: complaint._id,
+            actionUrl: `/authority/dashboard`
+        });
+    } catch (error) {
+        console.error("Notification error on task assignment", error);
+    }
 
     return res.status(200).json(
         new ApiResponse(200, complaint, "Task assigned successfully")

@@ -1,4 +1,5 @@
 import Complaint from "../models/Complaint.js";
+import User from "../models/User.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asynchandler.js";
@@ -46,7 +47,7 @@ export const resolveComplaint = asyncHandler(async (req, res) => {
             recipient: complaint.reportedBy,
             sender: req.user._id,
             title: 'Complaint Resolved',
-            message: `Your complaint regarding ${complaint.category} has been marked as resolved.`,
+            message: `Your complaint regarding ${complaint.category} has been marked as resolved by ${req.user.name || "a City Official"}.`,
             type: 'Complaint Resolved',
             priority: 'Medium',
             complaint: complaint._id,
@@ -204,6 +205,20 @@ export const createComplaint = asyncHandler(async (req, res) => {
             complaint: complaint._id,
             actionUrl: `/complaints/${complaint._id}`
         });
+
+        // Notify Admins and Authorities
+        const authorities = await User.find({ role: { $in: ['Admin', 'Authority'] } });
+        for (const auth of authorities) {
+            await notificationService.createNotification({
+                recipient: auth._id,
+                title: 'New Issue Reported',
+                message: `A new ${complaint.category} issue has been reported in the city.`,
+                type: 'System Notification',
+                priority: 'High',
+                complaint: complaint._id,
+                actionUrl: `/authority/dashboard`
+            });
+        }
     } catch (e) {
         console.error("Socket error on create complaint", e);
     }
@@ -405,6 +420,24 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
 
     complaint.lastActivityAt = Date.now();
     await complaint.save();
+
+    // Notify assigned authority if exists
+    if (complaint.assignedTo) {
+        try {
+            await notificationService.createNotification({
+                recipient: complaint.assignedTo,
+                sender: req.user._id,
+                title: `Resolution ${action === 'Accept' ? 'Accepted' : 'Rejected'}`,
+                message: `The citizen has ${action.toLowerCase()}ed your resolution for the ${complaint.category} issue.`,
+                type: 'System Notification',
+                priority: 'High',
+                complaint: complaint._id,
+                actionUrl: `/authority/dashboard`
+            });
+        } catch (error) {
+            console.error("Notification error on resolution feedback", error);
+        }
+    }
 
     return res.status(200).json(
         new ApiResponse(200, complaint, 'Feedback submitted successfully')

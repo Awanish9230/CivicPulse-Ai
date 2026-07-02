@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import PageLoader from '../components/common/PageLoader';
 
 const Notifications = () => {
-    const { markAllAsRead, markAsRead, fetchUnreadCount, unreadCount } = useContext(NotificationContext);
+    const { markAllAsRead, markAsRead, fetchUnreadCount, unreadCount, socket } = useContext(NotificationContext);
     
     const [notifications, setNotifications] = useState([]);
     const [page, setPage] = useState(1);
@@ -51,6 +51,26 @@ const Notifications = () => {
         setNotifications([]);
         fetchNotifications(1, filterType, false);
     }, [filterType, fetchNotifications]);
+
+    useEffect(() => {
+        if (!socket) return;
+        
+        const handleNewNotification = (notification) => {
+            if (filterType === 'All' || (filterType === 'Unread' && !notification.isRead)) {
+                setNotifications(prev => {
+                    // Avoid duplicates
+                    if (prev.some(n => n._id === notification._id)) return prev;
+                    return [notification, ...prev];
+                });
+            }
+        };
+
+        socket.on('notification', handleNewNotification);
+
+        return () => {
+            socket.off('notification', handleNewNotification);
+        };
+    }, [socket, filterType]);
 
     // Infinite scrolling
     const lastNotificationRef = useCallback(node => {

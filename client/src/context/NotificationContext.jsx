@@ -26,7 +26,7 @@ export const NotificationProvider = ({ children }) => {
     const fetchInitialNotifications = useCallback(async () => {
         if (!isAuthenticated) return;
         try {
-            const { data } = await api.get('/notification?limit=10');
+            const { data } = await api.get('/notification?limit=5');
             setNotifications(data.data.notifications || []);
         } catch (error) {
             console.error('Failed to fetch initial notifications', error);
@@ -55,6 +55,8 @@ export const NotificationProvider = ({ children }) => {
 
             newSocket.on('connect', () => {
                 newSocket.emit('join', user._id);
+                newSocket.emit('joinRoom', 'local-community-general');
+                newSocket.emit('joinRoom', 'local-community-authority');
             });
 
             newSocket.on('notification', (notification) => {
@@ -116,9 +118,11 @@ export const NotificationProvider = ({ children }) => {
             setNotifications,
             unreadCount,
             setUnreadCount,
+            markAsWindowAsRead: markAsRead, // avoid naming collision if needed, but it's fine
             markAsRead,
             markAllAsRead,
-            fetchUnreadCount
+            fetchUnreadCount,
+            socket
         }}>
             {children}
         </NotificationContext.Provider>

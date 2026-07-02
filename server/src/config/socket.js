@@ -66,6 +66,41 @@ export const initSocket = (server) => {
                 };
 
                 io.to(room).emit('receiveMessage', emittedMessage);
+
+                const User = (await import('../models/User.js')).default;
+                const Notification = (await import('../models/Notification.js')).default;
+                const mongoose = (await import('mongoose')).default;
+                
+                // Save to database for all users (except sender) so it persists in /notifications
+                const senderObjectId = new mongoose.Types.ObjectId(message.senderId);
+                const users = await User.find({ _id: { $ne: senderObjectId } }).select('_id');
+                const dbNotifications = users.map(u => ({
+                    recipient: u._id,
+                    sender: message.senderId,
+                    title: `New message in ${channelName}`,
+                    message: `${message.sender}: ${message.text.substring(0, 40)}${message.text.length > 40 ? '...' : ''}`,
+                    type: 'Community Chat Mention',
+                    actionUrl: '/community'
+                }));
+                
+                let savedNotifications = [];
+                if (dbNotifications.length > 0) {
+                    savedNotifications = await Notification.insertMany(dbNotifications);
+                }
+
+                logger.info(`Saved ${savedNotifications.length} chat notifications to DB and broadcasting...`);
+                
+                // We emit using io.to(room) so EVERYONE in the room (including sender) gets the live notification.
+                // This makes it much easier to test the app without needing two accounts!
+                io.to(room).emit('notification', {
+                    _id: 'chat_' + Date.now(),
+                    title: `New message in ${channelName}`,
+                    message: `${message.sender}: ${message.text.substring(0, 40)}${message.text.length > 40 ? '...' : ''}`,
+                    type: 'Community Chat Mention',
+                    createdAt: new Date().toISOString(),
+                    isRead: false,
+                    actionUrl: '/community'
+                });
             } catch (error) {
                 logger.error("Socket message error:", error);
             }
