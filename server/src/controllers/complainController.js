@@ -1,8 +1,108 @@
 import Complaint from "../models/Complaint.js";
+import User from "../models/User.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asynchandler.js";
-import uploadOnCloudinary from "../utils/cloudinary.js";
+import uploadOnCloudinary, { deleteFromCloudinary } from "../utils/cloudinary.js";
+import notificationService from "../services/notificationService.js";
+
+export const resolveComplaint = asyncHandler(async (req, res) => {
+    const { complaintId } = req.params;
+
+    // Check authority role (assuming `req.user.role === 'Authority'`)
+    if (req.user.role !== 'Authority') {
+        throw new ApiError(403, "Only authorities can resolve complaints");
+    }
+
+    const complaint = await Complaint.findById(complaintId);
+    
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+
+    if (complaint.status === "Resolved") {
+        throw new ApiError(400, "Complaint is already resolved");
+    }
+
+    // Delete excess images from Cloudinary to free up storage limits
+    if (complaint.imageUrls && complaint.imageUrls.length > 1) {
+        // Keep the first image, destroy the rest
+        for (let i = 1; i < complaint.imageUrls.length; i++) {
+            await deleteFromCloudinary(complaint.imageUrls[i]);
+        }
+        
+        // Update database array to only contain the first image
+        complaint.imageUrls = [complaint.imageUrls[0]];
+    }
+
+    complaint.status = "Resolved";
+    await complaint.save();
+
+    // Broadcast to users that it's resolved
+    try {
+        const { getIo } = await import('../config/socket.js');
+        getIo().emit('complaint_status_update', complaint);
+        
+        await notificationService.createNotification({
+            recipient: complaint.reportedBy,
+            sender: req.user._id,
+            title: 'Complaint Resolved',
+            message: `Your complaint regarding ${complaint.category} has been marked as resolved by ${req.user.name || "a City Official"}.`,
+            type: 'Complaint Resolved',
+            priority: 'Medium',
+            complaint: complaint._id,
+            actionUrl: `/complaints/${complaint._id}`
+        });
+    } catch (e) {
+        console.error("Socket error on resolve complaint", e);
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, complaint, "Complaint resolved and media optimized.")
+    );
+});
+
+export const addOfficialReply = asyncHandler(async (req, res) => {
+    const { complaintId } = req.params;
+    const { content } = req.body;
+    
+    if (!content) {
+        throw new ApiError(400, "Reply content is required");
+    }
+    
+    // Use the current user's anonymous ID or default to "City Official"
+    const authorityName = req.user?.anonymousId || "City Official";
+    
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+    
+    complaint.officialReplies.push({
+        authorityName,
+        content,
+        createdAt: new Date()
+    });
+    
+    await complaint.save();
+    
+    try {
+        await notificationService.createNotification({
+            recipient: complaint.reportedBy,
+            sender: req.user._id,
+            title: 'Authority Commented',
+            message: `An official replied: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+            type: 'Authority Commented',
+            priority: 'Medium',
+            complaint: complaint._id,
+            actionUrl: `/complaints/${complaint._id}`
+        });
+    } catch (error) {
+        console.error("Notification error on official reply", error);
+    }
+    
+    res.status(200).json(new ApiResponse(200, complaint, "Official reply added"));
+});
 
 export const createComplaint = asyncHandler(async (req, res) => {
 
@@ -11,6 +111,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
         category,
         description,
         coordinates,
+        address // stringified JSON
     } = req.body;
 
     // 2. Validate required fields
@@ -23,69 +124,104 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
     // 3. Parse and validate coordinates
     let parsedCoordinates = coordinates;
-
     try {
-
         if (typeof parsedCoordinates === "string") {
             parsedCoordinates = JSON.parse(parsedCoordinates);
         }
-
     } catch (error) {
-
-        throw new ApiError(
-            400,
-            "Coordinates must be a valid JSON array"
-        );
-
+        throw new ApiError(400, "Coordinates must be a valid JSON array");
     }
 
-    if (
-        !Array.isArray(parsedCoordinates) ||
-        parsedCoordinates.length !== 2
-    ) {
+    if (!Array.isArray(parsedCoordinates) || parsedCoordinates.length !== 2) {
+        throw new ApiError(400, "Coordinates must be [longitude, latitude]");
+    }
+
+    // Parse address if provided
+    let parsedAddress = null;
+    if (address) {
+        try {
+            parsedAddress = typeof address === "string" ? JSON.parse(address) : address;
+        } catch (error) {
+            console.error("Failed to parse address", error);
+        }
+    }
+
+    // 4. Validate images
+    const imageFiles = req.files;
+
+    if (!imageFiles || imageFiles.length === 0) {
         throw new ApiError(
             400,
-            "Coordinates must be [longitude, latitude]"
+            "At least one complaint image is required"
         );
     }
 
-    // 4. Validate image
-    const imageLocalPath = req.file?.path;
-
-    if (!imageLocalPath) {
-        throw new ApiError(
-            400,
-            "Complaint image is required"
-        );
+    if (imageFiles.length > 5) {
+        throw new ApiError(400, "Maximum of 5 images allowed");
     }
 
-    // 5. Upload image to Cloudinary
-    const uploadedImage = await uploadOnCloudinary(imageLocalPath);
+    // 5. Upload images to Cloudinary
+    const uploadedImages = [];
+    for (const file of imageFiles) {
+        const uploaded = await uploadOnCloudinary(file.path);
+        if (uploaded) {
+            uploadedImages.push(uploaded.secure_url);
+        }
+    }
 
-    if (!uploadedImage) {
+    if (uploadedImages.length === 0) {
         throw new ApiError(
             500,
-            "Failed to upload complaint image on Cloudinary"
+            "Failed to upload complaint images to Cloudinary"
         );
     }
 
     // 6. Create complaint
     const complaint = await Complaint.create({
-
         reportedBy: req.user._id,
-
         category,
-
         location: {
             type: "Point",
             coordinates: parsedCoordinates,
         },
-
         description,
-
-        imageUrl: uploadedImage.secure_url,
-
+        imageUrls: uploadedImages,
+        // For backwards compatibility, set the first image as imageUrl as well
+        imageUrl: uploadedImages[0],
+        ...(parsedAddress && { address: parsedAddress }),
     });
+
+    // Fetch complaint with populated data if necessary, or just emit it
+    try {
+        const { getIo } = await import('../config/socket.js');
+        getIo().emit('new_complaint', complaint);
+        
+        await notificationService.createNotification({
+            recipient: req.user._id,
+            title: 'Complaint Submitted',
+            message: `Your complaint regarding ${complaint.category} has been submitted successfully.`,
+            type: 'Complaint Submitted',
+            priority: 'Low',
+            complaint: complaint._id,
+            actionUrl: `/complaints/${complaint._id}`
+        });
+
+        // Notify Admins and Authorities
+        const authorities = await User.find({ role: { $in: ['Admin', 'Authority'] } });
+        for (const auth of authorities) {
+            await notificationService.createNotification({
+                recipient: auth._id,
+                title: 'New Issue Reported',
+                message: `A new ${complaint.category} issue has been reported in the city.`,
+                type: 'System Notification',
+                priority: 'High',
+                complaint: complaint._id,
+                actionUrl: `/authority/dashboard`
+            });
+        }
+    } catch (e) {
+        console.error("Socket error on create complaint", e);
+    }
 
     // 7. Send response
     return res.status(201).json(
@@ -105,7 +241,7 @@ export const getMyComplaints = asyncHandler(async (req, res) => {
         reportedBy: req.user._id,
     }).sort({
         createdAt: -1,                  //sort them in newset to oldest
-    });
+    }).populate('assignedTo', 'name authorityLevel department');
 
     return res.status(200).json(
         new ApiResponse(
@@ -141,11 +277,11 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
         );
     }
 
-    // 4. Allow deletion only before processing starts
-    if (complaint.status !== "Submitted") {
+    // 4. Allow deletion only before resolution
+    if (complaint.status === "Resolved" || complaint.status === "Closed") {
         throw new ApiError(
             400,
-            "Complaint can only be deleted while it is in Submitted status"
+            "Complaint cannot be deleted once it is Resolved or Closed"
         );
     }
 
@@ -165,3 +301,146 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
     );
 
 });
+
+export const getAllComplaints = asyncHandler(async (req, res) => {
+    // Fetch all complaints
+    const complaints = await Complaint.find().sort({
+        createdAt: -1,
+    }).populate('assignedTo', 'name authorityLevel department');
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            complaints,
+            "All complaints fetched successfully"
+        )
+    );
+});
+
+export const upvoteComplaint = asyncHandler(async (req, res) => {
+    const { complaintId } = req.params;
+
+    const complaint = await Complaint.findById(complaintId);
+
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+
+    // Increment support count
+    complaint.supportCount = (complaint.supportCount || 0) + 1;
+    await complaint.save();
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            complaint,
+            "Complaint upvoted successfully"
+        )
+    );
+});
+
+export const editComplaint = asyncHandler(async (req, res) => {
+    const { complaintId } = req.params;
+    const { category, description } = req.body;
+
+    const complaint = await Complaint.findById(complaintId);
+
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+
+    if (complaint.reportedBy.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to edit this complaint");
+    }
+
+    if (complaint.status === "Resolved" || complaint.status === "Closed") {
+        throw new ApiError(400, "Complaint cannot be edited once it is Resolved or Closed");
+    }
+
+    if (category) complaint.category = category;
+    if (description) complaint.description = description;
+
+    await complaint.save();
+
+    return res.status(200).json(
+        new ApiResponse(200, complaint, "Complaint updated successfully")
+    );
+});
+export const submitResolutionFeedback = asyncHandler(async (req, res) => {
+    const { complaintId } = req.params;
+    const { action, comment } = req.body;
+
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) {
+        throw new ApiError(404, 'Complaint not found');
+    }
+
+    if (complaint.reportedBy.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, 'Only the reporter can provide feedback');
+    }
+
+    if (complaint.status !== 'Resolved') {
+        throw new ApiError(400, 'Complaint is not in Resolved status');
+    }
+
+    if (action === 'Accept') {
+        complaint.resolutionFeedback = {
+            status: 'Accepted',
+            comment,
+            updatedAt: Date.now()
+        };
+        complaint.status = 'Closed'; // Permanently closed
+        complaint.officialReplies.push({
+            authorityName: req.user.name || 'Citizen',
+            content: 'Resolution Accepted by Citizen.' + (comment ? ' Comment: ' + comment : '')
+        });
+    } else if (action === 'Reject') {
+        complaint.resolutionFeedback = {
+            status: 'Rejected',
+            comment,
+            updatedAt: Date.now()
+        };
+        complaint.status = 'In Progress'; // Reopen
+
+        // Escalate
+        const currentLevel = complaint.escalationLevel;
+        let nextLevel = 'Senior'; // Default to Senior if Junior
+        if (currentLevel === 'Senior') nextLevel = 'HOD';
+        else if (currentLevel === 'HOD') nextLevel = 'HOD'; // Max level
+
+        complaint.escalationLevel = nextLevel;
+
+        complaint.officialReplies.push({
+            authorityName: req.user.name || 'Citizen',
+            content: 'Resolution REJECTED by Citizen. Task re-opened and escalated to ' + nextLevel + '.' + (comment ? ' Reason: ' + comment : '')
+        });
+    } else {
+        throw new ApiError(400, 'Invalid action');
+    }
+
+    complaint.lastActivityAt = Date.now();
+    await complaint.save();
+
+    // Notify assigned authority if exists
+    if (complaint.assignedTo) {
+        try {
+            await notificationService.createNotification({
+                recipient: complaint.assignedTo,
+                sender: req.user._id,
+                title: `Resolution ${action === 'Accept' ? 'Accepted' : 'Rejected'}`,
+                message: `The citizen has ${action.toLowerCase()}ed your resolution for the ${complaint.category} issue.`,
+                type: 'System Notification',
+                priority: 'High',
+                complaint: complaint._id,
+                actionUrl: `/authority/dashboard`
+            });
+        } catch (error) {
+            console.error("Notification error on resolution feedback", error);
+        }
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, complaint, 'Feedback submitted successfully')
+    );
+});
+

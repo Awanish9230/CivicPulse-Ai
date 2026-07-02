@@ -15,10 +15,15 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     }
 
     // Verify JWT
-    const decodedToken = jwt.verify(
-        token,
-        process.env.JWT_SECRET
-    );
+    let decodedToken;
+    try {
+        decodedToken = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid access token");
+    }
 
     // Find user
     const user = await User.findById(decodedToken._id).select("-password -refreshToken");
@@ -31,3 +36,12 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     req.user = user;
     next()
 });
+
+export const authorizeRoles = (...roles) => {
+    return (req, res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            return next(new ApiError(403, "Access denied. Insufficient permissions."));
+        }
+        next();
+    };
+};

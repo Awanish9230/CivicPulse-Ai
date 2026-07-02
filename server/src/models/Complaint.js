@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+function arrayLimit(val) {
+    return val.length <= 5;
+}
+
 const complaintSchema = new mongoose.Schema({
     reportedBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -34,7 +38,12 @@ const complaintSchema = new mongoose.Schema({
     },
     imageUrl: {
         type: String,
-        required: true,
+        required: false, // Make optional for backward compatibility
+    },
+    imageUrls: {
+        type: [String], // Array of secure URLs from Cloudinary
+        default: [],
+        validate: [arrayLimit, 'Exceeds the limit of 5 photos']
     },
     voiceNoteUrl: {
         type: String,
@@ -49,6 +58,9 @@ const complaintSchema = new mongoose.Schema({
         enum: ['Submitted', 'Verified', 'Assigned', 'In Progress', 'Resolved', 'Closed', 'Rejected'],
         default: 'Submitted',
     },
+    expectedCompletionDate: {
+        type: Date,
+    },
     supportCount: {
         type: Number,
         default: 1, // Represents number of merged duplicate reports
@@ -59,12 +71,41 @@ const complaintSchema = new mongoose.Schema({
         default: null,
     },
     assignedTo: {
-        department: String,
-        officer: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
     },
     escalationLevel: {
-        type: Number, // 0 = normal, 1 = 48h, 2 = 72h, 3 = 96h
-        default: 0,
+        type: String,
+        enum: ['Junior', 'Senior', 'HOD'],
+        default: 'Junior',
+    },
+    lastActivityAt: {
+        type: Date,
+        default: Date.now,
+    },
+    officialReplies: [{
+        authorityName: { type: String, required: true },
+        content: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }],
+    resolutionImages: {
+        type: [String],
+        default: [],
+        validate: [arrayLimit, 'Exceeds the limit of 5 photos']
+    },
+    resolutionFeedback: {
+        status: {
+            type: String,
+            enum: ['Pending', 'Accepted', 'Rejected'],
+            default: 'Pending',
+        },
+        comment: {
+            type: String,
+        },
+        updatedAt: {
+            type: Date,
+        }
     }
 }, {
     timestamps: true,

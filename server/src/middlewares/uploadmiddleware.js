@@ -1,11 +1,16 @@
 import multer from "multer"
 import path from "path";
 import crypto from "crypto";
+import fs from "fs";
 
 const storage = multer.diskStorage({
 
     destination: function (req, file, cb) {
-        cb(null, "./public/temp");
+        const tempPath = "./public/temp";
+        if (!fs.existsSync(tempPath)) {
+            fs.mkdirSync(tempPath, { recursive: true });
+        }
+        cb(null, tempPath);
     },
 
     filename: function (req, file, cb) {

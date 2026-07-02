@@ -22,6 +22,24 @@ const userSchema = new mongoose.Schema({
         unique: true,
         index: true,
     },
+    role: {
+        type: String,
+        enum: ['Citizen', 'Authority', 'Admin'],
+        default: 'Citizen',
+    },
+    name: {
+        type: String,
+        trim: true,
+    },
+    authorityLevel: {
+        type: String,
+        enum: ['Junior', 'Senior', 'HOD'],
+    },
+    department: {
+        type: String,
+        trim: true,
+        enum: ['Public Works', 'Water & Sanitation', 'Power', 'Traffic & Safety', 'Animal Control', 'General Administration', 'Master Admin'],
+    },
     // anonymousIdLastRotated: {
     //     type: Date,
     //     default: Date.now
@@ -46,7 +64,9 @@ const userSchema = new mongoose.Schema({
     banUntil: {
         type: Date,
         default: null,
-    }
+    },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date
 }, {
     timestamps: true,
 });
@@ -89,6 +109,23 @@ userSchema.methods.generateRefreshToken = function () {
     )
 
 }
+
+userSchema.methods.generatePasswordResetToken = function() {
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash token and set to resetPasswordToken field
+    this.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    // Set expire to 15 minutes
+    this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+    return resetToken; // Return the unhashed token for the email
+};
+
 // generates random anonymous id for each user
 userSchema.statics.generateAnonymousId = function () {           //used by User not "user"
     return `CP-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
