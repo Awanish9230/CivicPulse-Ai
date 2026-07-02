@@ -26,6 +26,8 @@ npm-debug.log*
 
 # Test files with secrets
 server/testGemini.js
+server/test_email.js
+server/test_brevo.js
 
 # Misc
 *.tgz
