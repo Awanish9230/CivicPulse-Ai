@@ -22,7 +22,7 @@ import startEscalationCron from './src/utils/escalationCron.js';
 
 // Connect to database
 connectDB();
-
+ 
 const app = express();
 const server = http.createServer(app);
 

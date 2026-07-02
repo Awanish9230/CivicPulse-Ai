@@ -4,63 +4,47 @@ export const welcomeEmailTemplate = (name, role) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to CivicPulse AI</title>
-    <style>
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #334155; background-color: #f8fafc; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        .header { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); padding: 40px 20px; text-align: center; color: white; }
-        .logo { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; margin: 0; }
-        .content { padding: 40px; }
-        h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin-top: 0; }
-        .role-badge { display: inline-block; padding: 6px 12px; background: #e0e7ff; color: #4338ca; border-radius: 9999px; font-size: 14px; font-weight: 600; margin-bottom: 24px; }
-        .features { background: #f8fafc; border-radius: 12px; padding: 24px; margin: 32px 0; border: 1px solid #e2e8f0; }
-        .features h3 { font-size: 16px; font-weight: 700; color: #0f172a; margin-top: 0; }
-        .features ul { padding-left: 20px; margin-bottom: 0; }
-        .features li { margin-bottom: 8px; }
-        .features li:last-child { margin-bottom: 0; }
-        .security-notice { font-size: 14px; color: #64748b; background: #f1f5f9; padding: 16px; border-radius: 8px; margin-top: 32px; }
-        .footer { text-align: center; padding: 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 14px; }
-        .support-link { color: #4f46e5; text-decoration: none; font-weight: 500; }
-    </style>
+    <title>Welcome to CivicPulse</title>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1 class="logo">CivicPulse AI</h1>
-            <p style="margin-top: 8px; opacity: 0.9;">Empowering Smart Communities</p>
-        </div>
-        <div class="content">
-            <h1>Welcome aboard, ${name || 'Citizen'}! 🎉</h1>
-            <div class="role-badge">Account Type: ${role}</div>
-            
-            <p>We are thrilled to have you join CivicPulse AI. Our platform is designed to bridge the gap between citizens and authorities, using artificial intelligence to solve urban issues faster and smarter.</p>
-            
-            <div class="features">
-                <h3>What you can do with CivicPulse AI:</h3>
-                <ul>
-                    <li><strong>Anonymous Reporting:</strong> Report issues safely without exposing your identity.</li>
-                    <li><strong>Real-Time Tracking:</strong> Follow the progress of your community reports instantly.</li>
-                    <li><strong>Direct Communication:</strong> Collaborate seamlessly with assigned authorities.</li>
-                    <li><strong>Smart Dashboard:</strong> Get personalized AI-driven insights on your locality.</li>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1a1a; background-color: #f4f5f7; margin: 0; padding: 40px 20px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 540px; margin: 0 auto; background-color: #ffffff; border: 1px solid #eaeaec; border-radius: 8px; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 32px; border-bottom: 1px solid #eaeaec;">
+                <h1 style="font-size: 20px; font-weight: 700; color: #111827; margin: 0; letter-spacing: -0.5px;">CivicPulse</h1>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 32px;">
+                <h2 style="font-size: 24px; font-weight: 600; color: #111827; margin: 0 0 16px 0;">Welcome, ${name || 'Citizen'}.</h2>
+                <p style="font-size: 15px; color: #4b5563; margin: 0 0 24px 0;">We are glad to have you on board. CivicPulse is designed to streamline community issue reporting and resolution.</p>
+                
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border: 1px solid #f3f4f6; border-radius: 6px; margin-bottom: 24px;">
+                    <tr>
+                        <td style="padding: 16px;">
+                            <p style="font-size: 13px; color: #6b7280; margin: 0 0 4px 0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Account Role</p>
+                            <p style="font-size: 15px; color: #111827; margin: 0; font-weight: 600;">${role}</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <p style="font-size: 15px; color: #4b5563; margin: 0 0 16px 0;">As a member, you can now:</p>
+                <ul style="font-size: 15px; color: #4b5563; margin: 0 0 32px 0; padding-left: 20px;">
+                    <li style="margin-bottom: 8px;">Submit and track infrastructure issues in real-time.</li>
+                    <li style="margin-bottom: 8px;">Collaborate directly with assigned municipal authorities.</li>
+                    <li style="margin-bottom: 8px;">Access the dashboard for status updates.</li>
                 </ul>
-            </div>
-            
-            <p>If you have any questions or need assistance getting started, our team is always here to help.</p>
-            
-            <div class="security-notice">
-                <strong>Security Notice:</strong> We will never ask for your password via email. If you ever receive a suspicious request, please contact our support team immediately.
-            </div>
-            
-            <p style="margin-top: 32px;">
-                Best regards,<br>
-                <strong>The CivicPulse AI Team</strong>
-            </p>
-        </div>
-        <div class="footer">
-            Need help? Contact us at <a href="mailto:support@civicpulse.com" class="support-link">support@civicpulse.com</a><br>
-            &copy; ${new Date().getFullYear()} CivicPulse AI. All rights reserved.
-        </div>
-    </div>
+                
+                <p style="font-size: 15px; color: #4b5563; margin: 0 0 32px 0;">If you run into any issues or have questions, please reach out to our support team.</p>
+                
+                <p style="font-size: 15px; color: #111827; margin: 0; font-weight: 500;">— The CivicPulse Team</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 24px 32px; background-color: #f9fafb; border-top: 1px solid #eaeaec; border-radius: 0 0 8px 8px;">
+                <p style="font-size: 12px; color: #6b7280; margin: 0; text-align: center;">&copy; ${new Date().getFullYear()} CivicPulse. All rights reserved.</p>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
 `;
@@ -71,44 +55,40 @@ export const passwordResetTemplate = (resetUrl) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Your Password</title>
-    <style>
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #334155; background-color: #f8fafc; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        .header { background: #0f172a; padding: 32px 20px; text-align: center; color: white; }
-        .logo { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; margin: 0; }
-        .content { padding: 40px; text-align: center; }
-        h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 16px; }
-        .btn { display: inline-block; background: #4f46e5; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin: 32px 0; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3); transition: transform 0.2s; }
-        .expiry-notice { display: inline-block; padding: 8px 16px; background: #fef3c7; color: #b45309; border-radius: 8px; font-size: 14px; font-weight: 600; margin-bottom: 24px; }
-        .security-warning { font-size: 14px; color: #64748b; background: #f1f5f9; padding: 16px; border-radius: 8px; margin-top: 32px; text-align: left; }
-        .footer { text-align: center; padding: 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 14px; }
-    </style>
+    <title>Reset Password</title>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1 class="logo">CivicPulse AI</h1>
-        </div>
-        <div class="content">
-            <h1>Reset Your Password</h1>
-            <p>We received a request to reset the password for your CivicPulse AI account. Click the button below to choose a new password.</p>
-            
-            <a href="${resetUrl}" class="btn" style="color: #ffffff; text-decoration: none;">Reset Password</a>
-            
-            <div>
-                <div class="expiry-notice">⏱️ This link will expire in 15 minutes</div>
-            </div>
-            
-            <div class="security-warning">
-                <strong>Didn't request this?</strong><br>
-                If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged and your account is secure.
-            </div>
-        </div>
-        <div class="footer">
-            &copy; ${new Date().getFullYear()} CivicPulse AI. All rights reserved.
-        </div>
-    </div>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1a1a; background-color: #f4f5f7; margin: 0; padding: 40px 20px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 540px; margin: 0 auto; background-color: #ffffff; border: 1px solid #eaeaec; border-radius: 8px; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 32px; border-bottom: 1px solid #eaeaec;">
+                <h1 style="font-size: 20px; font-weight: 700; color: #111827; margin: 0; letter-spacing: -0.5px;">CivicPulse</h1>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 32px;">
+                <h2 style="font-size: 20px; font-weight: 600; color: #111827; margin: 0 0 16px 0;">Reset your password</h2>
+                <p style="font-size: 15px; color: #4b5563; margin: 0 0 24px 0;">We received a request to reset the password for your CivicPulse account. You can reset your password by clicking the button below.</p>
+                
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
+                    <tr>
+                        <td>
+                            <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 15px; font-weight: 500;">Reset Password</a>
+                        </td>
+                    </tr>
+                </table>
+                
+                <p style="font-size: 14px; color: #6b7280; margin: 0 0 8px 0;">This link will expire in 15 minutes.</p>
+                <p style="font-size: 14px; color: #6b7280; margin: 0 0 24px 0;">If you did not request a password reset, you can safely ignore this email.</p>
+                
+                <p style="font-size: 15px; color: #111827; margin: 0; font-weight: 500;">— The CivicPulse Team</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 24px 32px; background-color: #f9fafb; border-top: 1px solid #eaeaec; border-radius: 0 0 8px 8px;">
+                <p style="font-size: 12px; color: #6b7280; margin: 0; text-align: center;">&copy; ${new Date().getFullYear()} CivicPulse. All rights reserved.</p>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
 `;
