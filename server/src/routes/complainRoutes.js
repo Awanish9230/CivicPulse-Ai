@@ -50,6 +50,6 @@ router.delete("/:complaintId", verifyJWT, deleteComplaint);
 router.get(
     "/all",
     getAllComplaints
-
+);
 
 export default router;
