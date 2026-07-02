@@ -1,4 +1,4 @@
-import transporter from '../config/email.js';
+
 import { welcomeEmailTemplate, passwordResetTemplate } from '../utils/emailTemplates.js';
 
 /**
@@ -10,17 +10,45 @@ import { welcomeEmailTemplate, passwordResetTemplate } from '../utils/emailTempl
  */
 export const sendEmail = async (options) => {
     try {
-        const message = {
-            from: `${process.env.EMAIL_FROM_NAME || 'CivicPulse AI'} <${process.env.EMAIL_FROM || 'noreply@civicpulse.com'}>`,
-            to: options.email,
-            subject: options.subject,
-            html: options.html,
-        };
+        const apiKey = process.env.BREVO_API_KEY;
+        
+        // If no API key is provided, log a warning and return (useful for local dev without key)
+        if (!apiKey) {
+            console.warn('BREVO_API_KEY is not set. Email was not sent.');
+            return;
+        }
 
-        const info = await transporter.sendMail(message);
-        console.log(`Message sent: ${info.messageId}`);
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': apiKey,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                sender: {
+                    name: process.env.EMAIL_FROM_NAME || 'CivicPulse AI',
+                    email: process.env.EMAIL_FROM || 'noreply@civicpulse.com'
+                },
+                to: [
+                    {
+                        email: options.email
+                    }
+                ],
+                subject: options.subject,
+                htmlContent: options.html
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Brevo API Error:', data);
+        } else {
+            console.log(`Email sent successfully to ${options.email} via Brevo HTTP API!`);
+        }
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.error('Error sending email via Brevo HTTP API:', error);
         // Do not throw to prevent blocking the main thread (e.g. registration success)
     }
 };
