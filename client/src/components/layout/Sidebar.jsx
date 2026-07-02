@@ -54,10 +54,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                                 <motion.div 
                                     layoutId="sidebar-active"
                                     className="absolute inset-0 bg-primary/10 rounded-xl"
-                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                 />
                             )}
-                            <div className={`relative flex items-center p-3 rounded-xl transition-colors ${isOpen ? 'flex-row' : 'flex-col justify-center'} ${isActive ? 'text-primary' : 'text-text/70 hover:text-primary hover:bg-surface/50'}`}>
+                            <div className={`relative flex items-center p-3 rounded-xl transition-colors duration-150 ${isOpen ? 'flex-row' : 'flex-col justify-center'} ${isActive ? 'text-primary' : 'text-text/70 hover:text-primary hover:bg-surface/50'}`}>
                                 <div className="relative">
                                     <Icon size={24} className={`transition-transform duration-200 ${isOpen ? 'mr-4' : 'mb-1'} ${isActive ? 'scale-110' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                                     {item.name === 'Notifications' && unreadCount > 0 && (

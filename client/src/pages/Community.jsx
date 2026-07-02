@@ -1,10 +1,120 @@
-import { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { io } from 'socket.io-client';
+
+const IssueCardSkeleton = () => (
+    <div className="bg-white/80 backdrop-blur-lg rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-3 mb-4">
+        <div className="flex items-center gap-3">
+            <div className="w-8 h-8 skeleton-avatar skeleton-box"></div>
+            <div className="flex flex-col gap-1.5 flex-1">
+                <div className="h-2.5 w-32 skeleton-text skeleton-box"></div>
+                <div className="h-2 w-20 skeleton-text skeleton-box"></div>
+            </div>
+            <div className="h-4 w-16 skeleton-text skeleton-box rounded-full"></div>
+        </div>
+        <div className="flex gap-3">
+            <div className="flex-1 flex flex-col gap-2 mt-1">
+                <div className="h-2.5 w-full skeleton-text skeleton-box"></div>
+                <div className="h-2.5 w-3/4 skeleton-text skeleton-box"></div>
+            </div>
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg skeleton-box shrink-0"></div>
+        </div>
+    </div>
+);
+
+const IssueCard = memo(({ item, index, user, expandedUpdates, setExpandedUpdates, handleUpvote, handleResolve, getTimeAgo }) => {
+    return (
+        <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.03 }}
+            className="bg-white/80 backdrop-blur-lg rounded-xl p-3 shadow-sm border border-slate-100 hover:border-slate-300 transition-all relative overflow-hidden group hover:-translate-y-0.5"
+        >
+            <div className="flex gap-3 relative z-10">
+                <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <span className="text-primary font-bold text-[8px]">AC</span>
+                        </div>
+                        <span className="font-bold text-xs text-slate-800">Anonymous</span>
+                        <span className="text-[10px] text-slate-400 font-medium">{getTimeAgo(item.createdAt)}</span>
+                        <div className="ml-auto flex gap-1">
+                            <span className="text-[9px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                {item.category}
+                            </span>
+                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${item.status === 'Resolved' ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
+                                {item.status}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <p className="text-slate-600 text-xs leading-relaxed mb-2 line-clamp-2">
+                        {item.description}
+                    </p>
+                    
+                    <div className="flex items-center gap-3 pt-2 border-t border-slate-100 mt-2">
+                        <button 
+                            onClick={() => handleUpvote(item._id)}
+                            className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-primary transition-colors hover:bg-primary/5 px-2 py-1 rounded-lg"
+                        >
+                            <ThumbsUp size={12} />
+                            {item.supportCount || item.upvotes || 0}
+                        </button>
+                        
+                        {user?.role === 'Authority' && item.status !== 'Resolved' && (
+                            <button 
+                                onClick={() => handleResolve(item._id)}
+                                className="ml-auto flex items-center gap-1.5 text-slate-600 bg-white border border-slate-200 hover:border-green-400 hover:text-green-600 px-2 py-1 rounded-lg transition-colors font-bold text-[10px] uppercase tracking-wider shadow-sm"
+                            >
+                                <ShieldAlert size={12} />
+                                Resolve
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Render Official Replies */}
+                    {item.officialReplies && item.officialReplies.length > 0 && (
+                        <div className="mt-3 space-y-2 border-t border-border/50 pt-3">
+                            <div className="flex items-center justify-between mb-1">
+                                <h5 className="text-[10px] font-bold text-text/60 uppercase tracking-wider">Authority Updates</h5>
+                                {item.officialReplies.length > 1 && (
+                                    <button 
+                                        onClick={() => setExpandedUpdates(prev => ({ ...prev, [item._id]: !prev[item._id] }))}
+                                        className="text-[10px] text-primary hover:underline font-bold"
+                                    >
+                                        {expandedUpdates[item._id] ? 'Hide Updates' : `See All Updates (${item.officialReplies.length})`}
+                                    </button>
+                                )}
+                            </div>
+                            {(expandedUpdates[item._id] ? item.officialReplies : [item.officialReplies[item.officialReplies.length - 1]]).map((reply, i) => (
+                                <div key={i} className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-2">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <ShieldAlert size={12} className="text-blue-500" />
+                                        <span className="font-bold text-xs text-blue-600">{reply.authorityName}</span>
+                                        <span className="text-[10px] text-text/40 ml-auto">{getTimeAgo(reply.createdAt)}</span>
+                                    </div>
+                                    <p className="text-xs text-text/80">{reply.content}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {(item.imageUrls?.[0] || item.imageUrl) && (
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 ml-1">
+                        <img src={item.imageUrls?.[0] || item.imageUrl} alt="Issue" loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                )}
+            </div>
+            {/* Heatmap background effect */}
+            <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[50px] rounded-full pointer-events-none" />
+        </motion.div>
+    );
+});
 
 const Community = () => {
     const { user } = useContext(AuthContext);
@@ -13,6 +123,7 @@ const Community = () => {
     // Issue Feed State
     const [feed, setFeed] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [expandedUpdates, setExpandedUpdates] = useState({});
 
     // Chat State
     const [socket, setSocket] = useState(null);
@@ -100,7 +211,10 @@ const Community = () => {
     // Auto-scroll chat
     useEffect(() => {
         if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+            chatContainerRef.current.scrollTo({
+                top: chatContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
         }
     }, [messages, activeChannel]);
 
@@ -212,7 +326,7 @@ const Community = () => {
                     <p className="text-xs text-slate-500 mt-1 font-medium">Within 5km radius</p>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto p-4 flex flex-col justify-between">
+                <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
                     <div className="space-y-1">
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-3">Channels</div>
                         {channels.map(channel => {
@@ -238,13 +352,13 @@ const Community = () => {
                     </div>
 
                     {/* Trending Widget */}
-                    <div className="mt-8 bg-white/60 border border-white/80 rounded-3xl p-5 shadow-sm backdrop-blur-md">
+                    <div className="mt-8 bg-white/60 border border-white/80 rounded-3xl p-5 shadow-sm backdrop-blur-md shrink-0">
                         <div className="flex items-center gap-2 text-primary font-black mb-4">
                             <TrendingUp size={16} />
                             <span className="text-sm tracking-tight">Trending Issues</span>
                         </div>
                         <div className="space-y-4">
-                            {feed.slice(0, 3).map(item => (
+                            {feed.slice(0, 2).map(item => (
                                 <div key={item._id} className="text-xs group cursor-pointer">
                                     <div className="font-bold text-slate-800 line-clamp-1 group-hover:text-primary transition-colors">{item.description}</div>
                                     <div className="text-slate-500 font-medium flex items-center gap-1 mt-1">
@@ -290,6 +404,26 @@ const Community = () => {
                     )}
                 </div>
 
+                {/* Mobile Channel Selector */}
+                <div className="md:hidden flex overflow-x-auto gap-2 p-3 bg-white/60 backdrop-blur-md border-b border-white shadow-sm shrink-0 no-scrollbar">
+                    {channels.map(channel => {
+                        const Icon = channel.icon;
+                        const isActive = activeChannel === channel.id;
+                        return (
+                            <button
+                                key={channel.id}
+                                onClick={() => setActiveChannel(channel.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${
+                                    isActive ? 'bg-primary text-white shadow-md font-bold' : 'bg-white/80 text-slate-600 font-medium border border-slate-200 hover:bg-slate-50'
+                                }`}
+                            >
+                                <Icon size={14} />
+                                <span className="text-sm capitalize">{channel.name.replace('-', ' ')}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+
                 {/* Content Area */}
                 <div className="flex-1 overflow-y-scroll bg-[#F8FAFC]/50" ref={chatContainerRef}>
                     <AnimatePresence mode="wait">
@@ -297,100 +431,43 @@ const Community = () => {
                     {activeChannel === 'issue' ? (
                         <motion.div 
                             key="issue"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.15 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
                             className="p-4 sm:p-6 max-w-4xl mx-auto space-y-4"
                         >
-                            {loading && <div className="text-center py-10">Loading issues...</div>}
+                            {loading && (
+                                <div>
+                                    <IssueCardSkeleton />
+                                    <IssueCardSkeleton />
+                                    <IssueCardSkeleton />
+                                </div>
+                            )}
                             {!loading && feed.length === 0 && (
                                 <div className="text-center py-12 text-text/50">No issues reported in your area.</div>
                             )}
                             {!loading && feed.map((item, index) => (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.03 }}
-                                    key={item._id} 
-                                    className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-slate-300 transition-all relative overflow-hidden group hover:-translate-y-0.5"
-                                >
-                                    <div className="flex gap-3 relative z-10">
-                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                            <span className="text-primary font-bold text-xs">AC</span>
-                                        </div>
-                                        
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                                                <span className="font-bold text-sm text-slate-800">Anonymous Citizen</span>
-                                                <span className="text-[10px] text-slate-400 font-medium">{getTimeAgo(item.createdAt)}</span>
-                                                <span className="text-[9px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded uppercase tracking-wider ml-auto">
-                                                    {item.category}
-                                                </span>
-                                                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${item.status === 'Resolved' ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
-                                                    {item.status}
-                                                </span>
-                                            </div>
-                                            
-                                            <p className="text-slate-600 text-sm leading-relaxed mb-3 line-clamp-2">
-                                                {item.description}
-                                            </p>
-                                            {(item.imageUrls?.[0] || item.imageUrl) && (
-                                                <div className="mb-3 rounded-xl overflow-hidden border border-slate-200 max-w-sm max-h-40 bg-slate-50">
-                                                    <img src={item.imageUrls?.[0] || item.imageUrl} alt="Issue" loading="lazy" className="w-full h-full object-cover" />
-                                                </div>
-                                            )}
-                                            
-                                            <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
-                                                <button 
-                                                    onClick={() => handleUpvote(item._id)}
-                                                    className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-primary transition-colors hover:bg-primary/5 px-2 py-1.5 rounded-lg"
-                                                >
-                                                    <ThumbsUp size={14} />
-                                                    {item.supportCount || item.upvotes || 0}
-                                                </button>
-                                                
-                                                {user?.role === 'Authority' && item.status !== 'Resolved' && (
-                                                    <button 
-                                                        onClick={() => handleResolve(item._id)}
-                                                        className="ml-auto flex items-center gap-1.5 text-slate-600 bg-white border border-slate-200 hover:border-green-400 hover:text-green-600 px-3 py-1.5 rounded-lg transition-colors font-bold text-[10px] uppercase tracking-wider shadow-sm"
-                                                    >
-                                                        <Shield size={12} />
-                                                        Resolve
-                                                    </button>
-                                                )}
-                                            </div>
-
-                                            {/* Render Official Replies */}
-                                            {item.officialReplies && item.officialReplies.length > 0 && (
-                                                <div className="mt-4 space-y-2 border-t border-border/50 pt-4">
-                                                    <h5 className="text-xs font-bold text-text/60 uppercase tracking-wider mb-2">Authority Updates</h5>
-                                                    {item.officialReplies.map((reply, i) => (
-                                                        <div key={i} className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <ShieldAlert size={14} className="text-blue-500" />
-                                                                <span className="font-bold text-sm text-blue-600">{reply.authorityName}</span>
-                                                                <span className="text-xs text-text/40 ml-auto">{getTimeAgo(reply.createdAt)}</span>
-                                                            </div>
-                                                            <p className="text-sm text-text/80">{reply.content}</p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {/* Heatmap background effect */}
-                                    <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[50px] rounded-full pointer-events-none" />
-                                </motion.div>
+                                <IssueCard
+                                    key={item._id}
+                                    item={item}
+                                    index={index}
+                                    user={user}
+                                    expandedUpdates={expandedUpdates}
+                                    setExpandedUpdates={setExpandedUpdates}
+                                    handleUpvote={handleUpvote}
+                                    handleResolve={handleResolve}
+                                    getTimeAgo={getTimeAgo}
+                                />
                             ))}
                         </motion.div>
                     ) : (
                         <motion.div 
-                            key="chat"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.15 }}
+                            key={activeChannel}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
                             className="flex flex-col min-h-full justify-end p-6"
                         >
                             <div className="space-y-6">

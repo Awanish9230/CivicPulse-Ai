@@ -229,7 +229,7 @@ const AdminLayout = () => {
         <div className="flex min-h-screen bg-slate-50">
             <AdminSidebar onLogout={() => logout()} />
             
-            <main className="flex-1 min-w-0 pb-16 md:pb-0 md:ml-20 lg:ml-72 transition-all duration-300">
+            <main className="flex-1 min-w-0 pb-16 md:pb-0 md:ml-20 lg:ml-72 transition-[margin] duration-300 ease-in-out">
                 <header className="h-20 border-b border-border/50 bg-white flex items-center px-6 md:px-10 justify-between sticky top-0 z-40 shadow-sm gap-4">
                     <div className="md:hidden font-black text-2xl tracking-tight text-slate-900">
                         SuperAdmin
@@ -260,11 +260,11 @@ const AdminLayout = () => {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
-                            initial={{ opacity: 0, y: 10 }}
+                            initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="h-full"
+                            exit={{ opacity: 0, y: -15 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="h-full min-h-[calc(100vh-9rem)]"
                         >
                             <Outlet />
                         </motion.div>

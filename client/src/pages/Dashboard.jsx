@@ -10,6 +10,7 @@ import 'leaflet/dist/leaflet.css';
 const Dashboard = () => {
     const [filter, setFilter] = useState('All');
     const [complaints, setComplaints] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         today: 0,
         pending: 0,
@@ -52,6 +53,8 @@ const Dashboard = () => {
         } catch (error) {
             console.error("Failed to fetch complaints:", error);
             toast.error("Failed to load dashboard data");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -118,6 +121,16 @@ const Dashboard = () => {
         show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
     };
 
+    const MetricSkeleton = () => (
+        <motion.div variants={itemVariants} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 overflow-hidden">
+            <div className="flex justify-between items-start mb-4">
+                <div className="w-12 h-12 rounded-2xl skeleton-box"></div>
+            </div>
+            <div className="h-3 w-24 mb-3 skeleton-box skeleton-text"></div>
+            <div className="h-10 w-16 skeleton-box skeleton-text"></div>
+        </motion.div>
+    );
+
     return (
         <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
@@ -147,51 +160,60 @@ const Dashboard = () => {
 
             {/* Quick Stats - Bento Box */}
             <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                
-                <motion.div variants={itemVariants} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-primary/30 transition-colors relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] pointer-events-none transition-all group-hover:scale-110"></div>
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="p-3 rounded-2xl bg-primary/10 text-primary">
-                            <Map size={24} />
-                        </div>
-                    </div>
-                    <h3 className="text-text/60 font-bold text-sm mb-1 relative z-10">Today's Reports</h3>
-                    <p className="text-4xl font-black text-text relative z-10">{stats.today}</p>
-                </motion.div>
+                {loading ? (
+                    <>
+                        <MetricSkeleton />
+                        <MetricSkeleton />
+                        <MetricSkeleton />
+                        <MetricSkeleton />
+                    </>
+                ) : (
+                    <>
+                        <motion.div variants={itemVariants} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-primary/30 transition-colors relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] pointer-events-none transition-all group-hover:scale-110"></div>
+                            <div className="flex justify-between items-start mb-4 relative z-10">
+                                <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                                    <Map size={24} />
+                                </div>
+                            </div>
+                            <h3 className="text-text/60 font-bold text-sm mb-1 relative z-10">Today's Reports</h3>
+                            <p className="text-4xl font-black text-text relative z-10">{stats.today}</p>
+                        </motion.div>
 
-                <motion.div variants={itemVariants} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-orange-500/30 transition-colors relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-bl-[100px] pointer-events-none transition-all group-hover:scale-110"></div>
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="p-3 rounded-2xl bg-orange-500/10 text-orange-500">
-                            <Clock size={24} />
-                        </div>
-                    </div>
-                    <h3 className="text-text/60 font-bold text-sm mb-1 relative z-10">Pending Resolution</h3>
-                    <p className="text-4xl font-black text-text relative z-10">{stats.pending}</p>
-                </motion.div>
+                        <motion.div variants={itemVariants} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-orange-500/30 transition-colors relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-bl-[100px] pointer-events-none transition-all group-hover:scale-110"></div>
+                            <div className="flex justify-between items-start mb-4 relative z-10">
+                                <div className="p-3 rounded-2xl bg-orange-500/10 text-orange-500">
+                                    <Clock size={24} />
+                                </div>
+                            </div>
+                            <h3 className="text-text/60 font-bold text-sm mb-1 relative z-10">Pending Resolution</h3>
+                            <p className="text-4xl font-black text-text relative z-10">{stats.pending}</p>
+                        </motion.div>
 
-                <motion.div variants={itemVariants} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-red-500/30 transition-colors relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-bl-[100px] pointer-events-none transition-all group-hover:scale-110"></div>
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
-                            <AlertTriangle size={24} />
-                        </div>
-                    </div>
-                    <h3 className="text-text/60 font-bold text-sm mb-1 relative z-10">Critical SLA Breaches</h3>
-                    <p className="text-4xl font-black text-text relative z-10">{stats.critical}</p>
-                </motion.div>
+                        <motion.div variants={itemVariants} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-red-500/30 transition-colors relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-bl-[100px] pointer-events-none transition-all group-hover:scale-110"></div>
+                            <div className="flex justify-between items-start mb-4 relative z-10">
+                                <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
+                                    <AlertTriangle size={24} />
+                                </div>
+                            </div>
+                            <h3 className="text-text/60 font-bold text-sm mb-1 relative z-10">Critical SLA Breaches</h3>
+                            <p className="text-4xl font-black text-text relative z-10">{stats.critical}</p>
+                        </motion.div>
 
-                <motion.div variants={itemVariants} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-green-500/30 transition-colors relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-bl-[100px] pointer-events-none transition-all group-hover:scale-110"></div>
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="p-3 rounded-2xl bg-green-500/10 text-green-500">
-                            <CheckCircle size={24} />
-                        </div>
-                    </div>
-                    <h3 className="text-text/60 font-bold text-sm mb-1 relative z-10">Successfully Resolved</h3>
-                    <p className="text-4xl font-black text-text relative z-10">{stats.resolved}</p>
-                </motion.div>
-
+                        <motion.div variants={itemVariants} className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 group hover:border-green-500/30 transition-colors relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-bl-[100px] pointer-events-none transition-all group-hover:scale-110"></div>
+                            <div className="flex justify-between items-start mb-4 relative z-10">
+                                <div className="p-3 rounded-2xl bg-green-500/10 text-green-500">
+                                    <CheckCircle size={24} />
+                                </div>
+                            </div>
+                            <h3 className="text-text/60 font-bold text-sm mb-1 relative z-10">Successfully Resolved</h3>
+                            <p className="text-4xl font-black text-text relative z-10">{stats.resolved}</p>
+                        </motion.div>
+                    </>
+                )}
             </motion.div>            {/* Main Content Area */}
             <div className="flex flex-col gap-8 flex-1">
                 
