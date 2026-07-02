@@ -1,12 +1,12 @@
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-    host: process.env.BREVO_HOST || 'smtp-relay.brevo.com',
-    port: process.env.BREVO_PORT || 587,
-    secure: false, // true for 465, false for other ports
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: process.env.SMTP_PORT || 465,
+    secure: true, // true for 465, false for other ports
     auth: {
-        user: process.env.BREVO_USER,
-        pass: process.env.BREVO_PASS,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
     },
 });
 
