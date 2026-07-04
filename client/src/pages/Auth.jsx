@@ -36,7 +36,8 @@ const Auth = () => {
         try {
             const response = await api.post(isLogin ? '/user/login' : '/user/register', {
                 email,
-                password
+                password,
+                role: 'Citizen'
             });
 
             if (isLogin) {

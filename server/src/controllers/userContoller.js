@@ -101,7 +101,7 @@ export const registerUser = asynchandler(async (req, res) => {
 export const loginUser = asynchandler(async (req, res) => {
 
     // 1. Get credentials
-    const { email, password } = req.body;
+    const { email, password, role = 'Citizen' } = req.body;
 
     // 2. Validate input
     if (!email || !password) {
@@ -112,10 +112,18 @@ export const loginUser = asynchandler(async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-        throw new ApiError(404, "User does not exist");
+        throw new ApiError(401, "Invalid email or password");
     }
 
-    // 4. Check if account is banned
+    // 4. Verify role (Security: Don't leak actual role if they try wrong portal)
+    if (user.role !== role) {
+        // Allow Admin to log in to Authority dashboard
+        if (!(role === 'Authority' && user.role === 'Admin')) {
+            throw new ApiError(401, "Invalid email or password");
+        }
+    }
+
+    // 5. Check if account is banned
     if (user.isBanned) {
         throw new ApiError(
             403,
@@ -123,7 +131,7 @@ export const loginUser = asynchandler(async (req, res) => {
         );
     }
 
-    // 5. Verify password
+    // 6. Verify password
     const isPasswordValid = await user.isPasswordCorrect(password);
 
     if (!isPasswordValid) {
