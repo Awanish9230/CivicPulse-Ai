@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { X, MapPin, Loader2, CheckCircle, Navigation } from 'lucide-react';
 import axios from 'axios';
-import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import CustomSelect from '../common/CustomSelect';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -319,35 +319,34 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                     {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : "✨"} AI Auto-Fill
                                 </button>
                             </div>
-                            <select 
+                            <CustomSelect 
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full bg-white border border-slate-200 rounded-xl p-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm shadow-sm font-medium text-slate-700 appearance-none"
-                                required
-                            >
-                                <option value="" disabled>Select the type of issue...</option>
-                                {CATEGORIES.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
+                                placeholder="Select the type of issue..."
+                                options={CATEGORIES.map(cat => ({ value: cat, label: cat }))}
+                                className="w-full bg-white p-4 focus:ring-4 focus:ring-primary/10 focus:border-primary shadow-sm"
+                            />
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-sm font-black text-slate-700">Description</label>
-                                <select 
-                                    value={language}
-                                    onChange={(e) => setLanguage(e.target.value)}
-                                    className="text-xs font-medium bg-slate-100 border border-slate-200 text-slate-600 rounded-md px-2 py-1 focus:outline-none"
-                                >
-                                    <option value="en">English</option>
-                                    <option value="hi">Hindi</option>
-                                    <option value="mr">Marathi</option>
-                                    <option value="ta">Tamil</option>
-                                    <option value="te">Telugu</option>
-                                    <option value="es">Spanish</option>
-                                    <option value="other">Other</option>
-                                </select>
+                                <div className="w-32 shrink-0 z-50">
+                                    <CustomSelect 
+                                        value={language}
+                                        onChange={(e) => setLanguage(e.target.value)}
+                                        options={[
+                                            { value: 'en', label: 'English' },
+                                            { value: 'hi', label: 'Hindi' },
+                                            { value: 'mr', label: 'Marathi' },
+                                            { value: 'ta', label: 'Tamil' },
+                                            { value: 'te', label: 'Telugu' },
+                                            { value: 'es', label: 'Spanish' },
+                                            { value: 'other', label: 'Other' }
+                                        ]}
+                                        className="!py-1 !px-2 bg-slate-100"
+                                    />
+                                </div>
                             </div>
                             <textarea 
                                 value={description}

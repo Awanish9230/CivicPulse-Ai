@@ -6,6 +6,7 @@ import { NotificationCard } from '../components/notifications/NotificationCard';
 import { NotificationContext } from '../context/NotificationContext';
 import toast from 'react-hot-toast';
 import PageLoader from '../components/common/PageLoader';
+import CustomSelect from '../components/common/CustomSelect';
 
 const Notifications = () => {
     const { markAllAsRead, markAsRead, fetchUnreadCount, unreadCount, socket } = useContext(NotificationContext);
@@ -126,14 +127,16 @@ const Notifications = () => {
                 </div>
                 
                 <div className="flex items-center gap-3 w-full md:w-auto">
-                    <select 
-                        className="bg-white border border-slate-200 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-primary cursor-pointer text-slate-700"
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                    >
-                        <option value="All">All Notifications</option>
-                        <option value="Unread">Unread Only</option>
-                    </select>
+                    <div className="w-48 shrink-0 z-[60]">
+                        <CustomSelect 
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                            options={[
+                                { value: 'All', label: 'All Notifications' },
+                                { value: 'Unread', label: 'Unread Only' }
+                            ]}
+                        />
+                    </div>
 
                     <button 
                         onClick={handleMarkAllRead}

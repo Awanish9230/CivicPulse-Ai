@@ -9,6 +9,7 @@ import 'leaflet/dist/leaflet.css';
 import CameraCapture from '../components/complaints/CameraCapture';
 import ReportModal from '../components/complaints/ReportModal';
 import ImageCarousel from '../components/common/ImageCarousel';
+import CustomSelect from '../components/common/CustomSelect';
 
 const MyComplaints = () => {
     const [filter, setFilter] = useState('All');
@@ -195,7 +196,7 @@ const MyComplaints = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="flex items-center gap-1 mt-5 overflow-x-auto no-scrollbar bg-slate-100/50 p-1 rounded-xl w-max border border-slate-200/50">
+                <div className="flex items-center gap-1 mt-5 overflow-x-auto no-scrollbar bg-slate-100/50 p-1 rounded-xl w-full md:w-max border border-slate-200/50">
                     {['All', 'Active', 'Verified', 'In Progress', 'Resolved'].map(f => (
                         <button 
                             key={f}
@@ -472,19 +473,19 @@ const MyComplaints = () => {
                             <form onSubmit={handleEditSubmit} className="space-y-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
-                                    <select 
+                                    <CustomSelect 
                                         value={editingComplaint.category}
                                         onChange={(e) => setEditingComplaint({...editingComplaint, category: e.target.value})}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium"
-                                        required
-                                    >
-                                        <option value="Pothole">Pothole</option>
-                                        <option value="Garbage">Garbage / Waste</option>
-                                        <option value="Water Leak">Water Leak</option>
-                                        <option value="Streetlight">Streetlight</option>
-                                        <option value="Noise">Noise</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                        options={[
+                                            { value: 'Pothole', label: 'Pothole' },
+                                            { value: 'Garbage', label: 'Garbage / Waste' },
+                                            { value: 'Water Leak', label: 'Water Leak' },
+                                            { value: 'Streetlight', label: 'Streetlight' },
+                                            { value: 'Noise', label: 'Noise' },
+                                            { value: 'Other', label: 'Other' }
+                                        ]}
+                                        className="w-full bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium"
+                                    />
                                 </div>
                                 
                                 <div>

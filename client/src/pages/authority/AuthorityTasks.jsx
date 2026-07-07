@@ -307,7 +307,7 @@ const AuthorityTasks = () => {
                                     <div className="pt-4 border-t border-slate-100 space-y-3 pb-4">
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 mb-1 block">Update Status</label>
-                                            <select 
+                                            <CustomSelect 
                                                 value={task.status} 
                                                 onChange={(e) => {
                                                     if (e.target.value === 'Resolved') {
@@ -317,15 +317,16 @@ const AuthorityTasks = () => {
                                                         handleUpdateTask(task._id, { status: e.target.value });
                                                     }
                                                 }}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
-                                            >
-                                                <option value="Submitted">Submitted</option>
-                                                <option value="Verified">Verified</option>
-                                                <option value="Assigned">Assigned</option>
-                                                <option value="In Progress">In Progress</option>
-                                                <option value="Resolved">Resolved</option>
-                                                <option value="Rejected">Rejected</option>
-                                            </select>
+                                                options={[
+                                                    { value: 'Submitted', label: 'Submitted' },
+                                                    { value: 'Verified', label: 'Verified' },
+                                                    { value: 'Assigned', label: 'Assigned' },
+                                                    { value: 'In Progress', label: 'In Progress' },
+                                                    { value: 'Resolved', label: 'Resolved' },
+                                                    { value: 'Rejected', label: 'Rejected' }
+                                                ]}
+                                                className="w-full bg-slate-50 focus:ring-2 focus:ring-emerald-500"
+                                            />
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 mb-1 block">Expected Completion</label>

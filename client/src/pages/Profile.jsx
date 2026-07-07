@@ -103,7 +103,7 @@ const Profile = () => {
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                    className={`md:col-span-2 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group ${
+                    className={`md:col-span-2 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl relative overflow-hidden group ${
                         isAuthority ? 'bg-gradient-to-br from-yellow-600 to-yellow-800 shadow-yellow-500/20' : 'bg-gradient-to-br from-primary to-blue-700 shadow-primary/20'
                     }`}
                 >
@@ -112,41 +112,41 @@ const Profile = () => {
                         {isAuthority ? <ShieldAlert size={240} /> : <Fingerprint size={240} />}
                     </div>
                     
-                    <div className="relative z-10 flex flex-col h-full justify-between gap-10">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="text-white/70 font-bold text-sm tracking-widest uppercase mb-2 flex items-center gap-2">
+                    <div className="relative z-10 flex flex-col h-full justify-between gap-8 md:gap-10">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div className="min-w-0">
+                                <p className="text-white/70 font-bold text-xs md:text-sm tracking-widest uppercase mb-1 md:mb-2 flex items-center gap-2">
                                     {isAuthority ? 'Official Designation' : 'Current Identity'}
-                                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                                    <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-400 animate-pulse shrink-0"></span>
                                 </p>
-                                <h2 className="text-5xl font-black font-mono tracking-wider drop-shadow-md">{user.anonymousId || "N/A"}</h2>
+                                <h2 className="text-3xl md:text-5xl font-black font-mono tracking-wider drop-shadow-md truncate">{user.anonymousId || "N/A"}</h2>
                             </div>
-                            <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 border border-white/20 shadow-inner">
-                                <ShieldCheck size={18} className={isAuthority ? 'text-yellow-300' : 'text-green-300'} />
-                                <span className="text-sm font-bold text-white tracking-wide uppercase">
-                                    {isAuthority ? 'Verified Authority' : 'Verified Secure'}
+                            <div className="bg-white/20 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2 rounded-xl md:rounded-2xl flex items-center gap-2 border border-white/20 shadow-inner shrink-0">
+                                <ShieldCheck size={16} className={isAuthority ? 'text-yellow-300' : 'text-green-300'} />
+                                <span className="text-xs md:text-sm font-bold text-white tracking-wide uppercase">
+                                    {isAuthority ? 'Verified' : 'Secure'}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="flex items-end justify-between border-t border-white/20 pt-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between border-t border-white/20 pt-6 gap-4">
                             {!isAuthority ? (
-                                <div>
-                                    <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-2">Next Auto-Rotation</p>
-                                    <div className="flex items-center gap-2 font-mono text-2xl font-bold bg-black/20 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/10">
-                                        <Clock size={20} className={timeLeft < 60000 ? 'text-red-400 animate-pulse' : 'text-white/80'} />
+                                <div className="w-full sm:w-auto">
+                                    <p className="text-white/70 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2">Next Auto-Rotation</p>
+                                    <div className="flex items-center gap-2 font-mono text-xl md:text-2xl font-bold bg-black/20 px-3 py-1.5 md:px-4 md:py-2 rounded-xl backdrop-blur-sm border border-white/10 w-fit">
+                                        <Clock size={16} className={timeLeft < 60000 ? 'text-red-400 animate-pulse' : 'text-white/80'} />
                                         <span className={timeLeft < 60000 ? 'text-red-400' : 'text-white'}>{formatTime(timeLeft)}</span>
                                     </div>
                                 </div>
                             ) : (
                                 <div>
-                                    <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-2">Clearance Level</p>
-                                    <div className="font-mono text-xl font-bold">Admin-Level 3</div>
+                                    <p className="text-white/70 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2">Clearance Level</p>
+                                    <div className="font-mono text-lg md:text-xl font-bold">Admin-Level 3</div>
                                 </div>
                             )}
-                            <div className="text-right">
-                                <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-2">Network Status</p>
-                                <p className="font-bold text-green-300 flex items-center gap-2 justify-end">
+                            <div className="sm:text-right w-full sm:w-auto flex flex-row sm:flex-col justify-between sm:justify-end items-center sm:items-end">
+                                <p className="text-white/70 text-[10px] md:text-xs font-bold uppercase tracking-widest sm:mb-2">Network Status</p>
+                                <p className="font-bold text-green-300 flex items-center gap-1.5 md:gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span> Untraceable
                                 </p>
                             </div>

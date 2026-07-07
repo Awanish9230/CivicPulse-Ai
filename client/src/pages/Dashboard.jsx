@@ -7,6 +7,7 @@ import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, Messa
 import { MapContainer, TileLayer, CircleMarker, Popup, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import ImageCarousel from '../components/common/ImageCarousel';
+import CustomSelect from '../components/common/CustomSelect';
 
 const Dashboard = () => {
     const [filter, setFilter] = useState('All');
@@ -281,20 +282,23 @@ const Dashboard = () => {
                             >
                                 {showRadiusMap ? 'Hide Radius' : 'Show Radius'}
                             </button>
-                            <select 
-                                value={radius}
-                                onChange={(e) => setRadius(e.target.value)}
-                                disabled={locationDenied}
-                                className="bg-surface border border-border/50 rounded-xl px-4 py-2.5 text-sm font-bold text-text outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
-                            >
-                                <option value="All">All Range</option>
-                                <option value="5">Within 5 km</option>
-                                <option value="10">Within 10 km</option>
-                                <option value="20">Within 20 km</option>
-                                <option value="50">Within 50 km</option>
-                                <option value="100">Within 100 km</option>
-                                <option value="200">Within 200 km</option>
-                            </select>
+                            <div className="w-40">
+                                <CustomSelect 
+                                    value={radius}
+                                    onChange={(e) => setRadius(e.target.value)}
+                                    disabled={locationDenied}
+                                    options={[
+                                        { value: 'All', label: 'All Range' },
+                                        { value: '5', label: 'Within 5 km' },
+                                        { value: '10', label: 'Within 10 km' },
+                                        { value: '20', label: 'Within 20 km' },
+                                        { value: '50', label: 'Within 50 km' },
+                                        { value: '100', label: 'Within 100 km' },
+                                        { value: '200', label: 'Within 200 km' }
+                                    ]}
+                                    className="bg-surface border border-border/50 rounded-xl px-4 py-2.5 text-sm font-bold text-text focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
+                                />
+                            </div>
                         </div>
                     </div>
                     <div className="flex-1 bg-surface relative overflow-hidden group">

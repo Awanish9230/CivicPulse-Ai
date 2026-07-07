@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { Plus, Users, Shield, Building, X, Activity, CheckCircle, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../../context/AuthContext';
+import CustomSelect from '../../components/common/CustomSelect';
 
 const ManageMembers = () => {
     const { user } = useContext(AuthContext);
@@ -335,32 +336,32 @@ const ManageMembers = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1">Level</label>
-                                    <select 
-                                        name="authorityLevel"
+                                    <CustomSelect 
                                         value={formData.authorityLevel}
-                                        onChange={handleChange}
-                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-                                    >
-                                        <option value="Junior">Junior</option>
-                                        <option value="Senior">Senior</option>
-                                        <option value="HOD">Head of Dept (HOD)</option>
-                                    </select>
+                                        onChange={(e) => handleChange({ target: { name: 'authorityLevel', value: e.target.value } })}
+                                        options={[
+                                            { value: 'Junior', label: 'Junior' },
+                                            { value: 'Senior', label: 'Senior' },
+                                            { value: 'HOD', label: 'Head of Dept (HOD)' }
+                                        ]}
+                                        className="w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
-                                    <select 
-                                        name="department"
+                                    <CustomSelect 
                                         value={formData.department}
-                                        onChange={handleChange}
-                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-                                    >
-                                        <option value="Public Works">Public Works</option>
-                                        <option value="Water & Sanitation">Water & Sanitation</option>
-                                        <option value="Power">Power</option>
-                                        <option value="Traffic & Safety">Traffic & Safety</option>
-                                        <option value="Animal Control">Animal Control</option>
-                                        <option value="General Administration">General Administration</option>
-                                    </select>
+                                        onChange={(e) => handleChange({ target: { name: 'department', value: e.target.value } })}
+                                        options={[
+                                            { value: 'Public Works', label: 'Public Works' },
+                                            { value: 'Water & Sanitation', label: 'Water & Sanitation' },
+                                            { value: 'Power', label: 'Power' },
+                                            { value: 'Traffic & Safety', label: 'Traffic & Safety' },
+                                            { value: 'Animal Control', label: 'Animal Control' },
+                                            { value: 'General Administration', label: 'General Administration' }
+                                        ]}
+                                        className="w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                                    />
                                 </div>
                             </div>
 

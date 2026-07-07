@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp, Megaphone } from 'lucide-react';
+import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp, Megaphone, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
@@ -139,6 +139,7 @@ const Community = () => {
     
     // Geospatial State
     const [radius, setRadius] = useState('10');
+    const [isRadiusOpen, setIsRadiusOpen] = useState(false);
     const [location, setLocation] = useState(null);
     const [locationDenied, setLocationDenied] = useState(false);
 
@@ -391,7 +392,7 @@ const Community = () => {
     ];
 
     return (
-        <div className="flex h-[calc(100vh-6rem)] max-w-6xl mx-auto bg-white/70 backdrop-blur-2xl rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden mb-8 relative z-10">
+        <div className="flex h-[calc(100dvh-10rem)] md:h-[calc(100vh-6rem)] max-w-6xl mx-auto bg-white/70 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden mb-0 md:mb-8 relative z-10">
             
             {/* Location Denied Overlay */}
             {locationDenied && (
@@ -461,53 +462,94 @@ const Community = () => {
             <div className="flex-1 flex flex-col min-w-0 bg-slate-50/30 relative">
                 
                 {/* Header */}
-                <div className="h-[72px] border-b border-white bg-white/40 backdrop-blur-xl flex items-center justify-between px-8 sticky top-0 z-20 shrink-0 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
-                    <div className="flex items-center">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-primary">
-                                {(() => {
-                                    const Icon = channels.find(c => c.id === activeChannel)?.icon || Hash;
-                                    return <Icon size={20} />;
-                                })()}
-                            </div>
-                            <h2 className="font-black text-slate-800 text-xl tracking-tight capitalize">{channels.find(c => c.id === activeChannel)?.name || activeChannel}</h2>
+                <div className="h-[72px] border-b border-white bg-white/40 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 shrink-0 shadow-[0_2px_10px_rgb(0,0,0,0.02)] gap-2">
+                    <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                        <div className="p-1.5 md:p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-primary shrink-0">
+                            {(() => {
+                                const Icon = channels.find(c => c.id === activeChannel)?.icon || Hash;
+                                return <Icon size={20} className="w-4 h-4 md:w-5 md:h-5" />;
+                            })()}
                         </div>
-                        <div className="ml-5 pl-5 border-l border-slate-200 text-sm font-medium text-slate-500 hidden sm:block">
+                        <h2 className="font-black text-slate-800 text-lg md:text-xl tracking-tight capitalize truncate shrink-0">{channels.find(c => c.id === activeChannel)?.name || activeChannel}</h2>
+                        <div className="ml-2 pl-2 md:ml-5 md:pl-5 border-l border-slate-200 text-xs md:text-sm font-medium text-slate-500 hidden sm:block truncate">
                             {channels.find(c => c.id === activeChannel)?.desc}
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                        <select 
-                            value={radius}
-                            onChange={(e) => setRadius(e.target.value)}
-                            disabled={locationDenied}
-                            className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
-                        >
-                            <option value="All">All Range</option>
-                            <option value="5">Within 5 km</option>
-                            <option value="10">Within 10 km</option>
-                            <option value="20">Within 20 km</option>
-                            <option value="50">Within 50 km</option>
-                            <option value="100">Within 100 km</option>
-                            <option value="200">Within 200 km</option>
-                        </select>
+                    <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                        {/* Custom Select Dropdown */}
+                        <div className="relative">
+                            <button 
+                                onClick={() => !locationDenied && setIsRadiusOpen(!isRadiusOpen)}
+                                disabled={locationDenied}
+                                className={`flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-50 ${isRadiusOpen ? 'ring-2 ring-primary/20 border-primary shadow-sm' : 'hover:bg-slate-50'}`}
+                            >
+                                <span className="whitespace-nowrap">
+                                    {radius === 'All' ? 'All Range' : `Within ${radius} km`}
+                                </span>
+                                <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isRadiusOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            <AnimatePresence>
+                                {isRadiusOpen && (
+                                    <>
+                                        <div 
+                                            className="fixed inset-0 z-40" 
+                                            onClick={() => setIsRadiusOpen(false)}
+                                        ></div>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            transition={{ duration: 0.15, ease: "easeOut" }}
+                                            className="absolute right-0 top-full mt-2 w-48 bg-white/95 backdrop-blur-xl border border-slate-200 shadow-[0_10px_40px_rgb(0,0,0,0.1)] rounded-2xl overflow-hidden z-50 flex flex-col p-1"
+                                        >
+                                            {[
+                                                { val: 'All', label: 'All Range' },
+                                                { val: '5', label: 'Within 5 km' },
+                                                { val: '10', label: 'Within 10 km' },
+                                                { val: '20', label: 'Within 20 km' },
+                                                { val: '50', label: 'Within 50 km' },
+                                                { val: '100', label: 'Within 100 km' },
+                                                { val: '200', label: 'Within 200 km' }
+                                            ].map((opt) => (
+                                                <button
+                                                    key={opt.val}
+                                                    onClick={() => {
+                                                        setRadius(opt.val);
+                                                        setIsRadiusOpen(false);
+                                                    }}
+                                                    className={`px-4 py-2.5 text-sm font-medium rounded-xl text-left transition-colors ${
+                                                        radius === opt.val 
+                                                            ? 'bg-primary text-white font-bold' 
+                                                            : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
+                                                    }`}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </motion.div>
+                                    </>
+                                )}
+                            </AnimatePresence>
+                        </div>
 
                         {/* Live Online Count for Chat Channels */}
                         {(activeChannel === 'general' || activeChannel === 'ask-authority') && (
-                            <div className="flex items-center gap-2 bg-green-500/10 text-green-600 px-3 py-1.5 rounded-full text-xs font-bold">
-                                <span className="relative flex h-2 w-2">
+                            <div className="flex items-center gap-1.5 md:gap-2 bg-green-500/10 text-green-600 px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shrink-0">
+                                <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-green-500"></span>
                                 </span>
-                                {onlineCounts[activeChannel] || 1}
+                                <span className="hidden sm:inline">{onlineCounts[activeChannel] || 1} online</span>
+                                <span className="sm:hidden">{onlineCounts[activeChannel] || 1}</span>
                             </div>
                         )}
                     </div>
                 </div>
 
                 {/* Mobile Channel Selector */}
-                <div className="md:hidden flex overflow-x-auto gap-2 p-3 bg-white/60 backdrop-blur-md border-b border-white shadow-sm shrink-0 no-scrollbar">
+                <div className="md:hidden flex justify-between gap-1 p-1.5 bg-white/60 backdrop-blur-md border-b border-white shadow-sm w-full relative">
                     {channels.map(channel => {
                         const Icon = channel.icon;
                         const isActive = activeChannel === channel.id;
@@ -515,12 +557,17 @@ const Community = () => {
                             <button
                                 key={channel.id}
                                 onClick={() => setActiveChannel(channel.id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${
-                                    isActive ? 'bg-primary text-white shadow-md font-bold' : 'bg-white/80 text-slate-600 font-medium border border-slate-200 hover:bg-slate-50'
+                                className={`flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-xl transition-all ${
+                                    isActive ? 'bg-primary text-white shadow-md font-bold' : 'bg-white/80 text-slate-600 font-medium hover:bg-slate-50'
                                 }`}
                             >
-                                <Icon size={14} />
-                                <span className="text-sm capitalize">{channel.name.replace('-', ' ')}</span>
+                                <Icon size={16} />
+                                <span className="text-[9px] sm:text-[10px] text-center leading-tight">
+                                    {channel.id === 'general' ? 'Chat' : 
+                                     channel.id === 'ask-authority' ? 'Authority' : 
+                                     channel.id === 'announcements' ? 'Alerts' : 
+                                     'Local'}
+                                </span>
                             </button>
                         );
                     })}
@@ -531,14 +578,14 @@ const Community = () => {
                     <AnimatePresence mode="wait">
                     {/* Channel: #issue */}
                     {activeChannel === 'issue' ? (
-                        <motion.div 
-                            key="issue"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="p-4 sm:p-6 max-w-4xl mx-auto space-y-4"
-                        >
+                            <motion.div 
+                                key="issue"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                className="p-3 sm:p-6 max-w-4xl mx-auto space-y-4 w-full"
+                            >
                             {loading && (
                                 <div>
                                     <IssueCardSkeleton />
