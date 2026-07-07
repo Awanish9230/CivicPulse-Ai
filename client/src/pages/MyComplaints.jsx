@@ -8,6 +8,7 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import CameraCapture from '../components/complaints/CameraCapture';
 import ReportModal from '../components/complaints/ReportModal';
+import ImageCarousel from '../components/common/ImageCarousel';
 
 const MyComplaints = () => {
     const [filter, setFilter] = useState('All');
@@ -261,10 +262,10 @@ const MyComplaints = () => {
                                     </div>
                                     
                                     {/* Image */}
-                                    {(c.imageUrls?.[0] || c.imageUrl) && (
+                                    {(c.imageUrls?.length > 0 || c.imageUrl) && (
                                         <div className="mb-3 rounded-xl overflow-hidden border border-slate-100 bg-slate-50 shrink-0 h-36 relative">
-                                            <img src={c.imageUrls?.[0] || c.imageUrl} alt="Issue" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                                            <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] text-white font-bold flex items-center gap-1">
+                                            <ImageCarousel images={c.imageUrls?.length > 0 ? c.imageUrls : [c.imageUrl]} />
+                                            <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] text-white font-bold flex items-center gap-1 z-10">
                                                 <MapPin size={10} /> {c.category}
                                             </div>
                                         </div>

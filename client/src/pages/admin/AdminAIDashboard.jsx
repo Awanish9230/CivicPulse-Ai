@@ -68,9 +68,16 @@ const AdminAIDashboard = () => {
                 </div>
                 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-                        <p className="text-slate-500 font-medium">Gemini AI is analyzing millions of data points...</p>
+                    <div className="space-y-4 animate-pulse py-4">
+                        <div className="h-8 bg-slate-200 rounded w-1/3 mb-6"></div>
+                        <div className="h-4 bg-slate-200 rounded w-full"></div>
+                        <div className="h-4 bg-slate-200 rounded w-full"></div>
+                        <div className="h-4 bg-slate-200 rounded w-5/6"></div>
+                        <div className="h-4 bg-slate-200 rounded w-3/4 mb-6"></div>
+                        <div className="h-6 bg-slate-200 rounded w-1/4 mt-8 mb-4"></div>
+                        <div className="h-4 bg-slate-200 rounded w-full"></div>
+                        <div className="h-4 bg-slate-200 rounded w-4/5"></div>
+                        <div className="h-4 bg-slate-200 rounded w-full"></div>
                     </div>
                 ) : (
                     <div className="prose prose-slate prose-indigo max-w-none">

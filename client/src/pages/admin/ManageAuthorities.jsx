@@ -107,7 +107,26 @@ const ManageAuthorities = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {authorities.map((auth) => (
+                            {loading ? (
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <tr key={`skel-${i}`} className="animate-pulse">
+                                        <td className="px-6 py-4 flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-full bg-slate-200"></div>
+                                            <div className="h-4 bg-slate-200 rounded w-24"></div>
+                                        </td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
+                                        <td className="px-6 py-4"><div className="h-6 bg-slate-200 rounded-full w-16"></div></td>
+                                        <td className="px-6 py-4"><div className="h-6 bg-slate-200 rounded w-8"></div></td>
+                                        <td className="px-6 py-4"><div className="h-6 bg-slate-200 rounded-full w-16"></div></td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <div className="w-8 h-8 bg-slate-200 rounded-lg"></div>
+                                                <div className="w-8 h-8 bg-slate-200 rounded-lg"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : authorities.map((auth) => (
                                 <tr key={auth.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../config/api';
 import { ArrowUp, MapPin, Clock, MessageSquare } from 'lucide-react';
+import ImageCarousel from '../common/ImageCarousel';
 
 const RecentReports = () => {
     const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchRecent = async () => {
@@ -14,6 +16,8 @@ const RecentReports = () => {
                 }
             } catch (error) {
                 console.error("Failed to fetch recent reports", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchRecent();
@@ -37,11 +41,27 @@ const RecentReports = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {reports.map((report) => (
-                    <div key={report._id} className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
-                        <div className="h-48 overflow-hidden relative">
-                            <img src={report.imageUrl || (report.imageUrls && report.imageUrls[0]) || "https://images.unsplash.com/photo-1519782508688-6934c9c585c5?q=80&w=400&h=300&auto=format&fit=crop"} alt={report.category || "Report"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(report.status)}`}>
+                {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm animate-pulse flex flex-col h-[400px]">
+                            <div className="h-48 bg-slate-200 w-full shrink-0"></div>
+                            <div className="p-6 flex flex-col flex-1 gap-4">
+                                <div className="h-6 bg-slate-200 rounded w-3/4"></div>
+                                <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                                <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between">
+                                    <div className="h-5 bg-slate-200 rounded w-1/3"></div>
+                                    <div className="h-5 bg-slate-200 rounded w-1/4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                ) : reports.map((report) => (
+                    <div key={report._id} className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition-all group flex flex-col h-full">
+                        <div className="h-48 overflow-hidden relative shrink-0">
+                            <ImageCarousel 
+                                images={report.imageUrls?.length > 0 ? report.imageUrls : (report.imageUrl ? [report.imageUrl] : ["https://images.unsplash.com/photo-1519782508688-6934c9c585c5?q=80&w=400&h=300&auto=format&fit=crop"])} 
+                            />
+                            <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold border z-10 backdrop-blur-sm ${getStatusColor(report.status)}`}>
                                 {report.status || "Pending"}
                             </div>
                         </div>

@@ -190,8 +190,16 @@ const Notifications = () => {
                             })}
                         </AnimatePresence>
                         {loading && (
-                            <div className="py-6 flex justify-center">
-                                <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                            <div className="space-y-4 py-4">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="flex gap-4 p-4 bg-white rounded-[1.5rem] border border-slate-100 shadow-sm animate-pulse">
+                                        <div className="w-12 h-12 rounded-2xl bg-slate-200 shrink-0"></div>
+                                        <div className="flex-1 space-y-3 py-1">
+                                            <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                                            <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>

@@ -95,8 +95,21 @@ const ManageMembers = () => {
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-6 space-y-4">
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="flex justify-between items-center py-4 border-b border-slate-100 animate-pulse">
+                            <div className="flex gap-4 items-center">
+                                <div className="w-10 h-10 bg-slate-200 rounded-full"></div>
+                                <div className="space-y-2">
+                                    <div className="w-32 h-4 bg-slate-200 rounded"></div>
+                                    <div className="w-24 h-3 bg-slate-200 rounded"></div>
+                                </div>
+                            </div>
+                            <div className="w-20 h-6 bg-slate-200 rounded-full"></div>
+                            <div className="w-24 h-4 bg-slate-200 rounded"></div>
+                            <div className="w-12 h-6 bg-slate-200 rounded"></div>
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

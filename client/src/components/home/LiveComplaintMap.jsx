@@ -46,6 +46,7 @@ const LiveComplaintMap = () => {
     const [reports, setReports] = useState([]);
     const [center, setCenter] = useState([28.6139, 77.2090]); // Default to New Delhi
     const [heatPoints, setHeatPoints] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchMapData = async () => {
@@ -69,6 +70,8 @@ const LiveComplaintMap = () => {
                 }
             } catch (error) {
                 console.error("Failed to fetch map data", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchMapData();
@@ -87,16 +90,27 @@ const LiveComplaintMap = () => {
                 </div>
             </div>
 
-            <div className="h-[500px] w-full rounded-[40px] overflow-hidden border border-slate-200 shadow-sm relative z-0">
-                <MapContainer center={center} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
-                    <TileLayer
-                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                    />
-                    
-                    <MapUpdater center={center} />
-                    <HeatmapLayer points={heatPoints} />
-                </MapContainer>
+            <div className="h-[500px] w-full rounded-[40px] overflow-hidden border border-slate-200 shadow-sm relative z-0 bg-slate-50">
+                {loading ? (
+                    <div className="w-full h-full bg-slate-200 animate-pulse flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-16 h-16 bg-slate-300 rounded-full flex items-center justify-center">
+                                <div className="w-6 h-6 bg-slate-200 rounded-full"></div>
+                            </div>
+                            <div className="w-32 h-4 bg-slate-300 rounded"></div>
+                        </div>
+                    </div>
+                ) : (
+                    <MapContainer center={center} zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={true}>
+                        <TileLayer
+                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                        />
+                        
+                        <MapUpdater center={center} />
+                        <HeatmapLayer points={heatPoints} />
+                    </MapContainer>
+                )}
             </div>
         </section>
     );

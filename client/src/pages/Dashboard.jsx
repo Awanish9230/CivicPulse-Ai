@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, MessageSquare, ThumbsUp, Shield, MapPin } from 'lucide-react';
 import { MapContainer, TileLayer, CircleMarker, Popup, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import ImageCarousel from '../components/common/ImageCarousel';
 
 const Dashboard = () => {
     const [filter, setFilter] = useState('All');
@@ -253,7 +254,7 @@ const Dashboard = () => {
                         </motion.div>
                     </>
                 )}
-            </motion.div>            {/* Main Content Area */}
+            </motion.div>            {/* Main Content Area */}
             <div className="flex flex-col gap-8 flex-1">
                 
                 {/* Map Area Placeholder */}
@@ -395,16 +396,12 @@ const Dashboard = () => {
                             >
                                 {/* Image */}
                                 <div className="w-full h-52 rounded-[2rem] overflow-hidden relative bg-slate-50 mb-5 shrink-0 border border-slate-100">
-                                    {(c.imageUrls?.[0] || c.imageUrl) ? (
-                                        <img 
-                                            src={c.imageUrls?.[0] || c.imageUrl} 
-                                            alt={c.description} 
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                        />
+                                    {(c.imageUrls?.length > 0 || c.imageUrl) ? (
+                                        <ImageCarousel images={c.imageUrls?.length > 0 ? c.imageUrls : [c.imageUrl]} />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium">No Image Provided</div>
                                     )}
-                                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-white text-slate-800 shadow-sm px-4 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-2 tracking-wide uppercase">
+                                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-white text-slate-800 shadow-sm px-4 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-2 tracking-wide uppercase z-10">
                                         <div className={`w-2 h-2 rounded-full animate-pulse ${
                                             c.status === 'Resolved' || c.status === 'Closed' ? 'bg-green-500' :
                                             c.status === 'In Progress' ? 'bg-blue-500' : 'bg-orange-500'

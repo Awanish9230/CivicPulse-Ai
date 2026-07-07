@@ -58,8 +58,22 @@ const AuthorityAnalytics = () => {
 
     if (loading) {
         return (
-            <div className="flex h-full items-center justify-center min-h-[400px]">
-                <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+            <div className="flex flex-col gap-6 w-full h-full p-4">
+                <div className="flex justify-between items-end mb-4">
+                    <div className="space-y-2">
+                        <div className="w-48 h-8 bg-slate-200 rounded animate-pulse"></div>
+                        <div className="w-64 h-4 bg-slate-200 rounded animate-pulse"></div>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>
+                    ))}
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 h-96 bg-slate-200 rounded-3xl animate-pulse"></div>
+                    <div className="h-96 bg-slate-200 rounded-3xl animate-pulse"></div>
+                </div>
             </div>
         );
     }

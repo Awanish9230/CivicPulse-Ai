@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { AuthContext } from '../../context/AuthContext';
+import ImageCarousel from '../../components/common/ImageCarousel';
 
 const AuthorityTasks = () => {
     const { user } = useContext(AuthContext);
@@ -194,8 +195,19 @@ const AuthorityTasks = () => {
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col gap-4 shadow-sm animate-pulse h-[400px]">
+                            <div className="flex justify-between">
+                                <div className="w-24 h-6 bg-slate-200 rounded-full"></div>
+                                <div className="w-16 h-6 bg-slate-200 rounded"></div>
+                            </div>
+                            <div className="w-3/4 h-6 bg-slate-200 rounded mt-2"></div>
+                            <div className="w-full h-40 bg-slate-200 rounded-xl"></div>
+                            <div className="w-full h-4 bg-slate-200 rounded"></div>
+                            <div className="w-1/2 h-4 bg-slate-200 rounded"></div>
+                        </div>
+                    ))}
                 </div>
             ) : tasks.length === 0 ? (
                 <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
@@ -229,9 +241,9 @@ const AuthorityTasks = () => {
                                     {task.category} Issue
                                 </h3>
 
-                                {(task.imageUrls?.[0] || task.imageUrl) && (
-                                    <div className="mb-4 rounded-xl overflow-hidden border border-slate-200 h-48 bg-slate-100 flex-shrink-0">
-                                        <img src={task.imageUrls?.[0] || task.imageUrl} alt="Issue" className="w-full h-full object-cover" />
+                                {(task.imageUrls?.length > 0 || task.imageUrl) && (
+                                    <div className="mb-4 rounded-xl overflow-hidden border border-slate-200 h-48 bg-slate-100 flex-shrink-0 relative group">
+                                        <ImageCarousel images={task.imageUrls?.length > 0 ? task.imageUrls : [task.imageUrl]} />
                                     </div>
                                 )}
 

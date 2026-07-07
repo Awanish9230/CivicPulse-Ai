@@ -5,6 +5,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { io } from 'socket.io-client';
+import ImageCarousel from '../components/common/ImageCarousel';
 
 const IssueCardSkeleton = () => (
     <div className="bg-white/80 backdrop-blur-lg rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-3 mb-4">
@@ -103,10 +104,9 @@ const IssueCard = memo(({ item, index, user, expandedUpdates, setExpandedUpdates
                         </div>
                     )}
                 </div>
-
-                {(item.imageUrls?.[0] || item.imageUrl) && (
+                {(item.imageUrls?.length > 0 || item.imageUrl) && (
                     <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 ml-1">
-                        <img src={item.imageUrls?.[0] || item.imageUrl} alt="Issue" loading="lazy" className="w-full h-full object-cover" />
+                        <ImageCarousel images={item.imageUrls?.length > 0 ? item.imageUrls : [item.imageUrl]} />
                     </div>
                 )}
             </div>
