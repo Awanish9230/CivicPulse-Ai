@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp } from 'lucide-react';
+import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp, Megaphone } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
@@ -386,7 +386,8 @@ const Community = () => {
     const channels = [
         { id: 'issue', name: 'issue', icon: MapPin, desc: 'Local complaints within 5km' },
         { id: 'general', name: 'general', icon: Users, desc: 'General community chat' },
-        { id: 'ask-authority', name: 'ask-authority', icon: ShieldAlert, desc: 'Direct chat with authorities' }
+        { id: 'ask-authority', name: 'ask-authority', icon: ShieldAlert, desc: 'Direct chat with authorities' },
+        { id: 'announcements', name: 'announcements', icon: Megaphone, desc: 'Official city updates & alerts' }
     ];
 
     return (
@@ -581,7 +582,9 @@ const Community = () => {
                                     <p className="text-text/50 text-sm">
                                         {activeChannel === 'general' 
                                             ? "Chat with people in your 5km radius. Paste image URLs to share photos!"
-                                            : "Tag authorities (e.g. @police, @municipality) to ask direct questions."}
+                                            : activeChannel === 'announcements'
+                                                ? "Read-only feed for official city updates and alerts."
+                                                : "Tag authorities (e.g. @police, @municipality) to ask direct questions."}
                                     </p>
                                 </div>
 
@@ -643,10 +646,16 @@ const Community = () => {
                 </div>
 
                 {/* Chat Input */}
-                {(activeChannel === 'general' || activeChannel === 'ask-authority') && (
+                {['general', 'ask-authority', 'announcements'].includes(activeChannel) && (
                     <div className="p-4 bg-white border-t border-border/50 shrink-0">
                         {user ? (
-                            <form onSubmit={handleSendMessage} className="relative flex flex-col">
+                            activeChannel === 'announcements' && user.role !== 'Authority' ? (
+                                <div className="text-center p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 font-bold text-sm">
+                                    <Megaphone size={16} className="inline-block mr-2 text-slate-400" />
+                                    This channel is read-only for official announcements.
+                                </div>
+                            ) : (
+                                <form onSubmit={handleSendMessage} className="relative flex flex-col">
                                 {/* Replying To Indicator */}
                                 <AnimatePresence>
                                     {replyingTo && (
@@ -684,6 +693,7 @@ const Community = () => {
                                     </button>
                                 </div>
                             </form>
+                            )
                         ) : (
                             <div className="text-center py-3 text-sm text-text/50 border border-border/50 rounded-xl bg-surface">
                                 Please <span className="font-bold text-primary">log in</span> to chat in this channel.
