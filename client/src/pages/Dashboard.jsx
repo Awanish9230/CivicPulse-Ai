@@ -4,7 +4,7 @@ import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, MessageSquare, ThumbsUp, Shield, MapPin } from 'lucide-react';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const Dashboard = () => {
@@ -18,6 +18,12 @@ const Dashboard = () => {
         resolved: 0
     });
     
+    // Geospatial State
+    const [radius, setRadius] = useState('10');
+    const [location, setLocation] = useState(null);
+    const [locationDenied, setLocationDenied] = useState(false);
+    const [showRadiusMap, setShowRadiusMap] = useState(true);
+
     // Reply State
     const [activeReplyId, setActiveReplyId] = useState(null);
     const [replyContent, setReplyContent] = useState('');
@@ -42,10 +48,21 @@ const Dashboard = () => {
         }
     };
 
-    const fetchComplaints = async () => {
+    const fetchComplaints = async (lat, lng, rds) => {
         try {
+            setLoading(true);
+            const params = {};
+            if (lat && lng) {
+                params.lat = lat;
+                params.lng = lng;
+            }
+            if (rds && rds !== 'All') {
+                params.radius = rds;
+            }
+
             const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/complaint/all`, {
-                withCredentials: true
+                withCredentials: true,
+                params
             });
             const fetchedComplaints = data.data;
             setComplaints(fetchedComplaints);
@@ -84,13 +101,35 @@ const Dashboard = () => {
     };
 
     useEffect(() => {
-        fetchComplaints();
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    setLocation({ lat, lng });
+                    setLocationDenied(false);
+                    fetchComplaints(lat, lng, radius);
+                },
+                (error) => {
+                    console.warn("Location permission denied", error);
+                    if (!locationDenied) {
+                        toast.error("Location denied. Showing only your complaints.");
+                    }
+                    setLocationDenied(true);
+                    fetchComplaints(null, null, null);
+                },
+                { timeout: 10000 }
+            );
+        } else {
+            if (!locationDenied) toast.error("Geolocation not supported.");
+            fetchComplaints(null, null, null);
+        }
 
         // Socket.io connection for real-time updates
         const socket = io(`${import.meta.env.VITE_API_URL}`);
         
         socket.on('new_complaint', (newComplaint) => {
-            toast.success('New emergency complaint received!', { icon: '🚨' });
+            // Only add if it's within radius or if we don't have location (so it's just ours)
             setComplaints(prev => {
                 const updated = [newComplaint, ...prev];
                 calculateStats(updated);
@@ -99,7 +138,7 @@ const Dashboard = () => {
         });
 
         return () => socket.disconnect();
-    }, []);
+    }, [radius]);
 
     const filteredComplaints = complaints.filter(c => {
         if (filter === 'All') return true;
@@ -224,21 +263,43 @@ const Dashboard = () => {
                     transition={{ delay: 0.3 }}
                     className="w-full bg-white rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 flex flex-col overflow-hidden h-[500px]"
                 >
-                    <div className="p-6 border-b border-border/50 flex justify-between items-center bg-white z-10">
+                    <div className="p-6 border-b border-border/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white z-10">
                         <div>
                             <h2 className="font-black text-xl text-text">Live Operations Map</h2>
                             <p className="text-xs font-medium text-text/50">Tracking active incidents across the city</p>
                         </div>
-                        <select className="bg-surface border border-border/50 rounded-xl px-4 py-2.5 text-sm font-bold text-text outline-none focus:ring-2 focus:ring-primary/20 transition-all">
-                            <option>All Wards</option>
-                            <option>Ward 1 (Downtown)</option>
-                            <option>Ward 2 (Northside)</option>
-                        </select>
+                        <div className="flex items-center gap-3">
+                            {locationDenied && (
+                                <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-md border border-red-100">
+                                    Location Denied
+                                </span>
+                            )}
+                            <button 
+                                onClick={() => setShowRadiusMap(!showRadiusMap)}
+                                className={`text-xs font-bold px-3 py-2 rounded-xl transition-colors ${showRadiusMap ? 'bg-primary text-white' : 'bg-surface text-text/60 border border-border/50'}`}
+                            >
+                                {showRadiusMap ? 'Hide Radius' : 'Show Radius'}
+                            </button>
+                            <select 
+                                value={radius}
+                                onChange={(e) => setRadius(e.target.value)}
+                                disabled={locationDenied}
+                                className="bg-surface border border-border/50 rounded-xl px-4 py-2.5 text-sm font-bold text-text outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
+                            >
+                                <option value="All">All Range</option>
+                                <option value="5">Within 5 km</option>
+                                <option value="10">Within 10 km</option>
+                                <option value="20">Within 20 km</option>
+                                <option value="50">Within 50 km</option>
+                                <option value="100">Within 100 km</option>
+                                <option value="200">Within 200 km</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="flex-1 bg-surface relative overflow-hidden group">
                         <MapContainer 
-                            center={[28.6139, 77.2090]} // default center (New Delhi)
-                            zoom={12} 
+                            center={location ? [location.lat, location.lng] : [28.6139, 77.2090]} // default center (New Delhi)
+                            zoom={location ? (radius === 'All' ? 5 : (radius > 50 ? 7 : 11)) : 12} 
                             scrollWheelZoom={true} 
                             className="h-full w-full z-0"
                         >
@@ -246,6 +307,16 @@ const Dashboard = () => {
                                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                             />
+                            
+                            {/* Render Circle for Radius if location exists and radius is not 'All' */}
+                            {location && !locationDenied && showRadiusMap && radius !== 'All' && (
+                                <Circle 
+                                    center={[location.lat, location.lng]} 
+                                    pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.1, weight: 2 }} 
+                                    radius={parseInt(radius) * 1000} 
+                                />
+                            )}
+
                             {filteredComplaints.map(c => {
                                 if (!c.location?.coordinates) return null;
                                 const isCritical = c.priority === 'Critical';

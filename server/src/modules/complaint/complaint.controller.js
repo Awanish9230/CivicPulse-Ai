@@ -303,8 +303,31 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
 });
 
 export const getAllComplaints = asyncHandler(async (req, res) => {
-    // Fetch all complaints
-    const complaints = await Complaint.find().sort({
+    const { lat, lng, radius } = req.query;
+    
+    let query = {};
+    
+    // If no location is provided, restrict to ONLY the user's own complaints
+    if (!lat || !lng) {
+        const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
+        query = { reportedBy: { $in: allUserIdentities } };
+    } 
+    // If location is provided and a specific radius (not 'All') is selected
+    else if (radius && radius !== 'All') {
+        const radiusInMeters = parseInt(radius) * 1000;
+        // Earth radius in radians: distance in meters / 6378100
+        const radiusInRadians = radiusInMeters / 6378100;
+        
+        query = {
+            location: {
+                $geoWithin: {
+                    $centerSphere: [[parseFloat(lng), parseFloat(lat)], radiusInRadians]
+                }
+            }
+        };
+    }
+
+    const complaints = await Complaint.find(query).sort({
         createdAt: -1,
     }).populate('assignedTo', 'name authorityLevel department');
 
@@ -312,7 +335,7 @@ export const getAllComplaints = asyncHandler(async (req, res) => {
         new ApiResponse(
             200,
             complaints,
-            "All complaints fetched successfully"
+            "Complaints fetched successfully"
         )
     );
 });

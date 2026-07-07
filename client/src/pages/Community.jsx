@@ -116,10 +116,32 @@ const IssueCard = memo(({ item, index, user, expandedUpdates, setExpandedUpdates
     );
 });
 
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    var R = 6371; // Radius of the earth in km
+    var dLat = deg2rad(lat2-lat1);
+    var dLon = deg2rad(lon2-lon1); 
+    var a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2); 
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    var d = R * c; // Distance in km
+    return d;
+}
+
+function deg2rad(deg) {
+    return deg * (Math.PI/180)
+}
+
 const Community = () => {
     const { user } = useContext(AuthContext);
     const [activeChannel, setActiveChannel] = useState('issue');
     
+    // Geospatial State
+    const [radius, setRadius] = useState('10');
+    const [location, setLocation] = useState(null);
+    const [locationDenied, setLocationDenied] = useState(false);
+
     // Issue Feed State
     const [feed, setFeed] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -133,10 +155,21 @@ const Community = () => {
     const [replyingTo, setReplyingTo] = useState(null);
     const chatContainerRef = useRef(null);
 
-    const fetchComplaints = async () => {
+    const fetchComplaints = async (lat, lng, rds) => {
         try {
+            setLoading(true);
+            const params = {};
+            if (lat && lng) {
+                params.lat = lat;
+                params.lng = lng;
+            }
+            if (rds && rds !== 'All') {
+                params.radius = rds;
+            }
+
             const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/complaint/all`, {
-                withCredentials: true
+                withCredentials: true,
+                params
             });
             setFeed(data.data || []);
         } catch (error) {
@@ -147,8 +180,28 @@ const Community = () => {
     };
 
     useEffect(() => {
-        fetchComplaints();
-    }, []);
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    setLocation({ lat, lng });
+                    setLocationDenied(false);
+                    fetchComplaints(lat, lng, radius);
+                },
+                (error) => {
+                    console.warn("Location permission denied", error);
+                    setLocationDenied(true);
+                    setLoading(false);
+                },
+                { timeout: 10000 }
+            );
+        } else {
+            toast.error("Geolocation not supported.");
+            setLocationDenied(true);
+            setLoading(false);
+        }
+    }, [radius]);
 
     const handleResolve = async (id) => {
         try {
@@ -174,6 +227,16 @@ const Community = () => {
         });
 
         newSocket.on('receiveMessage', (message) => {
+            // Client-side filtering of incoming socket messages based on distance
+            if (radius !== 'All' && location && message.location?.coordinates) {
+                const [msgLng, msgLat] = message.location.coordinates;
+                const distance = getDistanceFromLatLonInKm(location.lat, location.lng, msgLat, msgLng);
+                if (distance > parseInt(radius)) {
+                    // Ignore message, too far away
+                    return;
+                }
+            }
+
             setMessages(prev => ({
                 ...prev,
                 [message.channel]: [...(prev[message.channel] || []), message]
@@ -186,15 +249,24 @@ const Community = () => {
         });
 
         return () => newSocket.close();
-    }, []);
+    }, [radius, location]);
 
     // Fetch chat history when channel changes
     useEffect(() => {
-        if (activeChannel === 'general' || activeChannel === 'ask-authority') {
+        if ((activeChannel === 'general' || activeChannel === 'ask-authority') && location && !locationDenied) {
             const fetchChatHistory = async () => {
                 try {
+                    const params = {
+                        lat: location.lat,
+                        lng: location.lng
+                    };
+                    if (radius && radius !== 'All') {
+                        params.radius = radius;
+                    }
+
                     const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/message/${activeChannel}`, {
-                        withCredentials: true
+                        withCredentials: true,
+                        params
                     });
                     setMessages(prev => ({
                         ...prev,
@@ -206,7 +278,7 @@ const Community = () => {
             };
             fetchChatHistory();
         }
-    }, [activeChannel]);
+    }, [activeChannel, location, radius, locationDenied]);
 
     // Auto-scroll chat
     useEffect(() => {
@@ -263,6 +335,7 @@ const Community = () => {
                     text: newMessage,
                     timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                     channel: activeChannel,
+                    ...(location && { lat: location.lat, lng: location.lng }),
                     replyTo: replyingTo ? {
                         sender: replyingTo.sender,
                         text: replyingTo.text
@@ -319,11 +392,22 @@ const Community = () => {
     return (
         <div className="flex h-[calc(100vh-6rem)] max-w-6xl mx-auto bg-white/70 backdrop-blur-2xl rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden mb-8 relative z-10">
             
+            {/* Location Denied Overlay */}
+            {locationDenied && (
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center">
+                    <MapPin size={48} className="text-red-500 mb-4" />
+                    <h2 className="text-2xl font-black text-slate-800 mb-2">Location Required</h2>
+                    <p className="text-slate-600 max-w-md">
+                        You must enable location permissions in your browser to access the Community chat and local feeds. Please allow location access and refresh the page.
+                    </p>
+                </div>
+            )}
+
             {/* Left Sidebar - Channels */}
             <div className="w-72 bg-white/40 border-r border-white/50 flex flex-col hidden md:flex shrink-0 backdrop-blur-xl">
                 <div className="p-6 border-b border-white/50">
                     <h2 className="text-xl font-black text-slate-800 tracking-tight">Community Hub</h2>
-                    <p className="text-xs text-slate-500 mt-1 font-medium">Within 5km radius</p>
+                    <p className="text-xs text-slate-500 mt-1 font-medium">Local connections</p>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
@@ -392,16 +476,33 @@ const Community = () => {
                         </div>
                     </div>
                     
-                    {/* Live Online Count for Chat Channels */}
-                    {(activeChannel === 'general' || activeChannel === 'ask-authority') && (
-                        <div className="flex items-center gap-2 bg-green-500/10 text-green-600 px-3 py-1 rounded-full text-xs font-bold">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                            </span>
-                            {onlineCounts[activeChannel] || 1} online
-                        </div>
-                    )}
+                    <div className="flex items-center gap-4">
+                        <select 
+                            value={radius}
+                            onChange={(e) => setRadius(e.target.value)}
+                            disabled={locationDenied}
+                            className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
+                        >
+                            <option value="All">All Range</option>
+                            <option value="5">Within 5 km</option>
+                            <option value="10">Within 10 km</option>
+                            <option value="20">Within 20 km</option>
+                            <option value="50">Within 50 km</option>
+                            <option value="100">Within 100 km</option>
+                            <option value="200">Within 200 km</option>
+                        </select>
+
+                        {/* Live Online Count for Chat Channels */}
+                        {(activeChannel === 'general' || activeChannel === 'ask-authority') && (
+                            <div className="flex items-center gap-2 bg-green-500/10 text-green-600 px-3 py-1.5 rounded-full text-xs font-bold">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                </span>
+                                {onlineCounts[activeChannel] || 1}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Mobile Channel Selector */}

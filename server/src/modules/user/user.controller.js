@@ -37,24 +37,17 @@ export const rotateAnonymousId = asynchandler(async (req, res) => {
         throw new ApiError(401, "Unauthorized request");
     }
 
-    const { password } = req.body;
-    if (!password) {
-        throw new ApiError(400, "Password is required to rotate anonymous identity");
-    }
-
-    const isPasswordValid = await user.isPasswordCorrect(password);
-    if (!isPasswordValid) {
-        throw new ApiError(401, "Invalid password");
-    }
-
     const plainAnonymousId = User.generateAnonymousId();
     user.pastAnonymousIds.push(user.anonymousId); // Save the old encrypted ID
-    user.anonymousId = User.encryptIdentity(plainAnonymousId, password);
+    user.anonymousId = User.encryptIdentity(plainAnonymousId);
 
     await user.save({
         validateBeforeSave: false
     });
 
+    // Decrypt all past IDs to send in the new token
+    // We pass password (if they provided one for manual rotation) just in case they have legacy encrypted IDs
+    const { password } = req.body || {};
     const plainPastIds = (user.pastAnonymousIds || []).map(enc => User.decryptIdentity(enc, password)).filter(Boolean);
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id, plainAnonymousId, plainPastIds);
 
@@ -167,6 +160,11 @@ export const loginUser = asynchandler(async (req, res) => {
     // Decrypt Identity
     const plainAnonymousId = User.decryptIdentity(user.anonymousId, password) || user.anonymousId;
     const plainPastIds = (user.pastAnonymousIds || []).map(enc => User.decryptIdentity(enc, password)).filter(Boolean);
+
+    // MIGRATION: Automatically migrate to Global Secret encryption on login
+    user.anonymousId = User.encryptIdentity(plainAnonymousId);
+    user.pastAnonymousIds = plainPastIds.map(id => User.encryptIdentity(id));
+    await user.save({ validateBeforeSave: false });
 
     // 6. Generate tokens
     const { accessToken, refreshToken } =

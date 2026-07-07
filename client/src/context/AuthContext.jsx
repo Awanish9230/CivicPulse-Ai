@@ -63,12 +63,12 @@ export const AuthProvider = ({ children }) => {
             try {
                 await api.post('/user/rotate-anonymous-id');
                 await fetchUser(); // Refresh user info to get new ID
-                toast.success("Identity rotated successfully for security.", { icon: '🔄', id: 'rotation-toast' });
+                toast.success("Identity auto-rotated successfully for security.", { icon: '🔄', id: 'rotation-toast' });
                 
                 // Reset timer
                 localStorage.setItem('nextRotationTime', (Date.now() + ROTATION_INTERVAL).toString());
             } catch (error) {
-                console.error("Failed to rotate identity", error);
+                console.error("Failed to auto-rotate identity", error);
             }
         };
 

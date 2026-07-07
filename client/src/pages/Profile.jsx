@@ -27,13 +27,13 @@ const Profile = () => {
                 withCredentials: true
             });
             await fetchUser(); // Refresh user info to get new ID
-            toast.success("Identity rotated successfully for security.", { icon: '🔄' });
+            toast.success("Identity auto-rotated successfully for security.", { icon: '🔄' });
             
             // Reset timer
             const newTime = Date.now() + ROTATION_INTERVAL;
             localStorage.setItem('nextRotationTime', newTime.toString());
         } catch (error) {
-            toast.error("Failed to rotate identity.");
+            toast.error(error.response?.data?.message || "Failed to rotate identity.");
         }
     };
 
@@ -45,7 +45,9 @@ const Profile = () => {
             const difference = nextTime - now;
 
             if (difference <= 0) {
-                rotateIdentity();
+                // If it hits 0, AuthContext will handle the actual rotation API call in the background.
+                // We just keep checking until the time updates.
+                setTimeLeft(0); 
             } else {
                 setTimeLeft(difference);
             }

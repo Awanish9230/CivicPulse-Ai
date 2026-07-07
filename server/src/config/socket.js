@@ -49,12 +49,21 @@ export const initSocket = (server) => {
                 const channelName = room === 'local-community-general' ? 'general' : 'ask-authority';
                 
                 // Save to database
+                let locationObj = undefined;
+                if (message.lat && message.lng) {
+                    locationObj = {
+                        type: 'Point',
+                        coordinates: [parseFloat(message.lng), parseFloat(message.lat)]
+                    };
+                }
+
                 const newMessage = await Message.create({
                     sender: message.senderId,
                     senderName: message.sender, // Fix: frontend sends 'sender' not 'senderName'
                     channel: channelName,
                     content: message.text,
                     type: 'Text', // Or parse if you support image URLs directly
+                    ...(locationObj && { location: locationObj })
                 });
 
                 // Attach ID and timestamps to the emitted message

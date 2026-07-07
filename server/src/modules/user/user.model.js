@@ -137,10 +137,11 @@ userSchema.statics.generateAnonymousId = function () {
     return `CP-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
 };
 
-// Encrypt Identity using password
-userSchema.statics.encryptIdentity = function(plaintext, password) {
-    if (!plaintext || !password) return null;
-    const key = crypto.scryptSync(password, 'civicpulse_salt_2026', 32);
+// Encrypt Identity using Global Secret
+userSchema.statics.encryptIdentity = function(plaintext) {
+    if (!plaintext) return null;
+    const globalSecret = process.env.ACCESS_TOKEN_SECRET || 'civicpulse_global_fallback_secret_2026';
+    const key = crypto.scryptSync(globalSecret, 'civicpulse_salt_2026', 32);
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
     let encrypted = cipher.update(plaintext, 'utf8', 'hex');
@@ -149,21 +150,38 @@ userSchema.statics.encryptIdentity = function(plaintext, password) {
     return `${iv.toString('hex')}:${authTag}:${encrypted}`;
 };
 
-// Decrypt Identity using password
+// Decrypt Identity using Global Secret (with fallback to password for legacy compatibility)
 userSchema.statics.decryptIdentity = function(ciphertext, password) {
-    if (!ciphertext || !password) return null;
+    if (!ciphertext) return null;
     if (!ciphertext.includes(':')) return ciphertext; // In case it's already plaintext (legacy users)
+    
+    const [ivHex, authTagHex, encryptedHex] = ciphertext.split(':');
+    const iv = Buffer.from(ivHex, 'hex');
+    const authTag = Buffer.from(authTagHex, 'hex');
+
+    // Attempt 1: Try decrypting with Global Secret (New Method)
     try {
-        const key = crypto.scryptSync(password, 'civicpulse_salt_2026', 32);
-        const [ivHex, authTagHex, encryptedHex] = ciphertext.split(':');
-        const iv = Buffer.from(ivHex, 'hex');
-        const authTag = Buffer.from(authTagHex, 'hex');
+        const globalSecret = process.env.ACCESS_TOKEN_SECRET || 'civicpulse_global_fallback_secret_2026';
+        const key = crypto.scryptSync(globalSecret, 'civicpulse_salt_2026', 32);
         const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
         decipher.setAuthTag(authTag);
         let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
         return decrypted;
     } catch (e) {
+        // Attempt 2: Try decrypting with User Password (Legacy Method)
+        if (password) {
+            try {
+                const key = crypto.scryptSync(password, 'civicpulse_salt_2026', 32);
+                const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+                decipher.setAuthTag(authTag);
+                let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+                decrypted += decipher.final('utf8');
+                return decrypted;
+            } catch (err) {
+                return null;
+            }
+        }
         return null;
     }
 };
