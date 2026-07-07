@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { CheckSquare, ArrowUpRight, Clock, MapPin, AlertCircle, Map, UserPlus, X } from 'lucide-react';
+import { CheckSquare, ArrowUpRight, Clock, MapPin, AlertCircle, Map, UserPlus, X, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { AuthContext } from '../../context/AuthContext';
 import ImageCarousel from '../../components/common/ImageCarousel';
+import CameraCapture from '../../components/complaints/CameraCapture';
 
 const AuthorityTasks = () => {
     const { user } = useContext(AuthContext);
@@ -23,6 +24,9 @@ const AuthorityTasks = () => {
     // Resolution Modal State
     const [resolveModalOpen, setResolveModalOpen] = useState(false);
     const [resolutionImages, setResolutionImages] = useState([]);
+    const [resolutionGps, setResolutionGps] = useState(null);
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [testModeBypass, setTestModeBypass] = useState(false);
     const [resolving, setResolving] = useState(false);
 
     const isSeniorOrHOD = user?.role === 'Admin' || user?.authorityLevel === 'Senior' || user?.authorityLevel === 'HOD';
@@ -74,12 +78,33 @@ const AuthorityTasks = () => {
             toast.error("At least 2 resolution images are required.");
             return;
         }
+        if (!resolutionGps && !testModeBypass) {
+            toast.error("GPS location is required to resolve this task.");
+            return;
+        }
 
         setResolving(true);
         const formData = new FormData();
         formData.append('status', 'Resolved');
+        
+        // Convert data URLs to blobs if they are from CameraCapture
         for (let i = 0; i < resolutionImages.length; i++) {
-            formData.append('resolutionImages', resolutionImages[i]);
+            const img = resolutionImages[i];
+            if (typeof img === 'string' && img.startsWith('data:image')) {
+                const res = await fetch(img);
+                const blob = await res.blob();
+                formData.append('resolutionImages', blob, `resolution_${i}.jpg`);
+            } else {
+                formData.append('resolutionImages', img);
+            }
+        }
+        
+        if (resolutionGps) {
+            formData.append('gps[lat]', resolutionGps.lat);
+            formData.append('gps[lng]', resolutionGps.lng);
+        }
+        if (testModeBypass) {
+            formData.append('testModeBypass', 'true');
         }
 
         try {
@@ -92,6 +117,8 @@ const AuthorityTasks = () => {
             toast.success(data.message);
             setResolveModalOpen(false);
             setResolutionImages([]);
+            setResolutionGps(null);
+            setTestModeBypass(false);
             fetchTasks(); // refresh board
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to resolve task');
@@ -479,13 +506,49 @@ const AuthorityTasks = () => {
                                 
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Resolution Images (Min 2)</label>
+                                    
+                                    <div className="flex gap-4">
+                                        {resolutionImages.length < 5 && (
+                                            <button 
+                                                type="button"
+                                                onClick={() => setIsCameraOpen(true)}
+                                                className="w-24 h-24 shrink-0 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50 text-emerald-600 flex flex-col items-center justify-center gap-2 hover:bg-emerald-100 hover:border-emerald-400 transition-colors"
+                                            >
+                                                <Camera size={24} />
+                                                <span className="text-xs font-bold">Live Capture</span>
+                                            </button>
+                                        )}
+                                        <div className="flex-1 flex gap-2 overflow-x-auto pb-2">
+                                            {resolutionImages.map((img, i) => (
+                                                <div key={i} className="w-24 h-24 shrink-0 rounded-2xl overflow-hidden relative border border-slate-200">
+                                                    <img src={typeof img === 'string' ? img : URL.createObjectURL(img)} alt="Resolution" className="w-full h-full object-cover" />
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setResolutionImages(resolutionImages.filter((_, idx) => idx !== i))}
+                                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-md p-1 opacity-80 hover:opacity-100"
+                                                    >
+                                                        <X size={12}/>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-2">
+                                        For authenticity, resolutions must be captured live at the physical location.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-2 mt-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
                                     <input 
-                                        type="file" 
-                                        accept="image/*"
-                                        multiple
-                                        onChange={(e) => setResolutionImages(Array.from(e.target.files))}
-                                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-colors border border-slate-200 rounded-xl p-2"
+                                        type="checkbox" 
+                                        id="testModeBypass" 
+                                        checked={testModeBypass}
+                                        onChange={(e) => setTestModeBypass(e.target.checked)}
+                                        className="w-4 h-4 text-emerald-600 bg-white border-slate-300 rounded focus:ring-emerald-500"
                                     />
+                                    <label htmlFor="testModeBypass" className="text-sm font-bold text-slate-700">
+                                        [DEV ONLY] Bypass GPS Radius & AI Verification
+                                    </label>
                                 </div>
 
                                 {resolutionImages.length > 0 && (
@@ -500,6 +563,7 @@ const AuthorityTasks = () => {
                                         onClick={() => {
                                             setResolveModalOpen(false);
                                             setResolutionImages([]);
+                                            setResolutionGps(null);
                                         }}
                                         className="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                                     >
@@ -516,6 +580,27 @@ const AuthorityTasks = () => {
                             </form>
                         </motion.div>
                     </div>
+                )}
+            </AnimatePresence>
+
+            {/* Camera Overlay */}
+            <AnimatePresence>
+                {isCameraOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100]"
+                    >
+                        <CameraCapture 
+                            onClose={() => setIsCameraOpen(false)}
+                            onCapture={(data) => {
+                                setResolutionImages(prev => [...prev, ...data.photos]);
+                                setResolutionGps(data.gps);
+                                setIsCameraOpen(false);
+                            }}
+                        />
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>

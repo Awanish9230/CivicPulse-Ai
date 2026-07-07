@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, MessageSquare, ShieldCheck, Search, Activity } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 
 const HeroSection = () => {
+    const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleReportClick = (e) => {
+        e.preventDefault();
+        if (user) {
+            navigate('/complaints');
+        } else {
+            navigate('/auth?mode=register');
+        }
+    };
+
     return (
         <section className="relative w-full rounded-[40px] bg-[#F8FAFC] border border-slate-200 overflow-hidden py-24 px-6 text-center shadow-inner mt-4">
             {/* Optimized Static Background (No animated huge blurs) */}
@@ -23,21 +36,23 @@ const HeroSection = () => {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-500 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-600"></span>
                     </span>
-                    AI-Powered Civic Engagement
+                    Join 10,000+ citizens resolving civic issues
                 </motion.div>
                 
                 {/* Headline */}
-                <motion.h1 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.1 }}
-                    className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[1.1]"
+                    className="space-y-4"
                 >
-                    Report Issues. <br className="hidden md:block" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
-                        Stay Anonymous.
-                    </span>
-                </motion.h1>
+                    <h1 className="text-5xl md:text-7xl font-black text-slate-800 tracking-tight leading-[1.1]">
+                        Report. Resolve. <br className="hidden md:block" />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
+                            Rebuild Together.
+                        </span>
+                    </h1>
+                </motion.div>
                 
                 {/* Description */}
                 <motion.p 
@@ -56,9 +71,9 @@ const HeroSection = () => {
                     transition={{ duration: 0.6, delay: 0.3 }}
                     className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
                 >
-                    <Link to="/auth?mode=register" className="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-1">
+                    <button onClick={handleReportClick} className="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-1">
                         Report Issue <ArrowRight size={20} />
-                    </Link>
+                    </button>
                     <Link to="/community" className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-2xl flex items-center justify-center gap-2 transition-all border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-1">
                         Explore Community
                     </Link>

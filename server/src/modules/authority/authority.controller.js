@@ -5,6 +5,10 @@ import asyncHandler from "../../utils/asynchandler.js";
 import ApiResponse from "../../utils/ApiResponse.js";
 import notificationService from "../notification/notification.service.js";
 import uploadOnCloudinary from "../../utils/cloudinary.js";
+import { calculateDistance } from '../../utils/geo.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Middleware-like check, can be extracted to auth.middleware.js if needed
 const checkSuperOfficer = (req) => {
@@ -146,7 +150,7 @@ export const updateTask = asyncHandler(async (req, res) => {
     }
 
     const { complaintId } = req.params;
-    const { status, expectedCompletionDate } = req.body;
+    const { status, expectedCompletionDate, gps, testModeBypass } = req.body;
 
     const complaint = await Complaint.findById(complaintId);
 
@@ -158,8 +162,27 @@ export const updateTask = asyncHandler(async (req, res) => {
 
     // Resolution enforcement
     if (status === 'Resolved' && complaint.status !== 'Resolved') {
+        if (!testModeBypass) {
+            // 1. Enforce GPS location
+            if (!gps || !gps.lat || !gps.lng) {
+                throw new ApiError(400, "Live GPS coordinates are required for task resolution.");
+            }
+            
+            if (complaint.location && complaint.location.coordinates.length === 2) {
+                // coordinates are [longitude, latitude]
+                const issueLon = complaint.location.coordinates[0];
+                const issueLat = complaint.location.coordinates[1];
+                
+                const distance = calculateDistance(gps.lat, gps.lng, issueLat, issueLon);
+                
+                if (distance > 200) {
+                    throw new ApiError(400, `Resolution rejected: You are ${Math.round(distance)} meters away from the reported issue. You must be within 200 meters to resolve this task.`);
+                }
+            }
+        }
+
         if (!req.files || req.files.length < 2) {
-            throw new ApiError(400, "At least 2 resolution images are required to mark a task as Resolved.");
+            throw new ApiError(400, "At least 2 live resolution images are required to mark a task as Resolved.");
         }
 
         const uploadedImages = [];
@@ -173,10 +196,70 @@ export const updateTask = asyncHandler(async (req, res) => {
         if (uploadedImages.length < 2) {
             throw new ApiError(500, "Failed to upload resolution images to Cloudinary");
         }
+        
+        if (!testModeBypass) {
+            // 2. Gemini AI Validation
+            try {
+                // Get the original issue image if available
+                const originalImageUrl = complaint.imageUrls?.[0] || complaint.imageUrl;
+                
+                if (originalImageUrl) {
+                    // Helper to fetch image and convert to base64 for Gemini
+                    const fetchImageAsBase64 = async (url) => {
+                        const response = await fetch(url);
+                        const arrayBuffer = await response.arrayBuffer();
+                        return Buffer.from(arrayBuffer).toString('base64');
+                    };
+
+                    const originalBase64 = await fetchImageAsBase64(originalImageUrl);
+                    const resolutionBase64 = await fetchImageAsBase64(uploadedImages[0]);
+                    
+                    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                    
+                    const prompt = `You are a strict civic AI inspector.
+I am providing two images. 
+Image 1 (first) is the original complaint (e.g., a pothole, garbage, broken light).
+Image 2 (second) is the resolution proof provided by the authority.
+Your job is to determine if the core issue shown in Image 1 has genuinely been fixed in Image 2.
+Respond ONLY with a JSON object in the following format:
+{
+  "isResolved": boolean,
+  "reason": "a short explanation of your decision"
+}
+Do not use markdown blocks, just return the raw JSON text.`;
+                    
+                    const imageParts = [
+                        { inlineData: { data: originalBase64, mimeType: "image/jpeg" } },
+                        { inlineData: { data: resolutionBase64, mimeType: "image/jpeg" } }
+                    ];
+
+                    const result = await model.generateContent([prompt, ...imageParts]);
+                    const responseText = result.response.text();
+                    
+                    try {
+                        const aiDecision = JSON.parse(responseText.replace(/```json/g, '').replace(/```/g, '').trim());
+                        
+                        if (!aiDecision.isResolved) {
+                            throw new ApiError(400, `AI Verification Failed: ${aiDecision.reason}`);
+                        }
+                    } catch (parseError) {
+                        if (parseError instanceof ApiError) throw parseError; // Rethrow AI rejection
+                        console.error("Failed to parse Gemini response:", responseText);
+                        // If it fails to parse, we can either block or let it pass. Let's block if strict.
+                        throw new ApiError(500, "Failed to automatically verify resolution images. Please try again.");
+                    }
+                }
+            } catch (error) {
+                if (error instanceof ApiError) throw error;
+                console.error("Gemini AI Verification Error:", error);
+                throw new ApiError(500, "AI Verification encountered an error. Try again.");
+            }
+        }
 
         complaint.resolutionImages = uploadedImages;
         complaint.resolutionFeedback.status = 'Pending';
-        updates.push(`Uploaded ${uploadedImages.length} resolution images`);
+        updates.push(`Uploaded ${uploadedImages.length} live resolution images from site`);
+        if (!testModeBypass) updates.push(`AI successfully verified resolution`);
     }
 
     if (status && complaint.status !== status) {
