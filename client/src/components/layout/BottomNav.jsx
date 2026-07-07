@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Users, Bell, User } from 'lucide-react';
+import { Home, FileText, Users, Bell, User, LayoutDashboard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useContext } from 'react';
 import { NotificationContext } from '../../context/NotificationContext';
 
 const navItems = [
     { name: 'Home', path: '/', icon: Home },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Complaints', path: '/complaints', icon: FileText },
     { name: 'Community', path: '/community', icon: Users },
     { name: 'Notifications', path: '/notifications', icon: Bell },
@@ -28,7 +29,7 @@ const BottomNav = () => {
                             {item.name === 'Notifications' && unreadCount > 0 && (
                                 <span className="absolute -top-1 -right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white"></span>
                             )}
-                            <span className={`text-[10px] transition-all ${isActive ? 'font-bold opacity-100' : 'font-medium opacity-70'}`}>
+                            <span className={`text-[8px] sm:text-[9px] transition-all whitespace-nowrap ${isActive ? 'font-bold opacity-100' : 'font-medium opacity-70'}`}>
                                 {item.name}
                             </span>
                         </div>

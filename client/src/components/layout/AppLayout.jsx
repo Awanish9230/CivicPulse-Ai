@@ -19,7 +19,7 @@ const AppLayout = () => {
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
             <main className={`flex-1 min-w-0 pb-16 md:pb-0 transition-[margin] duration-300 ease-in-out ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
-                <header className="h-16 md:h-20 border-b border-border/50 glass flex items-center px-4 md:px-10 justify-between sticky top-0 z-40 gap-2 md:gap-4">
+                <header className="h-14 md:h-16 border-b border-border/50 glass flex items-center px-4 md:px-10 justify-between sticky top-0 z-40 gap-2 md:gap-4">
                     <div className="flex items-center gap-2 md:gap-4 truncate">
                         <div className="md:hidden font-black text-xl md:text-2xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 tracking-tight truncate">
                             CivicPulse
@@ -36,7 +36,7 @@ const AppLayout = () => {
                     </div>
                 </header>
 
-                <div className="p-4 md:p-8 max-w-6xl mx-auto min-h-[calc(100vh-5rem)]">
+                <div className="p-4 md:py-6 md:px-8 max-w-6xl mx-auto min-h-[calc(100vh-5rem)]">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}

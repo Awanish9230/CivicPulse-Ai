@@ -28,7 +28,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
     return (
         <aside className={`hidden md:flex flex-col ${isOpen ? 'w-64' : 'w-20'} h-screen bg-white/80 backdrop-blur-xl border-r border-border fixed left-0 top-0 transition-all duration-300 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)]`}>
-            <div className={`p-6 flex items-center ${isOpen ? 'justify-between' : 'justify-center'} h-20 border-b border-border/50`}>
+            <div className={`px-6 flex items-center ${isOpen ? 'justify-between' : 'justify-center'} h-16 border-b border-border/50`}>
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={() => setIsOpen(!isOpen)}

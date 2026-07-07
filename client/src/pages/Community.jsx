@@ -392,7 +392,7 @@ const Community = () => {
     ];
 
     return (
-        <div className="flex h-[calc(100dvh-10rem)] md:h-[calc(100vh-6rem)] max-w-6xl mx-auto bg-white/70 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden mb-0 md:mb-8 relative z-10">
+        <div className="flex h-[calc(100dvh-10rem)] md:h-[calc(100vh-7rem)] max-w-6xl mx-auto bg-white/70 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden relative z-10">
             
             {/* Location Denied Overlay */}
             {locationDenied && (
@@ -412,7 +412,7 @@ const Community = () => {
                     <p className="text-xs text-slate-500 mt-1 font-medium">Local connections</p>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
+                <div className="flex-1 overflow-hidden p-4 flex flex-col justify-between">
                     <div className="space-y-1">
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-3">Channels</div>
                         {channels.map(channel => {
@@ -438,7 +438,7 @@ const Community = () => {
                     </div>
 
                     {/* Trending Widget */}
-                    <div className="mt-8 bg-white/60 border border-white/80 rounded-3xl p-5 shadow-sm backdrop-blur-md shrink-0">
+                    <div className="mt-4 bg-white/60 border border-white/80 rounded-3xl p-5 shadow-sm backdrop-blur-md shrink-0">
                         <div className="flex items-center gap-2 text-primary font-black mb-4">
                             <TrendingUp size={16} />
                             <span className="text-sm tracking-tight">Trending Issues</span>
