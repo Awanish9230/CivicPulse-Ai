@@ -178,7 +178,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
     // 6. Create complaint
     const complaint = await Complaint.create({
-        reportedBy: req.user._id,
+        reportedBy: req.user.anonymousId,
         category,
         location: {
             type: "Point",
@@ -238,7 +238,7 @@ export const getMyComplaints = asyncHandler(async (req, res) => {
 
     // Fetch all complaints created by the logged-in user
     const complaints = await Complaint.find({
-        reportedBy: req.user._id,
+        reportedBy: req.user.anonymousId,
     }).sort({
         createdAt: -1,                  //sort them in newset to oldest
     }).populate('assignedTo', 'name authorityLevel department');
@@ -268,8 +268,7 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
 
     // 3. Check ownership
     if (
-        complaint.reportedBy.toString() !==
-        req.user._id.toString()
+        complaint.reportedBy !== req.user.anonymousId
     ) {
         throw new ApiError(
             403,
@@ -349,7 +348,7 @@ export const editComplaint = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Complaint not found");
     }
 
-    if (complaint.reportedBy.toString() !== req.user._id.toString()) {
+    if (complaint.reportedBy !== req.user.anonymousId) {
         throw new ApiError(403, "You are not authorized to edit this complaint");
     }
 
@@ -375,7 +374,7 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
         throw new ApiError(404, 'Complaint not found');
     }
 
-    if (complaint.reportedBy.toString() !== req.user._id.toString()) {
+    if (complaint.reportedBy !== req.user.anonymousId) {
         throw new ApiError(403, 'Only the reporter can provide feedback');
     }
 

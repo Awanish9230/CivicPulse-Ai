@@ -85,10 +85,11 @@ userSchema.methods.isPasswordCorrect = async function(password){
 }
 
 // generating access token and refresh token
-userSchema.methods.generateAccessToken = function () {    
+userSchema.methods.generateAccessToken = function (plainAnonymousId) {    
     return jwt.sign(
         {
             _id: this._id,
+            anonymousId: plainAnonymousId || this.anonymousId // Fallback if plain isn't provided
         },
         process.env.JWT_SECRET,
         {
@@ -127,8 +128,39 @@ userSchema.methods.generatePasswordResetToken = function() {
 };
 
 // generates random anonymous id for each user
-userSchema.statics.generateAnonymousId = function () {           //used by User not "user"
-    return `CP-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+userSchema.statics.generateAnonymousId = function () {
+    return `CP-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
+};
+
+// Encrypt Identity using password
+userSchema.statics.encryptIdentity = function(plaintext, password) {
+    if (!plaintext || !password) return null;
+    const key = crypto.scryptSync(password, 'civicpulse_salt_2026', 32);
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    let encrypted = cipher.update(plaintext, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    const authTag = cipher.getAuthTag().toString('hex');
+    return `${iv.toString('hex')}:${authTag}:${encrypted}`;
+};
+
+// Decrypt Identity using password
+userSchema.statics.decryptIdentity = function(ciphertext, password) {
+    if (!ciphertext || !password) return null;
+    if (!ciphertext.includes(':')) return ciphertext; // In case it's already plaintext (legacy users)
+    try {
+        const key = crypto.scryptSync(password, 'civicpulse_salt_2026', 32);
+        const [ivHex, authTagHex, encryptedHex] = ciphertext.split(':');
+        const iv = Buffer.from(ivHex, 'hex');
+        const authTag = Buffer.from(authTagHex, 'hex');
+        const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+        decipher.setAuthTag(authTag);
+        let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        return decrypted;
+    } catch (e) {
+        return null;
+    }
 };
 
  const User = mongoose.model('User', userSchema);

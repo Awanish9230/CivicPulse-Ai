@@ -6,8 +6,7 @@ function arrayLimit(val) {
 
 const complaintSchema = new mongoose.Schema({
     reportedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        type: String, // Store anonymousId directly instead of User ref
         required: true,
     },
     category: {

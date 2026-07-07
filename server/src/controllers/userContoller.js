@@ -5,11 +5,11 @@ import ApiResponse from "../utils/ApiResponse.js"
 import crypto from "crypto";
 import { sendWelcomeEmail, sendPasswordResetEmail } from "../services/emailService.js";
   
-const generateAccessAndRefreshTokens = async (userId) => {
+const generateAccessAndRefreshTokens = async (userId, plainAnonymousId) => {
     try {
         const user = await User.findById(userId);
 
-        const accessToken = user.generateAccessToken();
+        const accessToken = user.generateAccessToken(plainAnonymousId);
         const refreshToken = user.generateRefreshToken();
 
         user.refreshToken = refreshToken;
@@ -37,7 +37,18 @@ export const rotateAnonymousId = asynchandler(async (req, res) => {
         throw new ApiError(401, "Unauthorized request");
     }
 
-    user.anonymousId = User.generateAnonymousId();
+    const { password } = req.body;
+    if (!password) {
+        throw new ApiError(400, "Password is required to rotate anonymous identity");
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password);
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Invalid password");
+    }
+
+    const plainAnonymousId = User.generateAnonymousId();
+    user.anonymousId = User.encryptIdentity(plainAnonymousId, password);
 
     await user.save({
         validateBeforeSave: false
@@ -47,7 +58,7 @@ export const rotateAnonymousId = asynchandler(async (req, res) => {
         new ApiResponse(
             200,
             {
-                anonymousId: user.anonymousId
+                anonymousId: plainAnonymousId
             },
             "Anonymous ID rotated successfully"
         )
@@ -69,11 +80,14 @@ export const registerUser = asynchandler(async (req, res) => {
     if (existingUser) {
         throw new ApiError(409, "User already exists");
     }
+    const plainAnonymousId = User.generateAnonymousId();
+    const encryptedAnonymousId = User.encryptIdentity(plainAnonymousId, password);
+
     // 4. Create user
     const user = await User.create({
         email,
         password,
-        anonymousId: User.generateAnonymousId(),
+        anonymousId: encryptedAnonymousId,
     });
     // 5. Fetch created user without sensitive fields
     const createdUser = await User.findById(user._id).select(
@@ -138,14 +152,18 @@ export const loginUser = asynchandler(async (req, res) => {
         throw new ApiError(401, "Invalid email or password");
     }
 
+    // Decrypt Identity
+    const plainAnonymousId = User.decryptIdentity(user.anonymousId, password) || user.anonymousId;
+
     // 6. Generate tokens
     const { accessToken, refreshToken } =
-        await generateAccessAndRefreshTokens(user._id);
+        await generateAccessAndRefreshTokens(user._id, plainAnonymousId);
 
     // 7. Fetch updated user without sensitive fields
     const loggedInUser = await User.findById(user._id).select(
         "-password -refreshToken"
-    );
+    ).lean();
+    loggedInUser.anonymousId = plainAnonymousId;
 
     // 8. Cookie options
    const options = {
@@ -212,11 +230,13 @@ export const logoutUser = asynchandler(async (req, res) => {
 });
 
 export const getMe = asynchandler(async (req, res) => {
-    const user = await User.findById(req.user._id).select('-password -refreshToken');
+    // 7. Fetch user and inject plain anonymousId
+    const user = await User.findById(req.user._id).select('-password -refreshToken').lean();
     
     if (!user) {
         throw new ApiError(404, "User not found");
     }
+    user.anonymousId = req.user.anonymousId;
 
     return res.status(200).json(
         new ApiResponse(200, user, "User profile fetched successfully")

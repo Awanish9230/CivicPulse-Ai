@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema({
     recipient: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        type: String, // Can be ObjectId (stringified) or anonymousId (CP-XYZ)
         required: true,
         index: true
     },

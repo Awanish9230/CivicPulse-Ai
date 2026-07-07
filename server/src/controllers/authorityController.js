@@ -75,8 +75,7 @@ export const getTasks = asyncHandler(async (req, res) => {
 
     const complaints = await Complaint.find(filter)
         .sort({ createdAt: -1 })
-        .populate('reportedBy', 'anonymousId')
-        .populate('assignedTo', 'name authorityLevel department');
+        .populate('assignedTo', 'name department');
 
     return res.status(200).json(
         new ApiResponse(200, complaints, "Tasks fetched successfully")
@@ -383,11 +382,9 @@ export const getAnalytics = asyncHandler(async (req, res) => {
 
     const complaints = await Complaint.find(filter)
         .sort({ createdAt: -1 })
-        .populate('reportedBy', 'anonymousId')
         .populate('assignedTo', 'name authorityLevel department');
 
     return res.status(200).json(
         new ApiResponse(200, complaints, 'Analytics data fetched successfully')
     );
 });
-

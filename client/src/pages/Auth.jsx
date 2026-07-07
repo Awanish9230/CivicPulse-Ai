@@ -67,7 +67,7 @@ const Auth = () => {
                         rotate: [0, 90, 0],
                     }}
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-primary/10 blur-[120px] mix-blend-screen"
+                    className="absolute top-[-20%] left-[10%] w-[70vw] h-[70vw] rounded-full bg-primary/10 blur-[120px] mix-blend-screen"
                 />
                 <motion.div 
                     animate={{ 
@@ -75,7 +75,7 @@ const Auth = () => {
                         rotate: [0, -90, 0],
                     }}
                     transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-[40%] -right-[20%] w-[60vw] h-[60vw] rounded-full bg-blue-600/10 blur-[120px] mix-blend-screen"
+                    className="absolute top-[40%] right-[20%] w-[60vw] h-[60vw] rounded-full bg-blue-600/10 blur-[120px] mix-blend-screen"
                 />
             </div>
 
@@ -86,7 +86,7 @@ const Auth = () => {
                 className="w-full max-w-5xl bg-slate-900/40 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-3xl overflow-hidden flex flex-col md:flex-row relative z-10"
             >
                 {/* Left Side: Branding & Dynamic Info */}
-                <div className="w-full md:w-5/12 bg-gradient-to-br from-primary/80 to-blue-900/80 p-5 sm:p-6 md:p-14 flex flex-col justify-between text-white relative overflow-hidden">
+                <div className="w-full md:w-5/12 bg-linear-to-br from-primary/80 to-blue-900/80 p-5 sm:p-6 md:p-14 flex flex-col justify-between text-white relative overflow-hidden">
                     <div className="absolute inset-0 bg-black/20 mix-blend-overlay"></div>
                     
                     <div className="relative z-10">
@@ -178,7 +178,7 @@ const Auth = () => {
                                             />
                                             <label 
                                                 htmlFor="email" 
-                                                className="absolute text-slate-400 left-5 top-5 transition-all duration-300 peer-focus:text-xs peer-focus:text-primary peer-focus:top-2 peer-focus:font-bold peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:font-bold pointer-events-none"
+                                                className="absolute text-slate-400 left-5 top-5 transition-all duration-300 peer-focus:text-xs peer-focus:text-primary peer-focus:top-2 peer-focus:font-bold peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:top-2 peer-not-placeholder-shown:font-bold pointer-events-none"
                                             >
                                                 Email Address
                                             </label>
@@ -203,7 +203,7 @@ const Auth = () => {
                                             />
                                             <label 
                                                 htmlFor="password" 
-                                                className="absolute text-slate-400 left-5 top-5 transition-all duration-300 peer-focus:text-xs peer-focus:text-primary peer-focus:top-2 peer-focus:font-bold peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:font-bold pointer-events-none"
+                                                className="absolute text-slate-400 left-5 top-5 transition-all duration-300 peer-focus:text-xs peer-focus:text-primary peer-focus:top-2 peer-focus:font-bold peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-primary peer-not-placeholder-shown:top-2 peer-not-placeholder-shown:font-bold pointer-events-none"
                                             >
                                                 Password
                                             </label>
@@ -235,7 +235,7 @@ const Auth = () => {
                                         <motion.span 
                                             animate={{ x: ["-100%", "200%"] }}
                                             transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                                            className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                                            className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent"
                                         />
                                         <span className="relative flex items-center gap-2 z-10">
                                             {loading ? (

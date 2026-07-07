@@ -55,6 +55,9 @@ export const NotificationProvider = ({ children }) => {
 
             newSocket.on('connect', () => {
                 newSocket.emit('join', user._id);
+                if (user.anonymousId) {
+                    newSocket.emit('join', user.anonymousId);
+                }
                 newSocket.emit('joinRoom', 'local-community-general');
                 newSocket.emit('joinRoom', 'local-community-authority');
             });

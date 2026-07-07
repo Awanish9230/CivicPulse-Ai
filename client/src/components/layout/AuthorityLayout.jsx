@@ -21,7 +21,7 @@ const AuthoritySidebar = ({ onLogout }) => {
     return (
         <aside className="hidden md:flex flex-col w-20 lg:w-64 h-screen bg-emerald-950 border-r border-emerald-900 fixed left-0 top-0 transition-all duration-300 z-50 text-white">
             <div className="p-6 flex items-center justify-center lg:justify-start h-20 border-b border-emerald-900">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-black text-xl shadow-lg shadow-emerald-500/30">
+                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-black text-xl shadow-lg shadow-emerald-500/30">
                     A
                 </div>
                 <span className="hidden lg:block ml-3 font-black text-2xl tracking-tight">

@@ -69,7 +69,7 @@ const AdminSidebar = ({ onLogout }) => {
     return (
         <aside className="hidden md:flex flex-col w-20 lg:w-72 h-screen bg-orange-950 border-r border-orange-900 fixed left-0 top-0 transition-all duration-300 z-50 text-white">
             <div className="p-6 flex items-center justify-center lg:justify-start h-20 border-b border-orange-900 shrink-0">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center font-black text-xl shadow-lg shadow-orange-500/30">
+                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-orange-500 to-red-600 flex items-center justify-center font-black text-xl shadow-lg shadow-orange-500/30">
                     SA
                 </div>
                 <span className="hidden lg:block ml-3 font-black text-2xl tracking-tight text-white">

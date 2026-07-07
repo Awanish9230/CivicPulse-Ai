@@ -29,7 +29,7 @@ export const getAllCitizens = asynchandler(async (req, res) => {
 
     const query = { role: 'Citizen' };
     if (req.query.search) {
-        query.anonymousId = { $regex: req.query.search, $options: 'i' };
+        query.email = { $regex: req.query.search, $options: 'i' };
     }
 
     const citizens = await User.find(query).skip(skip).limit(limit).select('-password');
@@ -99,7 +99,6 @@ export const getAllComplaints = asynchandler(async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate('reportedBy', 'anonymousId')
         .populate('assignedTo', 'name department');
         
     const total = await Complaint.countDocuments(query);
