@@ -122,6 +122,18 @@ export const initSocket = (server) => {
             socket.to(data.room).emit('userTyping', data.user);
         });
 
+        // Real-time message edit
+        socket.on('editMessage', (data) => {
+            const { room, messageId, newText, channel } = data;
+            io.to(room).emit('messageEdited', { _id: messageId, text: newText, channel, isEdited: true });
+        });
+
+        // Real-time message delete
+        socket.on('deleteMessage', (data) => {
+            const { room, messageId, channel } = data;
+            io.to(room).emit('messageDeleted', { _id: messageId, channel });
+        });
+
         socket.on('disconnecting', () => {
             // Broadcast count updates for rooms the user is leaving
             for (const room of socket.rooms) {

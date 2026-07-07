@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp, Megaphone, ChevronDown } from 'lucide-react';
+import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp, Megaphone, ChevronDown, Pencil, Trash2, Check, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
@@ -154,7 +154,16 @@ const Community = () => {
     const [newMessage, setNewMessage] = useState('');
     const [onlineCounts, setOnlineCounts] = useState({});
     const [replyingTo, setReplyingTo] = useState(null);
+    const [editingMsg, setEditingMsg] = useState(null);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [showScrollButton, setShowScrollButton] = useState(false);
     const chatContainerRef = useRef(null);
+
+    const roomMap = {
+        'general': 'local-community-general',
+        'ask-authority': 'local-community-authority',
+        'announcements': 'local-community-announcements'
+    };
 
     const fetchComplaints = async (lat, lng, rds) => {
         try {
@@ -257,45 +266,82 @@ const Community = () => {
             setOnlineCounts(prev => ({ ...prev, [channel]: onlineCount }));
         });
 
+        newSocket.on('messageEdited', ({ _id, text, channel, isEdited }) => {
+            setMessages(prev => ({
+                ...prev,
+                [channel]: (prev[channel] || []).map(m => 
+                    m._id === _id ? { ...m, text, isEdited: true } : m
+                )
+            }));
+        });
+
+        newSocket.on('messageDeleted', ({ _id, channel }) => {
+            setMessages(prev => ({
+                ...prev,
+                [channel]: (prev[channel] || []).filter(m => m._id !== _id)
+            }));
+        });
+
         return () => newSocket.close();
     }, [radius, location]);
 
+    // Standalone function to fetch chat history
+    const loadHistory = async (channel) => {
+        const ch = channel || activeChannel;
+        if ((ch === 'general' || ch === 'ask-authority' || ch === 'announcements') && location && !locationDenied) {
+            setLoadingHistory(true);
+            try {
+                const params = {
+                    lat: location.lat,
+                    lng: location.lng
+                };
+                if (radius && radius !== 'All') {
+                    params.radius = radius;
+                }
+
+                const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/message/${ch}`, {
+                    withCredentials: true,
+                    params
+                });
+                setMessages(prev => ({
+                    ...prev,
+                    [ch]: data.data
+                }));
+            } catch (error) {
+                console.error("Failed to load chat history", error);
+            } finally {
+                setLoadingHistory(false);
+            }
+        }
+    };
+
     // Fetch chat history when channel changes
     useEffect(() => {
-        if ((activeChannel === 'general' || activeChannel === 'ask-authority' || activeChannel === 'announcements') && location && !locationDenied) {
-            const fetchChatHistory = async () => {
-                try {
-                    const params = {
-                        lat: location.lat,
-                        lng: location.lng
-                    };
-                    if (radius && radius !== 'All') {
-                        params.radius = radius;
-                    }
-
-                    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/message/${activeChannel}`, {
-                        withCredentials: true,
-                        params
-                    });
-                    setMessages(prev => ({
-                        ...prev,
-                        [activeChannel]: data.data
-                    }));
-                } catch (error) {
-                    console.error("Failed to load chat history", error);
-                }
-            };
-            fetchChatHistory();
-        }
+        loadHistory(activeChannel);
     }, [activeChannel, location, radius, locationDenied]);
 
-    // Auto-scroll chat
-    useEffect(() => {
+    const scrollToBottom = () => {
         if (chatContainerRef.current) {
             chatContainerRef.current.scrollTo({
                 top: chatContainerRef.current.scrollHeight,
                 behavior: 'smooth'
             });
+        }
+    };
+
+    const handleScroll = (e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        if (scrollHeight - scrollTop - clientHeight > 150) {
+            setShowScrollButton(true);
+        } else {
+            setShowScrollButton(false);
+        }
+    };
+
+    // Auto-scroll chat
+    useEffect(() => {
+        if (!showScrollButton) {
+            scrollToBottom();
         }
     }, [messages, activeChannel]);
 
@@ -335,9 +381,7 @@ const Community = () => {
         e.preventDefault();
         if (newMessage.trim() && socket && user) {
             const messageData = {
-                room: activeChannel === 'general' ? 'local-community-general' 
-                    : activeChannel === 'ask-authority' ? 'local-community-authority'
-                    : 'local-community-announcements',
+                room: roomMap[activeChannel],
                 message: {
                     id: Date.now().toString(),
                     senderId: user._id,
@@ -356,6 +400,46 @@ const Community = () => {
             socket.emit('sendMessage', messageData);
             setNewMessage('');
             setReplyingTo(null);
+        }
+    };
+
+    const handleEditMessage = async (msgId, newText) => {
+        if (!newText.trim()) return;
+        try {
+            await axios.put(`${import.meta.env.VITE_API_URL}/api/v1/message/${msgId}`,
+                { text: newText },
+                { withCredentials: true }
+            );
+            if (socket) {
+                socket.emit('editMessage', {
+                    room: roomMap[activeChannel],
+                    messageId: msgId,
+                    newText: newText.trim(),
+                    channel: activeChannel
+                });
+            }
+            setEditingMsg(null);
+            toast.success('Message edited');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to edit message');
+        }
+    };
+
+    const handleDeleteMessage = async (msgId) => {
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/v1/message/${msgId}`, {
+                withCredentials: true
+            });
+            if (socket) {
+                socket.emit('deleteMessage', {
+                    room: roomMap[activeChannel],
+                    messageId: msgId,
+                    channel: activeChannel
+                });
+            }
+            toast.success('Message deleted');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to delete message');
         }
     };
 
@@ -546,13 +630,16 @@ const Community = () => {
 
                         {/* Live Online Count for Chat Channels */}
                         {(activeChannel === 'general' || activeChannel === 'ask-authority' || activeChannel === 'announcements') && (
-                            <div className="flex items-center gap-1.5 md:gap-2 bg-green-500/10 text-green-600 px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shrink-0">
-                                <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-green-500"></span>
-                                </span>
-                                <span className="hidden sm:inline">{onlineCounts[activeChannel] || 1} online</span>
-                                <span className="sm:hidden">{onlineCounts[activeChannel] || 1}</span>
+                            <div className="flex items-center gap-2">
+
+                                <div className="flex items-center gap-1.5 md:gap-2 bg-green-500/10 text-green-600 px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shrink-0">
+                                    <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-green-500"></span>
+                                    </span>
+                                    <span className="hidden sm:inline">{onlineCounts[activeChannel] || 1} online</span>
+                                    <span className="sm:hidden">{onlineCounts[activeChannel] || 1}</span>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -584,7 +671,11 @@ const Community = () => {
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-scroll bg-[#F8FAFC]/50" ref={chatContainerRef}>
+                <div 
+                    className="flex-1 overflow-y-scroll bg-[#F8FAFC]/50 relative" 
+                    ref={chatContainerRef}
+                    onScroll={handleScroll}
+                >
                     <AnimatePresence mode="wait">
                     {/* Channel: #issue */}
                     {activeChannel === 'issue' ? (
@@ -649,16 +740,20 @@ const Community = () => {
                                 {(messages[activeChannel] || []).map((msg) => {
                                     const isMe = msg.senderId === user?._id || msg.sender === (user?.anonymousId || 'Anonymous Citizen');
                                     const isAuthority = msg.role === 'Authority';
+                                    const isAdmin = user?.role === 'Admin';
+                                    const canEdit = isMe;
+                                    const canDelete = isMe || isAdmin;
+                                    const isCurrentlyEditing = editingMsg?._id === msg._id;
 
                                     return (
                                         <motion.div 
                                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            key={msg.id} 
+                                            key={msg._id || msg.id} 
                                             className={`flex gap-4 group ${isMe ? 'flex-row-reverse text-right' : ''}`}
                                         >
                                             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-1 shadow-sm border ${isAuthority ? 'bg-gradient-to-br from-yellow-400 to-amber-500 border-amber-300 text-white shadow-amber-500/30' : 'bg-white border-slate-100 text-slate-500'}`}>
-                                                {isAuthority ? <ShieldAlert size={18} /> : <span className="font-bold text-sm">{msg.sender.substring(0,2).toUpperCase()}</span>}
+                                                {isAuthority ? <ShieldAlert size={18} /> : <span className="font-bold text-sm">{(msg.sender || '??').substring(0,2).toUpperCase()}</span>}
                                             </div>
                                             
                                             <div className={`flex flex-col max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
@@ -668,6 +763,9 @@ const Community = () => {
                                                         {isAuthority && <BadgeCheck size={14} className="text-yellow-500" />}
                                                     </span>
                                                     <span className="text-[10px] text-text/40">{msg.timestamp}</span>
+                                                    {msg.isEdited && (
+                                                        <span className="text-[10px] text-text/30 italic">(edited)</span>
+                                                    )}
                                                 </div>
 
                                                 <div className="flex flex-col gap-1 w-full">
@@ -679,19 +777,60 @@ const Community = () => {
                                                         </div>
                                                     )}
 
-                                                    <div className={`px-4 py-3 rounded-2xl text-sm break-words flex flex-col shadow-sm border ${isMe ? 'bg-gradient-to-r from-primary to-blue-600 text-white rounded-tr-sm border-blue-500/50 shadow-primary/20' : isAuthority ? 'bg-yellow-50/90 backdrop-blur-md border-yellow-200 text-yellow-900 rounded-tl-sm shadow-amber-500/10' : 'bg-white/90 backdrop-blur-md border-white text-slate-700 rounded-tl-sm shadow-[0_4px_20px_rgb(0,0,0,0.03)]'}`}>
-                                                        {renderMessageContent(msg.text)}
+                                                    <div className={`px-4 py-3 rounded-2xl text-sm break-words flex flex-col shadow-sm border relative ${isMe ? 'bg-gradient-to-r from-primary to-blue-600 text-white rounded-tr-sm border-blue-500/50 shadow-primary/20' : isAuthority ? 'bg-yellow-50/90 backdrop-blur-md border-yellow-200 text-yellow-900 rounded-tl-sm shadow-amber-500/10' : 'bg-white/90 backdrop-blur-md border-white text-slate-700 rounded-tl-sm shadow-[0_4px_20px_rgb(0,0,0,0.03)]'}`}>
+                                                        {isCurrentlyEditing ? (
+                                                            <div className="flex items-center gap-2 min-w-[180px]">
+                                                                <input
+                                                                    type="text"
+                                                                    value={editingMsg.text}
+                                                                    onChange={(e) => setEditingMsg({ ...editingMsg, text: e.target.value })}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter') handleEditMessage(msg._id, editingMsg.text);
+                                                                        if (e.key === 'Escape') setEditingMsg(null);
+                                                                    }}
+                                                                    autoFocus
+                                                                    className={`flex-1 bg-transparent outline-none text-sm ${isMe ? 'text-white placeholder-white/50' : 'text-slate-800'}`}
+                                                                />
+                                                                <button onClick={() => handleEditMessage(msg._id, editingMsg.text)} className="p-1 rounded-full hover:bg-black/10 transition-colors">
+                                                                    <Check size={13} />
+                                                                </button>
+                                                                <button onClick={() => setEditingMsg(null)} className="p-1 rounded-full hover:bg-black/10 transition-colors">
+                                                                    <X size={13} />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            renderMessageContent(msg.text)
+                                                        )}
                                                     </div>
                                                 </div>
 
-                                                {!isMe && (
-                                                    <button 
-                                                        onClick={() => setReplyingTo(msg)}
-                                                        className="text-[10px] font-bold text-text/40 hover:text-primary transition-colors mt-1 px-2 opacity-0 group-hover:opacity-100"
-                                                    >
-                                                        Reply
-                                                    </button>
-                                                )}
+                                                {/* Action buttons under message */}
+                                                <div className="flex items-center gap-1 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    {!isMe && (
+                                                        <button 
+                                                            onClick={() => setReplyingTo(msg)}
+                                                            className="text-[10px] font-bold text-text/40 hover:text-primary transition-colors px-1.5 py-0.5 rounded hover:bg-primary/5"
+                                                        >
+                                                            Reply
+                                                        </button>
+                                                    )}
+                                                    {canEdit && !isCurrentlyEditing && (
+                                                        <button 
+                                                            onClick={() => setEditingMsg({ _id: msg._id, text: msg.text })}
+                                                            className="text-[10px] font-bold text-text/40 hover:text-amber-600 transition-colors px-1.5 py-0.5 rounded hover:bg-amber-50 flex items-center gap-0.5"
+                                                        >
+                                                            <Pencil size={10} /> Edit
+                                                        </button>
+                                                    )}
+                                                    {canDelete && (
+                                                        <button 
+                                                            onClick={() => handleDeleteMessage(msg._id)}
+                                                            className="text-[10px] font-bold text-text/40 hover:text-red-600 transition-colors px-1.5 py-0.5 rounded hover:bg-red-50 flex items-center gap-0.5"
+                                                        >
+                                                            <Trash2 size={10} /> Delete
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </motion.div>
                                     );
@@ -699,6 +838,21 @@ const Community = () => {
                             </div>
                         </motion.div>
                     )}
+                    </AnimatePresence>
+
+                    {/* Scroll to bottom FAB */}
+                    <AnimatePresence>
+                        {showScrollButton && (
+                            <motion.button
+                                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                                onClick={scrollToBottom}
+                                className="fixed bottom-[90px] right-6 md:absolute md:bottom-6 md:right-6 w-10 h-10 bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg flex items-center justify-center transition-colors z-50"
+                            >
+                                <ChevronDown size={20} />
+                            </motion.button>
+                        )}
                     </AnimatePresence>
                 </div>
 

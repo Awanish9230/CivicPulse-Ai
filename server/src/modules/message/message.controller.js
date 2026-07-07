@@ -55,11 +55,72 @@ export const getChannelMessages = asyncHandler(async (req, res) => {
         timestamp: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
         createdAt: msg.createdAt,
         channel: msg.channel,
+        isEdited: msg.isEdited || false,
         role: msg.senderRole || ((msg.senderName === 'Anonymous Citizen' || msg.senderName?.startsWith('CP-')) ? 'Citizen' : 'Authority')
     }));
 
     res.status(200).json({
         success: true,
         data: formattedMessages,
+    });
+});
+
+export const editMessage = asyncHandler(async (req, res) => {
+    const { messageId } = req.params;
+    const { text } = req.body;
+
+    if (!text || !text.trim()) {
+        throw new ApiError(400, "Message text is required");
+    }
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+        throw new ApiError(404, "Message not found");
+    }
+
+    // Only the sender can edit their own message
+    if (message.sender.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You can only edit your own messages");
+    }
+
+    message.content = text.trim();
+    message.isEdited = true;
+    await message.save();
+
+    res.status(200).json({
+        success: true,
+        data: {
+            _id: message._id,
+            text: message.content,
+            channel: message.channel,
+            isEdited: true
+        },
+        message: "Message updated successfully"
+    });
+});
+
+export const deleteMessage = asyncHandler(async (req, res) => {
+    const { messageId } = req.params;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+        throw new ApiError(404, "Message not found");
+    }
+
+    // Sender can delete their own, Admin can delete any
+    const isSender = message.sender.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'Admin';
+
+    if (!isSender && !isAdmin) {
+        throw new ApiError(403, "You can only delete your own messages");
+    }
+
+    const channel = message.channel;
+    await Message.findByIdAndDelete(messageId);
+
+    res.status(200).json({
+        success: true,
+        data: { _id: messageId, channel },
+        message: "Message deleted successfully"
     });
 });

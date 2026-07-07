@@ -45,6 +45,10 @@ const messageSchema = new mongoose.Schema({
         enum: ['Citizen', 'Authority', 'Admin'],
         default: 'Citizen'
     },
+    isEdited: {
+        type: Boolean,
+        default: false,
+    },
     isToxic: {
         type: Boolean,
         default: false,
