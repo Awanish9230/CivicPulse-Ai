@@ -14,8 +14,8 @@ const aiFeatures = [
 const AIFeatures = () => {
     return (
         <section className="py-20 relative overflow-hidden">
-            {/* Background elements */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[600px] bg-gradient-to-r from-indigo-50 to-purple-50 rounded-full blur-[100px] -z-10" />
+            {/* Background elements (Optimized without blur) */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-50 via-purple-50/50 to-transparent -z-10" />
 
             <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm mb-4">

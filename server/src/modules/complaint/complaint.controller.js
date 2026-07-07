@@ -236,9 +236,11 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
 export const getMyComplaints = asyncHandler(async (req, res) => {
 
-    // Fetch all complaints created by the logged-in user
+    // Fetch all complaints created by the logged-in user (including past rotated identities)
+    const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
+
     const complaints = await Complaint.find({
-        reportedBy: req.user.anonymousId,
+        reportedBy: { $in: allUserIdentities },
     }).sort({
         createdAt: -1,                  //sort them in newset to oldest
     }).populate('assignedTo', 'name authorityLevel department');
@@ -267,9 +269,8 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
     }
 
     // 3. Check ownership
-    if (
-        complaint.reportedBy !== req.user.anonymousId
-    ) {
+    const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
+    if (!allUserIdentities.includes(complaint.reportedBy)) {
         throw new ApiError(
             403,
             "You are not authorized to delete this complaint"
@@ -348,7 +349,8 @@ export const editComplaint = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Complaint not found");
     }
 
-    if (complaint.reportedBy !== req.user.anonymousId) {
+    const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
+    if (!allUserIdentities.includes(complaint.reportedBy)) {
         throw new ApiError(403, "You are not authorized to edit this complaint");
     }
 
@@ -374,7 +376,8 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
         throw new ApiError(404, 'Complaint not found');
     }
 
-    if (complaint.reportedBy !== req.user.anonymousId) {
+    const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
+    if (!allUserIdentities.includes(complaint.reportedBy)) {
         throw new ApiError(403, 'Only the reporter can provide feedback');
     }
 

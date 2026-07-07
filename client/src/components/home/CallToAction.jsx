@@ -6,7 +6,8 @@ const CallToAction = () => {
     return (
         <section className="py-24">
             <div className="bg-slate-900 rounded-[40px] p-8 md:p-16 text-white text-center relative overflow-hidden border border-slate-800 shadow-2xl">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none" />
+                {/* Optimized background without blur */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500/10 to-transparent pointer-events-none" />
 
                 <div className="relative z-10 max-w-3xl mx-auto space-y-10">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm backdrop-blur-sm">

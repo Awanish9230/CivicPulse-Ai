@@ -85,8 +85,8 @@ const Profile = () => {
             animate={{ opacity: 1 }} 
             className="max-w-3xl mx-auto space-y-8 pb-20 relative"
         >
-            {/* Ambient background */}
-            <div className={`absolute top-[10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none -z-10 ${isAuthority ? 'bg-yellow-500/10' : 'bg-primary/10'}`}></div>
+            {/* Ambient background (Optimized) */}
+            <div className={`absolute top-[10%] left-[-10%] w-[50%] h-[50%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] ${isAuthority ? 'from-yellow-500/10' : 'from-primary/10'} to-transparent pointer-events-none -z-10`}></div>
 
             {/* Header */}
             <div className="border-b border-border/50 pb-6">

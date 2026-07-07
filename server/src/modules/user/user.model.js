@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
         unique: true,
         index: true,
     },
+    pastAnonymousIds: {
+        type: [String],
+        default: [],
+    },
     role: {
         type: String,
         enum: ['Citizen', 'Authority', 'Admin'],
@@ -85,11 +89,12 @@ userSchema.methods.isPasswordCorrect = async function(password){
 }
 
 // generating access token and refresh token
-userSchema.methods.generateAccessToken = function (plainAnonymousId) {    
+userSchema.methods.generateAccessToken = function (plainAnonymousId, plainPastIds = []) {    
     return jwt.sign(
         {
             _id: this._id,
-            anonymousId: plainAnonymousId || this.anonymousId // Fallback if plain isn't provided
+            anonymousId: plainAnonymousId || this.anonymousId, // Fallback if plain isn't provided
+            pastAnonymousIds: plainPastIds
         },
         process.env.JWT_SECRET,
         {

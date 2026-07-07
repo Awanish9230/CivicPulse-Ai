@@ -110,8 +110,8 @@ const IssueCard = memo(({ item, index, user, expandedUpdates, setExpandedUpdates
                     </div>
                 )}
             </div>
-            {/* Heatmap background effect */}
-            <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[50px] rounded-full pointer-events-none" />
+            {/* Heatmap background effect (Optimized) */}
+            <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 to-transparent pointer-events-none -z-10" />
         </motion.div>
     );
 });

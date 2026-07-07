@@ -6,9 +6,9 @@ import { Link } from 'react-router-dom';
 const HeroSection = () => {
     return (
         <section className="relative w-full rounded-[40px] bg-[#F8FAFC] border border-slate-200 overflow-hidden py-24 px-6 text-center shadow-inner mt-4">
-            {/* Animated Background */}
-            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/20 blur-[120px] rounded-full animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-400/20 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+            {/* Optimized Static Background (No animated huge blurs) */}
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500/20 to-transparent" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-400/20 to-transparent" />
 
             <div className="relative z-10 max-w-5xl mx-auto space-y-8">
                 

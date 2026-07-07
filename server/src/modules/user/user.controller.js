@@ -5,11 +5,11 @@ import ApiResponse from "../../utils/ApiResponse.js"
 import crypto from "crypto";
 import { sendWelcomeEmail, sendPasswordResetEmail } from "../../services/emailService.js";
   
-const generateAccessAndRefreshTokens = async (userId, plainAnonymousId) => {
+const generateAccessAndRefreshTokens = async (userId, plainAnonymousId, plainPastIds = []) => {
     try {
         const user = await User.findById(userId);
 
-        const accessToken = user.generateAccessToken(plainAnonymousId);
+        const accessToken = user.generateAccessToken(plainAnonymousId, plainPastIds);
         const refreshToken = user.generateRefreshToken();
 
         user.refreshToken = refreshToken;
@@ -48,21 +48,33 @@ export const rotateAnonymousId = asynchandler(async (req, res) => {
     }
 
     const plainAnonymousId = User.generateAnonymousId();
+    user.pastAnonymousIds.push(user.anonymousId); // Save the old encrypted ID
     user.anonymousId = User.encryptIdentity(plainAnonymousId, password);
 
     await user.save({
         validateBeforeSave: false
     });
 
-    return res.status(200).json(
-        new ApiResponse(
-            200,
-            {
-                anonymousId: plainAnonymousId
-            },
-            "Anonymous ID rotated successfully"
-        )
-    );
+    const plainPastIds = (user.pastAnonymousIds || []).map(enc => User.decryptIdentity(enc, password)).filter(Boolean);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id, plainAnonymousId, plainPastIds);
+
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    };
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                { anonymousId: plainAnonymousId },
+                "Anonymous ID rotated successfully"
+            )
+        );
 
 });
 
@@ -154,10 +166,11 @@ export const loginUser = asynchandler(async (req, res) => {
 
     // Decrypt Identity
     const plainAnonymousId = User.decryptIdentity(user.anonymousId, password) || user.anonymousId;
+    const plainPastIds = (user.pastAnonymousIds || []).map(enc => User.decryptIdentity(enc, password)).filter(Boolean);
 
     // 6. Generate tokens
     const { accessToken, refreshToken } =
-        await generateAccessAndRefreshTokens(user._id, plainAnonymousId);
+        await generateAccessAndRefreshTokens(user._id, plainAnonymousId, plainPastIds);
 
     // 7. Fetch updated user without sensitive fields
     const loggedInUser = await User.findById(user._id).select(

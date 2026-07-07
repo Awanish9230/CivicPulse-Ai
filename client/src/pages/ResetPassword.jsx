@@ -67,23 +67,17 @@ const ResetPassword = () => {
 
     return (
         <div className={`min-h-screen relative overflow-hidden flex items-center justify-center p-2 sm:p-4 md:p-8 ${isAdmin ? 'bg-orange-950' : isAuthority ? 'bg-emerald-950' : 'bg-[#0F172A]'}`}>
-            {/* Immersive Animated Background */}
+            {/* Optimized Background without expensive blurs/mix-blend-modes */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <motion.div 
-                    animate={{ 
-                        scale: [1, 1.2, 1],
-                        rotate: [0, 90, 0],
-                    }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className={`absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full blur-[120px] mix-blend-screen ${isAdmin ? 'bg-orange-500/10' : isAuthority ? 'bg-emerald-500/10' : 'bg-primary/10'}`}
+                    animate={{ opacity: [0.4, 0.6, 0.4] }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                    className={`absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${isAdmin ? 'from-orange-500/20 via-orange-500/5' : isAuthority ? 'from-emerald-500/20 via-emerald-500/5' : 'from-primary/20 via-primary/5'} to-transparent`}
                 />
                 <motion.div 
-                    animate={{ 
-                        scale: [1, 1.5, 1],
-                        rotate: [0, -90, 0],
-                    }}
-                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                    className={`absolute top-[40%] -right-[20%] w-[60vw] h-[60vw] rounded-full blur-[120px] mix-blend-screen ${isAdmin ? 'bg-red-600/10' : isAuthority ? 'bg-teal-600/10' : 'bg-blue-600/10'}`}
+                    animate={{ opacity: [0.3, 0.5, 0.3] }}
+                    transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                    className={`absolute top-[40%] -right-[20%] w-[60vw] h-[60vw] rounded-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] ${isAdmin ? 'from-red-600/20 via-red-600/5' : isAuthority ? 'from-teal-600/20 via-teal-600/5' : 'from-blue-600/20 via-blue-600/5'} to-transparent`}
                 />
             </div>
 

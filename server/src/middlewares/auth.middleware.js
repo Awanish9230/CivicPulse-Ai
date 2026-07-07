@@ -35,6 +35,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     // Attach user and plain anonymousId to request
     req.user = user;
     req.user.anonymousId = decodedToken.anonymousId;
+    req.user.pastAnonymousIds = decodedToken.pastAnonymousIds || [];
     next()
 });
 
