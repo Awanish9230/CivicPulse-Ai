@@ -61,6 +61,14 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    points: {
+        type: Number,
+        default: 0,
+    },
+    badges: {
+        type: [String],
+        default: [],
+    },
     isBanned: {
         type: Boolean,
         default: false,

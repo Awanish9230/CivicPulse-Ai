@@ -33,7 +33,14 @@ const complaintSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: true,
+        required: true, // This will store the English translated version
+    },
+    originalDescription: {
+        type: String, // Stores the user's native text
+    },
+    originalLanguage: {
+        type: String,
+        default: 'en',
     },
     imageUrl: {
         type: String,
@@ -59,6 +66,10 @@ const complaintSchema = new mongoose.Schema({
     },
     expectedCompletionDate: {
         type: Date,
+    },
+    upvotedBy: {
+        type: [String], // Array of anonymousIds
+        default: [],
     },
     supportCount: {
         type: Number,

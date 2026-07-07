@@ -5,6 +5,9 @@ import ApiResponse from "../../utils/ApiResponse.js";
 import asyncHandler from "../../utils/asynchandler.js";
 import uploadOnCloudinary, { deleteFromCloudinary } from "../../utils/cloudinary.js";
 import notificationService from "../notification/notification.service.js";
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const resolveComplaint = asyncHandler(async (req, res) => {
     const { complaintId } = req.params;
@@ -111,7 +114,8 @@ export const createComplaint = asyncHandler(async (req, res) => {
         category,
         description,
         coordinates,
-        address // stringified JSON
+        address, // stringified JSON
+        language = 'en' // Pass language from frontend if possible
     } = req.body;
 
     // 2. Validate required fields
@@ -176,7 +180,28 @@ export const createComplaint = asyncHandler(async (req, res) => {
         );
     }
 
-    // 6. Create complaint
+    // 6. Translation handling (Auto-Translation if not English)
+    let finalDescription = description;
+    let originalDescriptionText = description;
+    
+    // Let's use Gemini to quickly check and translate if needed
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const prompt = `You are a civic translation AI. The user has submitted a complaint description: "${description}".
+If this description is already in English, reply with exactly the word "ENGLISH".
+If it is in another language, translate it fully and accurately to professional English. Reply ONLY with the translated English text, nothing else.`;
+        
+        const result = await model.generateContent(prompt);
+        const translatedText = result.response.text().trim();
+        
+        if (translatedText.toUpperCase() !== "ENGLISH" && translatedText.length > 5) {
+            finalDescription = translatedText;
+        }
+    } catch (e) {
+        console.error("Auto-translation failed, falling back to original text:", e);
+    }
+
+    // 7. Create complaint
     const complaint = await Complaint.create({
         reportedBy: req.user.anonymousId,
         category,
@@ -184,7 +209,9 @@ export const createComplaint = asyncHandler(async (req, res) => {
             type: "Point",
             coordinates: parsedCoordinates,
         },
-        description,
+        description: finalDescription,
+        originalDescription: originalDescriptionText,
+        originalLanguage: language,
         imageUrls: uploadedImages,
         // For backwards compatibility, set the first image as imageUrl as well
         imageUrl: uploadedImages[0],
@@ -419,6 +446,23 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
             authorityName: req.user.name || 'Citizen',
             content: 'Resolution Accepted by Citizen.' + (comment ? ' Comment: ' + comment : '')
         });
+        
+        // Gamification: Award points and badges
+        try {
+            const user = await User.findById(req.user._id);
+            if (user) {
+                user.points = (user.points || 0) + 50;
+                if (user.points >= 100 && !user.badges.includes("Neighborhood Hero")) {
+                    user.badges.push("Neighborhood Hero");
+                }
+                if (user.points >= 50 && !user.badges.includes("Rookie Watcher")) {
+                    user.badges.push("Rookie Watcher");
+                }
+                await user.save();
+            }
+        } catch (e) {
+            console.error("Failed to award gamification points", e);
+        }
     } else if (action === 'Reject') {
         complaint.resolutionFeedback = {
             status: 'Rejected',
@@ -467,5 +511,38 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(200, complaint, 'Feedback submitted successfully')
     );
+});
+
+export const analyzeImage = asyncHandler(async (req, res) => {
+    const { imageBase64 } = req.body;
+    
+    if (!imageBase64) {
+        throw new ApiError(400, "Image data is required for analysis");
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const prompt = `You are a civic issue analyzer. I will provide a photo of a local civic issue (like a pothole, garbage, broken light).
+Your task is to identify the issue and return a JSON object with two fields:
+1. "category": Must be exactly one of: 'Road', 'Electricity', 'Garbage', 'Water', 'Drainage', 'Traffic', 'Illegal Dumping', 'Street Light', 'Construction', 'Animal', 'Others'. Choose the most fitting.
+2. "description": A concise, professional, one-sentence description of the issue shown in the image, in English.
+
+Return ONLY the raw JSON object, no markdown blocks.`;
+
+        const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+
+        const result = await model.generateContent([
+            prompt,
+            { inlineData: { data: base64Data, mimeType: "image/jpeg" } }
+        ]);
+
+        const responseText = result.response.text();
+        const parsed = JSON.parse(responseText.replace(/```json/g, '').replace(/```/g, '').trim());
+        
+        return res.status(200).json(new ApiResponse(200, parsed, "Image analyzed successfully"));
+    } catch (error) {
+        console.error("AI Analysis Error:", error);
+        throw new ApiError(500, "Failed to analyze image using AI");
+    }
 });
 

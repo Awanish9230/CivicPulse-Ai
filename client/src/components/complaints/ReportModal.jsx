@@ -62,8 +62,40 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
         district: '',
         state: ''
     });
+    const [language, setLanguage] = useState('en');
     const [isFetchingAddress, setIsFetchingAddress] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    // AI Analysis
+    const handleAutoFill = async () => {
+        if (!captureData?.photos?.[0]) {
+            toast.error("No photo found to analyze");
+            return;
+        }
+
+        setIsAnalyzing(true);
+        try {
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/analyze-image`, {
+                imageBase64: captureData.photos[0]
+            }, { withCredentials: true });
+
+            if (data.data) {
+                if (data.data.category && CATEGORIES.includes(data.data.category)) {
+                    setCategory(data.data.category);
+                }
+                if (data.data.description) {
+                    setDescription(data.data.description);
+                }
+                toast.success("AI auto-filled the details!");
+            }
+        } catch (error) {
+            console.error("AI Auto-fill failed", error);
+            toast.error("Failed to analyze image automatically. Please fill manually.");
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     // Reverse Geocode
     const fetchAddress = async (lat, lng) => {
@@ -142,6 +174,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
 
             formData.append('category', category);
             formData.append('description', description);
+            formData.append('language', language);
             
             // Format coordinates as [longitude, latitude] for GeoJSON
             const coords = [position.lng, position.lat];
@@ -275,7 +308,17 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-black text-slate-700 mb-2">Category</label>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-black text-slate-700">Category</label>
+                                <button 
+                                    type="button" 
+                                    onClick={handleAutoFill}
+                                    disabled={isAnalyzing}
+                                    className="text-xs font-bold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full hover:bg-indigo-100 flex items-center gap-1 transition-colors disabled:opacity-50"
+                                >
+                                    {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : "✨"} AI Auto-Fill
+                                </button>
+                            </div>
                             <select 
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
@@ -290,7 +333,22 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-black text-slate-700 mb-2">Description</label>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-black text-slate-700">Description</label>
+                                <select 
+                                    value={language}
+                                    onChange={(e) => setLanguage(e.target.value)}
+                                    className="text-xs font-medium bg-slate-100 border border-slate-200 text-slate-600 rounded-md px-2 py-1 focus:outline-none"
+                                >
+                                    <option value="en">English</option>
+                                    <option value="hi">Hindi</option>
+                                    <option value="mr">Marathi</option>
+                                    <option value="ta">Tamil</option>
+                                    <option value="te">Telugu</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
                             <textarea 
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}

@@ -61,8 +61,8 @@ const MyComplaints = () => {
 
         try {
             await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/${id}/feedback`, {
-                action,
-                comment
+                isResolved: action === 'Accept',
+                feedback: comment
             }, {
                 withCredentials: true
             });
@@ -160,6 +160,8 @@ const MyComplaints = () => {
             </div>
         );
     };
+
+
 
     return (
         <div className="max-w-[1600px] mx-auto pb-20 px-4 md:px-6">

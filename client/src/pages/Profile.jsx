@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ShieldCheck, Clock, AlertTriangle, User, ShieldAlert, Fingerprint, Check } from 'lucide-react';
+import { ShieldCheck, Clock, AlertTriangle, User, ShieldAlert, Fingerprint, Check, Award, Star } from 'lucide-react';
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
@@ -197,6 +197,56 @@ const Profile = () => {
                                 {user.strikes < 3 ? 'Standing is Good.' : 'Account Banned.'}
                             </span>
                         </p>
+                    </motion.div>
+                )}
+
+                {/* Gamification / Points & Badges */}
+                {!isAuthority && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                        className="bg-white rounded-[2rem] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-border/50 relative overflow-hidden group hover:border-purple-500/30 transition-colors md:col-span-2"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-[100px] pointer-events-none transition-all group-hover:scale-110"></div>
+                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border/50 relative z-10">
+                            <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 shrink-0">
+                                <Award size={28} />
+                            </div>
+                            <div>
+                                <h3 className="font-black text-xl text-text">Civic Impact</h3>
+                                <p className="text-text/50 font-medium text-sm mt-0.5">Points & Achievements</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                            {/* Points */}
+                            <div className="bg-surface rounded-2xl p-6 flex items-center justify-between">
+                                <div>
+                                    <p className="text-text/50 font-bold text-xs uppercase tracking-wider mb-1">Total Points</p>
+                                    <h4 className="text-3xl font-black text-purple-600">{user.points || 0} <span className="text-sm font-bold text-purple-400">XP</span></h4>
+                                </div>
+                                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500">
+                                    <Star size={24} />
+                                </div>
+                            </div>
+
+                            {/* Badges */}
+                            <div className="bg-surface rounded-2xl p-6">
+                                <p className="text-text/50 font-bold text-xs uppercase tracking-wider mb-3">Earned Badges</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {(!user.badges || user.badges.length === 0) ? (
+                                        <div className="text-text/40 text-sm font-medium">Verify resolved reports to earn badges!</div>
+                                    ) : (
+                                        user.badges.map((badge, idx) => (
+                                            <div key={idx} className="bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm shadow-purple-500/20">
+                                                <Award size={12} /> {badge}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </motion.div>
                 )}
 

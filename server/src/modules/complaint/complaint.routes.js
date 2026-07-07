@@ -11,7 +11,8 @@ import {
     addOfficialReply,
     editComplaint,
     deleteComplaint,
-    submitResolutionFeedback
+    submitResolutionFeedback,
+    analyzeImage
 } from "./complaint.controller.js";
 
 const router = Router();
@@ -29,6 +30,7 @@ router.post("/:complaintId/upvote", verifyJWT, upvoteComplaint);
 router.post("/:complaintId/resolve", verifyJWT, resolveComplaint);
 router.post("/:complaintId/reply", verifyJWT, addOfficialReply);
 router.post("/:complaintId/feedback", verifyJWT, submitResolutionFeedback);
+router.post("/analyze-image", verifyJWT, analyzeImage);
 router.post(
     "/create",
     verifyJWT,
