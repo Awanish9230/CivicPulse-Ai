@@ -222,7 +222,7 @@ const ManageMembers = () => {
                                     </div>
 
                                     <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
-                                        <div className="grid grid-cols-2 gap-4 mb-8">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                                             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center">
                                                 <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
                                                     <Activity size={24} />

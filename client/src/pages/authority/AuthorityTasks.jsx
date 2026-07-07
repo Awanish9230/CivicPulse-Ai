@@ -273,11 +273,11 @@ const AuthorityTasks = () => {
                     <h1 className="text-3xl font-black text-slate-900">Task Board</h1>
                     <p className="text-slate-500 mt-1">Manage and escalate incoming civic complaints.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={exportToCSV} className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm">
+                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <button onClick={exportToCSV} className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm whitespace-nowrap">
                         <Download size={18} /> Export CSV
                     </button>
-                    <div className="flex bg-slate-200 p-1 rounded-xl">
+                    <div className="flex bg-slate-200 p-1 rounded-xl w-full sm:w-auto">
                         <button 
                             onClick={() => setViewMode('List')}
                             className={`px-4 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${viewMode === 'List' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
@@ -317,7 +317,7 @@ const AuthorityTasks = () => {
                             { value: 'In Progress', label: 'In Progress' },
                             { value: 'Resolved', label: 'Resolved' }
                         ]}
-                        className="w-40 bg-slate-50"
+                        className="flex-1 min-w-[140px] md:w-40 md:flex-none bg-slate-50"
                     />
                     <CustomSelect 
                         value={filterPriority}
@@ -329,7 +329,7 @@ const AuthorityTasks = () => {
                             { value: 'Medium', label: 'Medium' },
                             { value: 'Low', label: 'Low' }
                         ]}
-                        className="w-40 bg-slate-50"
+                        className="flex-1 min-w-[140px] md:w-40 md:flex-none bg-slate-50"
                     />
                     <CustomSelect 
                         value={filterCategory}
@@ -341,7 +341,7 @@ const AuthorityTasks = () => {
                             { value: 'Electricity', label: 'Electricity' },
                             { value: 'Garbage', label: 'Garbage' }
                         ]}
-                        className="w-40 bg-slate-50"
+                        className="flex-1 min-w-[140px] md:w-40 md:flex-none bg-slate-50"
                     />
                     <div className="h-8 w-px bg-slate-200 mx-1 hidden md:block"></div>
                     <CustomSelect 
@@ -352,7 +352,7 @@ const AuthorityTasks = () => {
                             { value: 'Oldest', label: 'Oldest First' },
                             { value: 'Priority (High)', label: 'Highest Priority' }
                         ]}
-                        className="w-40 bg-slate-50"
+                        className="flex-1 min-w-[140px] md:w-40 md:flex-none bg-slate-50"
                     />
                 </div>
             </div>
@@ -544,7 +544,7 @@ const AuthorityTasks = () => {
                                             onClick={() => setExpandedMapId(expandedMapId === task._id ? null : task._id)}
                                             className="text-emerald-600 font-bold text-sm hover:text-emerald-700 transition-colors flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-lg flex-1 justify-center"
                                         >
-                                            <Map size={14} />
+                                            <MapIcon size={14} />
                                             {expandedMapId === task._id ? 'Hide Map' : 'Location'}
                                         </button>
                                         

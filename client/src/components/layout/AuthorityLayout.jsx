@@ -179,7 +179,7 @@ const AuthorityLayout = () => {
                     </div>
                 </header>
 
-                <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-[calc(100vh-5rem)]">
+                <div className={location.pathname.includes('/chat') ? "flex flex-col h-[calc(100dvh-9rem)] md:h-[calc(100vh-5rem)] overflow-hidden" : "p-4 md:p-8 max-w-7xl mx-auto min-h-[calc(100vh-5rem)] pb-20 md:pb-8"}>
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
@@ -187,7 +187,7 @@ const AuthorityLayout = () => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -15 }}
                             transition={{ duration: 0.25, ease: "easeInOut" }}
-                            className="min-h-full"
+                            className={location.pathname.includes('/chat') ? "flex-1 flex flex-col min-h-0" : "min-h-full h-full"}
                         >
                             <Outlet />
                         </motion.div>

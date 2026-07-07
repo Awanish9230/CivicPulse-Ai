@@ -840,21 +840,22 @@ const Community = () => {
                     )}
                     </AnimatePresence>
 
-                    {/* Scroll to bottom FAB */}
-                    <AnimatePresence>
-                        {showScrollButton && (
-                            <motion.button
-                                initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                                onClick={scrollToBottom}
-                                className="fixed bottom-[90px] right-6 md:absolute md:bottom-6 md:right-6 w-10 h-10 bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg flex items-center justify-center transition-colors z-50"
-                            >
-                                <ChevronDown size={20} />
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
                 </div>
+
+                {/* Scroll to bottom FAB */}
+                <AnimatePresence>
+                    {showScrollButton && (
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                            onClick={scrollToBottom}
+                            className="absolute bottom-[90px] right-6 w-10 h-10 bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg flex items-center justify-center transition-colors z-50"
+                        >
+                            <ChevronDown size={20} />
+                        </motion.button>
+                    )}
+                </AnimatePresence>
 
                 {/* Chat Input */}
                 {['general', 'ask-authority', 'announcements'].includes(activeChannel) && (

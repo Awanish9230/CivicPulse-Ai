@@ -210,65 +210,68 @@ const AuthorityChat = () => {
     };
 
     return (
-        <div className="flex h-[calc(100vh-80px)] overflow-hidden bg-white">
+        <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full bg-white relative">
             
             {/* Sidebar Channels */}
-            <div className="w-64 border-r border-slate-200 bg-slate-50 flex flex-col">
-                <div className="p-4 border-b border-slate-200">
+            <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 flex flex-col shrink-0">
+                <div className="p-4 border-b border-slate-200 hidden md:block">
                     <h2 className="font-black text-slate-800 text-lg">Community Chat</h2>
                     <p className="text-xs text-slate-500 font-medium">Monitor & Respond</p>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                <div className="w-full md:w-auto md:flex-1 md:overflow-y-auto p-1.5 md:p-4 flex flex-row md:flex-col gap-1 md:gap-2">
                     <button 
                         onClick={() => setActiveChannel('ask-authority')}
-                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all font-bold ${
+                        className={`flex-1 md:w-full flex flex-col md:flex-row items-center md:justify-between p-2 md:p-3 rounded-xl transition-all font-bold ${
                             activeChannel === 'ask-authority' 
                                 ? 'bg-indigo-600 text-white shadow-md' 
-                                : 'text-slate-600 hover:bg-slate-200'
+                                : 'text-slate-600 hover:bg-slate-200 bg-white md:bg-transparent'
                         }`}
                     >
-                        <div className="flex items-center gap-2">
-                            <ShieldAlert size={18} className={activeChannel === 'ask-authority' ? 'text-indigo-200' : 'text-slate-400'} />
-                            <span>Ask Authority</span>
+                        <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2">
+                            <ShieldAlert size={16} className={`md:w-[18px] md:h-[18px] ${activeChannel === 'ask-authority' ? 'text-indigo-200' : 'text-slate-400'}`} />
+                            <span className="text-[10px] md:text-base leading-tight md:leading-normal hidden sm:inline md:hidden lg:inline">Ask Authority</span>
+                            <span className="text-[10px] leading-tight sm:hidden md:inline lg:hidden">Authority</span>
                         </div>
-                        <span className="text-xs bg-black/10 px-2 py-0.5 rounded-full">{onlineCounts['ask-authority'] || 0}</span>
+                        <span className="hidden md:inline-block text-[10px] md:text-xs bg-black/10 px-2 py-0.5 rounded-full mt-1 md:mt-0">{onlineCounts['ask-authority'] || 0}</span>
                     </button>
                     
                     <button 
                         onClick={() => setActiveChannel('general')}
-                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all font-bold ${
+                        className={`flex-1 md:w-full flex flex-col md:flex-row items-center md:justify-between p-2 md:p-3 rounded-xl transition-all font-bold ${
                             activeChannel === 'general' 
                                 ? 'bg-indigo-600 text-white shadow-md' 
-                                : 'text-slate-600 hover:bg-slate-200'
+                                : 'text-slate-600 hover:bg-slate-200 bg-white md:bg-transparent'
                         }`}
                     >
-                        <div className="flex items-center gap-2">
-                            <Hash size={18} className={activeChannel === 'general' ? 'text-indigo-200' : 'text-slate-400'} />
-                            <span>General Chat</span>
+                        <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2">
+                            <Hash size={16} className={`md:w-[18px] md:h-[18px] ${activeChannel === 'general' ? 'text-indigo-200' : 'text-slate-400'}`} />
+                            <span className="text-[10px] md:text-base leading-tight md:leading-normal hidden sm:inline md:hidden lg:inline">General Chat</span>
+                            <span className="text-[10px] leading-tight sm:hidden md:inline lg:hidden">General</span>
                         </div>
-                        <span className="text-xs bg-black/10 px-2 py-0.5 rounded-full">{onlineCounts['general'] || 0}</span>
+                        <span className="hidden md:inline-block text-[10px] md:text-xs bg-black/10 px-2 py-0.5 rounded-full mt-1 md:mt-0">{onlineCounts['general'] || 0}</span>
                     </button>
 
                     <button 
                         onClick={() => setActiveChannel('announcements')}
-                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all font-bold ${
+                        className={`flex-1 md:w-full flex flex-col md:flex-row items-center md:justify-between p-2 md:p-3 rounded-xl transition-all font-bold ${
                             activeChannel === 'announcements' 
                                 ? 'bg-indigo-600 text-white shadow-md' 
-                                : 'text-slate-600 hover:bg-slate-200'
+                                : 'text-slate-600 hover:bg-slate-200 bg-white md:bg-transparent'
                         }`}
                     >
-                        <div className="flex items-center gap-2">
-                            <ShieldAlert size={18} className={activeChannel === 'announcements' ? 'text-indigo-200' : 'text-slate-400'} />
-                            <span>Announcements</span>
+                        <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2">
+                            <ShieldAlert size={16} className={`md:w-[18px] md:h-[18px] ${activeChannel === 'announcements' ? 'text-indigo-200' : 'text-slate-400'}`} />
+                            <span className="text-[10px] md:text-base leading-tight md:leading-normal hidden sm:inline md:hidden lg:inline">Announcements</span>
+                            <span className="text-[10px] leading-tight sm:hidden md:inline lg:hidden">Alerts</span>
                         </div>
-                        <span className="text-xs bg-black/10 px-2 py-0.5 rounded-full">{onlineCounts['announcements'] || 0}</span>
+                        <span className="hidden md:inline-block text-[10px] md:text-xs bg-black/10 px-2 py-0.5 rounded-full mt-1 md:mt-0">{onlineCounts['announcements'] || 0}</span>
                     </button>
                 </div>
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 flex flex-col relative bg-slate-50/50">
+            <div className="flex-1 flex flex-col min-h-0 relative bg-slate-50/50">
                 
                 {/* Chat Header */}
                 <div className="h-16 border-b border-slate-200 bg-white flex items-center px-6 justify-between shrink-0">
@@ -406,21 +409,22 @@ const AuthorityChat = () => {
                         })}
                     </div>
 
-                    {/* Scroll to bottom FAB */}
-                    <AnimatePresence>
-                        {showScrollButton && (
-                            <motion.button
-                                initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                                onClick={scrollToBottom}
-                                className="absolute bottom-6 right-6 w-10 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors z-50"
-                            >
-                                <ChevronDown size={20} />
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
                 </div>
+
+                {/* Scroll to bottom FAB */}
+                <AnimatePresence>
+                    {showScrollButton && (
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                            onClick={scrollToBottom}
+                            className="absolute bottom-[90px] right-6 w-10 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors z-50"
+                        >
+                            <ChevronDown size={20} />
+                        </motion.button>
+                    )}
+                </AnimatePresence>
 
                 {/* Input Area */}
                 <div className="p-4 bg-white border-t border-slate-200 shrink-0">
