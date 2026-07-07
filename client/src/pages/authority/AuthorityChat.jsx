@@ -27,6 +27,7 @@ const AuthorityChat = () => {
             console.log('Authority connected to Chat Socket');
             newSocket.emit('joinRoom', 'local-community-general');
             newSocket.emit('joinRoom', 'local-community-authority');
+            newSocket.emit('joinRoom', 'local-community-announcements');
         });
 
         newSocket.on('receiveMessage', (msg) => {
@@ -49,7 +50,8 @@ const AuthorityChat = () => {
         newSocket.on('roomData', ({ room, onlineCount }) => {
             const channelMap = {
                 'local-community-general': 'general',
-                'local-community-authority': 'ask-authority'
+                'local-community-authority': 'ask-authority',
+                'local-community-announcements': 'announcements'
             };
             const mappedRoom = channelMap[room];
             if (mappedRoom) {
@@ -63,7 +65,6 @@ const AuthorityChat = () => {
     // Load message history when switching channels
     useEffect(() => {
         const loadHistory = async () => {
-            if (messages[activeChannel]?.length > 0) return;
             try {
                 const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/message/${activeChannel}`, {
                     withCredentials: true
@@ -88,8 +89,14 @@ const AuthorityChat = () => {
         e.preventDefault();
         if (!newMessage.trim() || !socket) return;
 
+        const roomMap = {
+            'general': 'local-community-general',
+            'ask-authority': 'local-community-authority',
+            'announcements': 'local-community-announcements'
+        };
+
         const messageData = {
-            room: activeChannel === 'general' ? 'local-community-general' : 'local-community-authority',
+            room: roomMap[activeChannel],
             message: {
                 id: Date.now().toString(),
                 senderId: user?._id,
@@ -150,6 +157,21 @@ const AuthorityChat = () => {
                         </div>
                         <span className="text-xs bg-black/10 px-2 py-0.5 rounded-full">{onlineCounts['general'] || 0}</span>
                     </button>
+
+                    <button 
+                        onClick={() => setActiveChannel('announcements')}
+                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all font-bold ${
+                            activeChannel === 'announcements' 
+                                ? 'bg-indigo-600 text-white shadow-md' 
+                                : 'text-slate-600 hover:bg-slate-200'
+                        }`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <ShieldAlert size={18} className={activeChannel === 'announcements' ? 'text-indigo-200' : 'text-slate-400'} />
+                            <span>Announcements</span>
+                        </div>
+                        <span className="text-xs bg-black/10 px-2 py-0.5 rounded-full">{onlineCounts['announcements'] || 0}</span>
+                    </button>
                 </div>
             </div>
 
@@ -160,11 +182,11 @@ const AuthorityChat = () => {
                 <div className="h-16 border-b border-slate-200 bg-white flex items-center px-6 justify-between shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
-                            {activeChannel === 'ask-authority' ? <ShieldAlert size={20} /> : <Hash size={20} />}
+                            {activeChannel === 'ask-authority' ? <ShieldAlert size={20} /> : activeChannel === 'announcements' ? <ShieldAlert size={20} /> : <Hash size={20} />}
                         </div>
                         <div>
                             <h2 className="font-black text-slate-800 capitalize">
-                                {activeChannel === 'ask-authority' ? 'Ask Authority' : 'General Chat'}
+                                {activeChannel === 'ask-authority' ? 'Ask Authority' : activeChannel === 'announcements' ? 'Announcements' : 'General Chat'}
                             </h2>
                             <p className="text-xs text-slate-500 flex items-center gap-1">
                                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -264,7 +286,7 @@ const AuthorityChat = () => {
                             type="text"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder={activeChannel === 'ask-authority' ? "Respond officially to citizens..." : "Join the conversation..."}
+                            placeholder={activeChannel === 'ask-authority' ? "Respond officially to citizens..." : activeChannel === 'announcements' ? "Broadcast a city-wide announcement..." : "Join the conversation..."}
                             className="flex-1 bg-slate-100 border-transparent focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 rounded-2xl px-6 py-4 outline-none transition-all"
                         />
                         <button 

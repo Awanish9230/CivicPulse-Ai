@@ -150,7 +150,7 @@ export const updateTask = asyncHandler(async (req, res) => {
     }
 
     const { complaintId } = req.params;
-    const { status, expectedCompletionDate, gps, testModeBypass } = req.body;
+    const { status, expectedCompletionDate, gps, testModeBypass, replyMessage } = req.body;
 
     const complaint = await Complaint.findById(complaintId);
 
@@ -272,12 +272,26 @@ Do not use markdown blocks, just return the raw JSON text.`;
         updates.push(`Expected completion date set to ${new Date(expectedCompletionDate).toLocaleDateString()}`);
     }
 
+    let madeChanges = false;
+
     if (updates.length > 0) {
-        complaint.lastActivityAt = Date.now();
         complaint.officialReplies.push({
             authorityName: req.user.name || "System",
             content: updates.join('. ') + '.',
         });
+        madeChanges = true;
+    }
+
+    if (replyMessage && replyMessage.trim() !== '') {
+        complaint.officialReplies.push({
+            authorityName: req.user.name || "Authority",
+            content: replyMessage.trim(),
+        });
+        madeChanges = true;
+    }
+
+    if (madeChanges) {
+        complaint.lastActivityAt = Date.now();
         await complaint.save();
 
         try {

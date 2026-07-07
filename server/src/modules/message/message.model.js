@@ -12,7 +12,7 @@ const messageSchema = new mongoose.Schema({
     },
     channel: {
         type: String,
-        enum: ['general', 'ask-authority'],
+        enum: ['general', 'ask-authority', 'announcements'],
         required: true,
     },
     complaintId: {
@@ -39,6 +39,11 @@ const messageSchema = new mongoose.Schema({
         type: String,
         enum: ['Text', 'Image', 'Voice'],
         default: 'Text'
+    },
+    senderRole: {
+        type: String,
+        enum: ['Citizen', 'Authority', 'Admin'],
+        default: 'Citizen'
     },
     isToxic: {
         type: Boolean,

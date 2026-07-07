@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { BarChart, TrendingUp, AlertTriangle, CheckCircle, Clock, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const AuthorityAnalytics = () => {
     const [complaints, setComplaints] = useState([]);
@@ -55,6 +56,30 @@ const AuthorityAnalytics = () => {
         acc[c.status] = (acc[c.status] || 0) + 1;
         return acc;
     }, {});
+
+    // Chart 1: Time-Series Trend Data
+    const processTrendData = () => {
+        const trend = {};
+        const sorted = [...complaints].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        sorted.forEach(c => {
+            if(!c.createdAt) return;
+            const dateObj = new Date(c.createdAt);
+            const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            if (!trend[dateStr]) {
+                trend[dateStr] = { date: dateStr, New: 0, Resolved: 0 };
+            }
+            trend[dateStr].New += 1;
+            if (c.status === 'Resolved' || c.status === 'Closed') {
+                trend[dateStr].Resolved += 1;
+            }
+        });
+        return Object.values(trend);
+    };
+    const trendData = processTrendData();
+
+    // Chart 2: Donut Data for Categories
+    const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#64748b'];
+    const pieData = Object.entries(categoryCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
 
     if (loading) {
         return (
@@ -188,30 +213,36 @@ const AuthorityAnalytics = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-                {/* Category Breakdown (Bar Chart) */}
+                {/* Category Breakdown (Donut Chart) */}
                 <motion.div 
                     initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
-                    className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col"
+                    className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col h-[400px]"
                 >
-                    <h2 className="text-xl font-black text-slate-900 mb-6">Top Issue Categories</h2>
-                    {topCategories.length > 0 ? (
-                        <div className="space-y-6 flex-1 flex flex-col justify-center">
-                            {topCategories.map((cat, idx) => (
-                                <div key={cat.name}>
-                                    <div className="flex justify-between text-sm font-bold mb-2">
-                                        <span className="text-slate-700">{cat.name}</span>
-                                        <span className="text-slate-400">{cat.count} ({Math.round(cat.percentage)}%)</span>
-                                    </div>
-                                    <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex">
-                                        <motion.div 
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${cat.percentage}%` }}
-                                            transition={{ duration: 1, delay: 0.5 + (idx * 0.1) }}
-                                            className="h-full bg-emerald-500 rounded-full"
-                                        ></motion.div>
-                                    </div>
-                                </div>
-                            ))}
+                    <h2 className="text-xl font-black text-slate-900 mb-2">Issue Categories</h2>
+                    {pieData.length > 0 ? (
+                        <div className="flex-1 w-full h-full min-h-0">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={pieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={100}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {pieData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip 
+                                        contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                                        itemStyle={{ fontWeight: 'bold' }}
+                                    />
+                                    <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b' }} />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </div>
                     ) : (
                         <div className="flex-1 flex items-center justify-center text-slate-400 font-medium">
@@ -267,6 +298,49 @@ const AuthorityAnalytics = () => {
                     </div>
                 </motion.div>
             </div>
+
+            {/* Time-Series Trend Chart */}
+            <motion.div 
+                initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.7 }}
+                className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col h-[400px]"
+            >
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-black text-slate-900">Incident Trends Over Time</h2>
+                </div>
+                {trendData.length > 0 ? (
+                    <div className="flex-1 w-full h-full min-h-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorNew" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
+                                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorResolved" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} dx={-10} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <RechartsTooltip 
+                                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                                    itemStyle={{ fontWeight: 'bold' }}
+                                    labelStyle={{ color: '#64748b', fontWeight: 'bold', marginBottom: '8px' }}
+                                />
+                                <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b' }} />
+                                <Area type="monotone" dataKey="New" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorNew)" activeDot={{r: 6, strokeWidth: 0, fill: '#ef4444'}} />
+                                <Area type="monotone" dataKey="Resolved" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorResolved)" activeDot={{r: 6, strokeWidth: 0, fill: '#10b981'}} />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                ) : (
+                    <div className="flex-1 flex items-center justify-center text-slate-400 font-medium">
+                        Not enough data points to generate trend chart.
+                    </div>
+                )}
+            </motion.div>
         </motion.div>
     );
 };

@@ -46,7 +46,9 @@ export const initSocket = (server) => {
         socket.on('sendMessage', async (messageData) => {
             try {
                 const { room, message } = messageData;
-                const channelName = room === 'local-community-general' ? 'general' : 'ask-authority';
+                let channelName = 'general';
+                if (room === 'local-community-authority') channelName = 'ask-authority';
+                if (room === 'local-community-announcements') channelName = 'announcements';
                 
                 // Save to database
                 let locationObj = undefined;
@@ -59,10 +61,11 @@ export const initSocket = (server) => {
 
                 const newMessage = await Message.create({
                     sender: message.senderId,
-                    senderName: message.sender, // Fix: frontend sends 'sender' not 'senderName'
+                    senderName: message.sender,
+                    senderRole: message.role || 'Citizen',
                     channel: channelName,
                     content: message.text,
-                    type: 'Text', // Or parse if you support image URLs directly
+                    type: 'Text',
                     ...(locationObj && { location: locationObj })
                 });
 

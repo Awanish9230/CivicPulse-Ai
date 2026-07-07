@@ -6,12 +6,12 @@ export const getChannelMessages = asyncHandler(async (req, res) => {
     const { channel } = req.params;
     const { lat, lng, radius } = req.query;
 
-    if (!['general', 'ask-authority'].includes(channel)) {
+    if (!['general', 'ask-authority', 'announcements'].includes(channel)) {
         throw new ApiError(400, "Invalid channel");
     }
 
-    // Require location to access the community chat
-    if (!lat || !lng) {
+    // Require location to access the community chat, unless Authority or Admin
+    if ((!lat || !lng) && req.user.role !== 'Authority' && req.user.role !== 'Admin') {
         throw new ApiError(403, "Location permission is required to access the community chat.");
     }
 
@@ -24,15 +24,23 @@ export const getChannelMessages = asyncHandler(async (req, res) => {
         createdAt: { $gte: ninetyDaysAgo }
     };
 
-    if (radius && radius !== 'All') {
+    if (radius && radius !== 'All' && lat && lng) {
         const radiusInMeters = parseInt(radius) * 1000;
         const radiusInRadians = radiusInMeters / 6378100;
         
-        query.location = {
-            $geoWithin: {
-                $centerSphere: [[parseFloat(lng), parseFloat(lat)], radiusInRadians]
-            }
-        };
+        // Include messages that match the geo filter OR have no location at all
+        // (e.g. authority messages sent from dashboard without GPS)
+        query.$or = [
+            {
+                location: {
+                    $geoWithin: {
+                        $centerSphere: [[parseFloat(lng), parseFloat(lat)], radiusInRadians]
+                    }
+                }
+            },
+            { location: { $exists: false } },
+            { 'location.coordinates': { $exists: false } }
+        ];
     }
 
     const messages = await Message.find(query).sort({ createdAt: 1 }).limit(500); // Fetch up to 500 recent messages
@@ -47,7 +55,7 @@ export const getChannelMessages = asyncHandler(async (req, res) => {
         timestamp: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
         createdAt: msg.createdAt,
         channel: msg.channel,
-        role: (msg.senderName === 'Anonymous Citizen' || msg.senderName.startsWith('CP-')) ? 'Citizen' : 'Authority'
+        role: msg.senderRole || ((msg.senderName === 'Anonymous Citizen' || msg.senderName?.startsWith('CP-')) ? 'Citizen' : 'Authority')
     }));
 
     res.status(200).json({

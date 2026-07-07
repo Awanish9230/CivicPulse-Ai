@@ -225,6 +225,7 @@ const Community = () => {
             console.log('Connected to Community Socket');
             newSocket.emit('joinRoom', 'local-community-general');
             newSocket.emit('joinRoom', 'local-community-authority');
+            newSocket.emit('joinRoom', 'local-community-announcements');
         });
 
         newSocket.on('receiveMessage', (message) => {
@@ -238,14 +239,21 @@ const Community = () => {
                 }
             }
 
-            setMessages(prev => ({
-                ...prev,
-                [message.channel]: [...(prev[message.channel] || []), message]
-            }));
+            setMessages(prev => {
+                const channelMsgs = prev[message.channel] || [];
+                // Deduplicate: skip if this message ID already exists
+                if (channelMsgs.find(m => m._id === message._id || m.id === message.id)) return prev;
+                return {
+                    ...prev,
+                    [message.channel]: [...channelMsgs, message]
+                };
+            });
         });
 
         newSocket.on('roomData', ({ room, onlineCount }) => {
-            const channel = room === 'local-community-general' ? 'general' : 'ask-authority';
+            const channel = room === 'local-community-general' ? 'general' 
+                          : room === 'local-community-authority' ? 'ask-authority' 
+                          : 'announcements';
             setOnlineCounts(prev => ({ ...prev, [channel]: onlineCount }));
         });
 
@@ -254,7 +262,7 @@ const Community = () => {
 
     // Fetch chat history when channel changes
     useEffect(() => {
-        if ((activeChannel === 'general' || activeChannel === 'ask-authority') && location && !locationDenied) {
+        if ((activeChannel === 'general' || activeChannel === 'ask-authority' || activeChannel === 'announcements') && location && !locationDenied) {
             const fetchChatHistory = async () => {
                 try {
                     const params = {
@@ -327,11 +335,13 @@ const Community = () => {
         e.preventDefault();
         if (newMessage.trim() && socket && user) {
             const messageData = {
-                room: activeChannel === 'general' ? 'local-community-general' : 'local-community-authority',
+                room: activeChannel === 'general' ? 'local-community-general' 
+                    : activeChannel === 'ask-authority' ? 'local-community-authority'
+                    : 'local-community-announcements',
                 message: {
                     id: Date.now().toString(),
                     senderId: user._id,
-                    sender: user.role === 'Authority' ? user.name : user.anonymousId,
+                    sender: user.role === 'Authority' ? (user.name || 'Authority') : (user.anonymousId || user.name || 'Anonymous Citizen'),
                     role: user.role,
                     text: newMessage,
                     timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
@@ -535,7 +545,7 @@ const Community = () => {
                         </div>
 
                         {/* Live Online Count for Chat Channels */}
-                        {(activeChannel === 'general' || activeChannel === 'ask-authority') && (
+                        {(activeChannel === 'general' || activeChannel === 'ask-authority' || activeChannel === 'announcements') && (
                             <div className="flex items-center gap-1.5 md:gap-2 bg-green-500/10 text-green-600 px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shrink-0">
                                 <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
