@@ -1,6 +1,6 @@
-import Notification from '../models/Notification.js';
-import { getIo } from '../config/socket.js';
-import logger from '../utils/logger.js';
+import Notification from './notification.model.js';
+import { getIo } from '../../config/socket.js';
+import logger from '../../utils/logger.js';
 
 class NotificationService {
     /**

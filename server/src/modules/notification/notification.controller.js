@@ -1,6 +1,6 @@
-import Notification from '../models/Notification.js';
-import asynchandler from '../utils/asynchandler.js';
-import ApiResponse from '../utils/ApiResponse.js';
+import Notification from './notification.model.js';
+import asynchandler from '../../utils/asynchandler.js';
+import ApiResponse from '../../utils/ApiResponse.js';
 
 export const getMyNotifications = asynchandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { upload } from "../middlewares/uploadmiddleware.js";
+import { verifyJWT } from "../../middlewares/auth.middleware.js";
+import { upload } from "../../middlewares/uploadmiddleware.js";
 import { 
     createAuthorityMember, 
     getAuthorityMembers,
@@ -11,7 +11,7 @@ import {
     assignTask,
     getDepartmentMembers,
     getEmployeeReport
-} from "../controllers/authorityController.js";
+} from "./authority.controller.js";
 
 const router = Router();
 

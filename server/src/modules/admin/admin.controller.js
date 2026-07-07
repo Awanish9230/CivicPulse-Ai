@@ -1,8 +1,8 @@
-import User from '../models/User.js';
-import Complaint from '../models/Complaint.js';
-import asynchandler from '../utils/asynchandler.js';
-import ApiResponse from '../utils/ApiResponse.js';
-import ApiError from '../utils/ApiError.js';
+import User from '../user/user.model.js';
+import Complaint from '../complaint/complaint.model.js';
+import asynchandler from '../../utils/asynchandler.js';
+import ApiResponse from '../../utils/ApiResponse.js';
+import ApiError from '../../utils/ApiError.js';
 
 // Get Dashboard Statistics
 export const getDashboardStats = asynchandler(async (req, res) => {

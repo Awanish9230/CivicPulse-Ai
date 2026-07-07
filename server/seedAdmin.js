@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import 'dotenv/config';
-import User from './src/models/User.js';
+import User from './src/modules/user/user.model.js';
 
 const seedAdmin = async () => {
     try {

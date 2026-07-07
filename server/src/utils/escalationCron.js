@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import Complaint from '../models/Complaint.js';
+import Complaint from '../modules/complaint/complaint.model.js';
 import logger from './logger.js';
 
 // Run every hour to check for complaints that need escalation

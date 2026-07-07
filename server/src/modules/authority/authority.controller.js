@@ -1,10 +1,10 @@
-import User from "../models/User.js";
-import Complaint from "../models/Complaint.js";
-import ApiError from "../utils/ApiError.js";
-import asyncHandler from "../utils/asynchandler.js";
-import ApiResponse from "../utils/ApiResponse.js";
-import notificationService from "../services/notificationService.js";
-import uploadOnCloudinary from "../utils/cloudinary.js";
+import User from "../user/user.model.js";
+import Complaint from "../complaint/complaint.model.js";
+import ApiError from "../../utils/ApiError.js";
+import asyncHandler from "../../utils/asynchandler.js";
+import ApiResponse from "../../utils/ApiResponse.js";
+import notificationService from "../notification/notification.service.js";
+import uploadOnCloudinary from "../../utils/cloudinary.js";
 
 // Middleware-like check, can be extracted to auth.middleware.js if needed
 const checkSuperOfficer = (req) => {

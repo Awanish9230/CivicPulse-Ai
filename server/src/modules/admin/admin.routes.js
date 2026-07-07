@@ -1,5 +1,5 @@
 import express from 'express';
-import { verifyJWT, authorizeRoles } from '../middlewares/auth.middleware.js';
+import { verifyJWT, authorizeRoles } from '../../middlewares/auth.middleware.js';
 import { 
     getDashboardStats, 
     getAllCitizens, 
@@ -7,7 +7,7 @@ import {
     getAllComplaints,
     getAiInsights,
     getMemberDetails
-} from '../controllers/adminController.js';
+} from './admin.controller.js';
 
 const router = express.Router();
 

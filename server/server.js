@@ -11,13 +11,13 @@ import { notFound, errorHandler } from './src/middlewares/errorHandler.js';
 import { initSocket } from './src/config/socket.js';
 import cookieParser from "cookie-parser";
 
-import userRoutes from './src/routes/userRoutes.js';
-import complainRoutes from './src/routes/complainRoutes.js';
-import notificationRoutes from './src/routes/notificationRoutes.js';
-import messageRoutes from './src/routes/messageRoutes.js';
-import authorityRoutes from './src/routes/authorityRoutes.js';
-import adminRoutes from './src/routes/adminRoutes.js';
-import publicRoutes from './src/routes/publicRoutes.js';
+import userRoutes from './src/modules/user/user.routes.js';
+import complainRoutes from './src/modules/complaint/complaint.routes.js';
+import notificationRoutes from './src/modules/notification/notification.routes.js';
+import messageRoutes from './src/modules/message/message.routes.js';
+import authorityRoutes from './src/modules/authority/authority.routes.js';
+import adminRoutes from './src/modules/admin/admin.routes.js';
+import publicRoutes from './src/modules/public/public.routes.js';
 import startEscalationCron from './src/utils/escalationCron.js';
 
 // Connect to database

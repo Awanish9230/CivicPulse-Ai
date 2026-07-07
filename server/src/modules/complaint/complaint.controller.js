@@ -1,10 +1,10 @@
-import Complaint from "../models/Complaint.js";
-import User from "../models/User.js";
-import ApiError from "../utils/ApiError.js";
-import ApiResponse from "../utils/ApiResponse.js";
-import asyncHandler from "../utils/asynchandler.js";
-import uploadOnCloudinary, { deleteFromCloudinary } from "../utils/cloudinary.js";
-import notificationService from "../services/notificationService.js";
+import Complaint from "./complaint.model.js";
+import User from "../user/user.model.js";
+import ApiError from "../../utils/ApiError.js";
+import ApiResponse from "../../utils/ApiResponse.js";
+import asyncHandler from "../../utils/asynchandler.js";
+import uploadOnCloudinary, { deleteFromCloudinary } from "../../utils/cloudinary.js";
+import notificationService from "../notification/notification.service.js";
 
 export const resolveComplaint = asyncHandler(async (req, res) => {
     const { complaintId } = req.params;
@@ -40,7 +40,7 @@ export const resolveComplaint = asyncHandler(async (req, res) => {
 
     // Broadcast to users that it's resolved
     try {
-        const { getIo } = await import('../config/socket.js');
+        const { getIo } = await import('../../config/socket.js');
         getIo().emit('complaint_status_update', complaint);
         
         await notificationService.createNotification({
@@ -193,7 +193,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
     // Fetch complaint with populated data if necessary, or just emit it
     try {
-        const { getIo } = await import('../config/socket.js');
+        const { getIo } = await import('../../config/socket.js');
         getIo().emit('new_complaint', complaint);
         
         await notificationService.createNotification({

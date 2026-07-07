@@ -6,8 +6,8 @@ import {
     getUnreadCount, 
     deleteNotification, 
     deleteAllNotifications 
-} from '../controllers/notificationController.js';
-import { verifyJWT } from '../middlewares/auth.middleware.js';
+} from './notification.controller.js';
+import { verifyJWT } from '../../middlewares/auth.middleware.js';
 
 const router = Router();
 

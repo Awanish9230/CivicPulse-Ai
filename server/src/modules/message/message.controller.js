@@ -1,6 +1,6 @@
-import Message from "../models/Message.js";
-import asyncHandler from "../utils/asynchandler.js";
-import ApiError from "../utils/ApiError.js";
+import Message from "./message.model.js";
+import asyncHandler from "../../utils/asynchandler.js";
+import ApiError from "../../utils/ApiError.js";
 
 export const getChannelMessages = asyncHandler(async (req, res) => {
     const { channel } = req.params;

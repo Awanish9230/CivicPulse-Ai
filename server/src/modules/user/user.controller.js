@@ -1,9 +1,9 @@
-import asynchandler from "../utils/asynchandler.js" 
-import ApiError from "../utils/ApiError.js"
-import User from "../models/User.js"
-import ApiResponse from "../utils/ApiResponse.js"
+import asynchandler from "../../utils/asynchandler.js" 
+import ApiError from "../../utils/ApiError.js"
+import User from "./user.model.js"
+import ApiResponse from "../../utils/ApiResponse.js"
 import crypto from "crypto";
-import { sendWelcomeEmail, sendPasswordResetEmail } from "../services/emailService.js";
+import { sendWelcomeEmail, sendPasswordResetEmail } from "../../services/emailService.js";
   
 const generateAccessAndRefreshTokens = async (userId, plainAnonymousId) => {
     try {

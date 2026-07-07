@@ -1,7 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { upload } from "../middlewares/uploadmiddleware.js";
+import { verifyJWT } from "../../middlewares/auth.middleware.js";
+import { upload } from "../../middlewares/uploadmiddleware.js";
 import {
     createComplaint,
     getMyComplaints,
@@ -12,7 +12,7 @@ import {
     editComplaint,
     deleteComplaint,
     submitResolutionFeedback
-} from "../controllers/complainController.js";
+} from "./complaint.controller.js";
 
 const router = Router();
 

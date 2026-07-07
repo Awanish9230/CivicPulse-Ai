@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import logger from '../utils/logger.js';
-import Message from '../models/Message.js';
+import Message from '../modules/message/message.model.js';
 
 let io;
 
@@ -67,8 +67,8 @@ export const initSocket = (server) => {
 
                 io.to(room).emit('receiveMessage', emittedMessage);
 
-                const User = (await import('../models/User.js')).default;
-                const Notification = (await import('../models/Notification.js')).default;
+                const User = (await import('../modules/user/user.model.js')).default;
+                const Notification = (await import('../modules/notification/notification.model.js')).default;
                 const mongoose = (await import('mongoose')).default;
                 
                 // Save to database for all users (except sender) so it persists in /notifications

@@ -5,7 +5,7 @@ import {
     getPublicMapData,
     getRecentReports,
     getLeaderboard
-} from '../controllers/publicController.js';
+} from './public.controller.js';
 
 const router = express.Router();
 
