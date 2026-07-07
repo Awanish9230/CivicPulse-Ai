@@ -42,6 +42,12 @@ export const initSocket = (server) => {
             }
         });
 
+        // Join Admin Room for real-time dashboard updates
+        socket.on('joinAdminRoom', () => {
+            socket.join('admin_room');
+            logger.info(`Socket ${socket.id} joined admin_room`);
+        });
+
         // Handle incoming messages
         socket.on('sendMessage', async (messageData) => {
             try {

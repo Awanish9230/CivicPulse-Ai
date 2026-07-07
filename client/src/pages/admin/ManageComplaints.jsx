@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Filter, Eye, Edit2, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import io from 'socket.io-client';
 
 const ManageComplaints = () => {
     const [complaints, setComplaints] = useState([]);
@@ -30,7 +31,29 @@ const ManageComplaints = () => {
 
     useEffect(() => {
         fetchComplaints();
+
+        const socket = io(`${import.meta.env.VITE_API_URL}`);
+        socket.on('connect', () => socket.emit('joinAdminRoom'));
+        socket.on('stats_update', (data) => {
+            if (data.type === 'new_complaint' || data.type === 'complaint_resolved' || data.type === 'complaint_deleted') {
+                fetchComplaints();
+            }
+        });
+
+        return () => socket.disconnect();
     }, []);
+
+    const handleAdminDelete = async (complaintId) => {
+        if (!window.confirm("Are you sure you want to permanently delete this complaint? This is an administrative override.")) return;
+        
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/v1/admin/complaints/${complaintId}`, { withCredentials: true });
+            toast.success("Complaint forcefully deleted");
+            // The socket will trigger fetchComplaints automatically
+        } catch (error) {
+            toast.error("Failed to delete complaint");
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -112,7 +135,11 @@ const ManageComplaints = () => {
                                             <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
                                                 <Edit2 size={16} />
                                             </button>
-                                            <button className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                                            <button 
+                                                onClick={() => handleAdminDelete(comp.id)}
+                                                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors tooltip-trigger"
+                                                title="Force Delete Override"
+                                            >
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>

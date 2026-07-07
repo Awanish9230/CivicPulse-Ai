@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import io from 'socket.io-client';
 
 const ManageUsers = () => {
     const [users, setUsers] = useState([]);
@@ -15,6 +16,11 @@ const ManageUsers = () => {
     const [memberDetails, setMemberDetails] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [expandedMapId, setExpandedMapId] = useState(null);
+
+    // Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({ role: '', isBanned: false });
+    const [saving, setSaving] = useState(false);
 
     const fetchUsers = async () => {
         try {
@@ -40,21 +46,48 @@ const ManageUsers = () => {
 
     useEffect(() => {
         fetchUsers();
+
+        const socket = io(`${import.meta.env.VITE_API_URL}`);
+        socket.on('connect', () => socket.emit('joinAdminRoom'));
+        socket.on('stats_update', (data) => {
+            if (data.type === 'new_user') fetchUsers();
+        });
+        socket.on('user_updated', () => {
+            fetchUsers();
+        });
+
+        return () => socket.disconnect();
     }, []);
 
     const openMemberDetails = async (memberId) => {
         setSelectedMember(memberId);
         setLoadingDetails(true);
+        setIsEditing(false);
         try {
             const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/admin/members/${memberId}`, {
                 withCredentials: true
             });
             setMemberDetails(data.data);
+            setEditForm({ role: data.data.member.role, isBanned: data.data.member.isBanned });
         } catch (error) {
             toast.error('Failed to fetch user details');
             setSelectedMember(null);
         } finally {
             setLoadingDetails(false);
+        }
+    };
+
+    const handleSaveEdit = async () => {
+        setSaving(true);
+        try {
+            await axios.put(`${import.meta.env.VITE_API_URL}/api/v1/admin/members/${selectedMember}`, editForm, { withCredentials: true });
+            toast.success("User updated successfully");
+            setIsEditing(false);
+            openMemberDetails(selectedMember);
+        } catch (error) {
+            toast.error("Failed to update user");
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -218,12 +251,77 @@ const ManageUsers = () => {
                                                 </p>
                                             </div>
                                         </div>
-                                        <button onClick={() => setSelectedMember(null)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
-                                            <X size={24} />
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={() => setIsEditing(!isEditing)} 
+                                                className="px-4 py-2 bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-xl transition-colors text-sm font-bold shadow-sm"
+                                            >
+                                                {isEditing ? 'Cancel Edit' : 'Edit Access'}
+                                            </button>
+                                            <button onClick={() => setSelectedMember(null)} className="p-2 hover:bg-slate-200 bg-slate-100 rounded-full text-slate-500 transition-colors">
+                                                <X size={20} />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
+                                        
+                                        {/* Edit Mode Panel */}
+                                        <AnimatePresence>
+                                            {isEditing && (
+                                                <motion.div 
+                                                    initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1, marginBottom: 32 }}
+                                                    exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                                        <h3 className="text-lg font-black text-slate-900 mb-4">Edit User Access</h3>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                                            <div>
+                                                                <label className="block text-sm font-bold text-slate-700 mb-2">System Role</label>
+                                                                <select 
+                                                                    value={editForm.role}
+                                                                    onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-indigo-500"
+                                                                >
+                                                                    <option value="Citizen">Citizen</option>
+                                                                    <option value="Authority">Authority</option>
+                                                                    <option value="Admin">Admin</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-sm font-bold text-slate-700 mb-2">Account Status</label>
+                                                                <select 
+                                                                    value={editForm.isBanned ? 'banned' : 'active'}
+                                                                    onChange={(e) => setEditForm({...editForm, isBanned: e.target.value === 'banned'})}
+                                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-indigo-500"
+                                                                >
+                                                                    <option value="active">Active</option>
+                                                                    <option value="banned">Suspended (Banned)</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex justify-end gap-2">
+                                                            <button 
+                                                                onClick={() => setIsEditing(false)}
+                                                                className="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors"
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                            <button 
+                                                                onClick={handleSaveEdit}
+                                                                disabled={saving}
+                                                                className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                                            >
+                                                                {saving ? 'Saving...' : 'Save Changes'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+
                                         <div className="grid grid-cols-3 gap-4 mb-8">
                                             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                                                 <div className="text-sm font-bold text-slate-500 uppercase mb-1">Total Reported</div>

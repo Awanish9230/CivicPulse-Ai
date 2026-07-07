@@ -198,3 +198,67 @@ export const getMemberDetails = asynchandler(async (req, res) => {
         }, "Member details fetched successfully")
     );
 });
+
+// Advanced User Customization
+export const updateUser = asynchandler(async (req, res) => {
+    const { memberId } = req.params;
+    const { name, email, role, department, authorityLevel, isBanned } = req.body;
+
+    const user = await User.findById(memberId);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role) {
+        user.role = role;
+        if (role === 'Citizen') {
+            user.department = undefined;
+            user.authorityLevel = undefined;
+        }
+    }
+    if (department && user.role === 'Authority') user.department = department;
+    if (authorityLevel && user.role === 'Authority') user.authorityLevel = authorityLevel;
+    if (typeof isBanned !== 'undefined') user.isBanned = isBanned;
+
+    await user.save();
+
+    // Broadcast update
+    try {
+        const { getIo } = await import('../../config/socket.js');
+        getIo().to('admin_room').emit('user_updated', user);
+    } catch (e) {
+        console.error("Socket error on user update", e);
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, user, "User updated successfully")
+    );
+});
+
+// Admin Complaint Delete Override
+export const deleteComplaintAdmin = asynchandler(async (req, res) => {
+    const { complaintId } = req.params;
+
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) {
+        throw new ApiError(404, "Complaint not found");
+    }
+
+    // Admins can delete ANY complaint instantly
+    await Complaint.findByIdAndDelete(complaintId);
+
+    // Broadcast deletion so admin dashboards update
+    try {
+        const { getIo } = await import('../../config/socket.js');
+        getIo().emit('complaint_deleted', { _id: complaintId });
+        getIo().to('admin_room').emit('stats_update', { type: 'complaint_deleted' });
+    } catch (e) {
+        console.error("Socket error on admin complaint delete", e);
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Complaint permanently deleted by Admin")
+    );
+});

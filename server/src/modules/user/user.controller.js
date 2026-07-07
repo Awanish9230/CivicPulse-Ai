@@ -4,6 +4,7 @@ import User from "./user.model.js"
 import ApiResponse from "../../utils/ApiResponse.js"
 import crypto from "crypto";
 import { sendWelcomeEmail, sendPasswordResetEmail } from "../../services/emailService.js";
+import { getIo } from "../../config/socket.js";
   
 const generateAccessAndRefreshTokens = async (userId, plainAnonymousId, plainPastIds = []) => {
     try {
@@ -105,6 +106,14 @@ export const registerUser = asynchandler(async (req, res) => {
     
     // 6. Send welcome email asynchronously
     sendWelcomeEmail(createdUser.email, createdUser.name, createdUser.role);
+
+    // Emit real-time update to admin dashboard
+    try {
+        const io = getIo();
+        io.to('admin_room').emit('stats_update', { type: 'new_user', role: createdUser.role });
+    } catch (err) {
+        console.error("Socket error on register:", err);
+    }
 
     // 7. Send response
     return res.status(201).json(

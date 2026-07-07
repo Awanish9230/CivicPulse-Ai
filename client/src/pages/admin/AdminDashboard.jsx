@@ -5,6 +5,8 @@ import {
     TrendingUp, ShieldAlert, CheckCircle2, Clock
 } from 'lucide-react';
 
+import io from 'socket.io-client';
+
 const StatCard = ({ title, value, trend, icon: Icon, colorClass }) => (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-start justify-between">
         <div>
@@ -13,7 +15,7 @@ const StatCard = ({ title, value, trend, icon: Icon, colorClass }) => (
             {trend && (
                 <div className="flex items-center gap-1 mt-2 text-emerald-600 text-sm font-medium">
                     <TrendingUp size={16} />
-                    <span>{trend} this week</span>
+                    <span>{trend}</span>
                 </div>
             )}
         </div>
@@ -30,6 +32,9 @@ const AdminDashboard = () => {
         registeredCitizens: 0,
         systemHealth: 100
     });
+    const [recentActivities, setRecentActivities] = useState([
+        { title: 'System Initialized', time: 'Just now', desc: 'Real-time dashboard monitoring started.', icon: Activity, color: 'text-blue-500 bg-blue-50' }
+    ]);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -41,6 +46,66 @@ const AdminDashboard = () => {
             }
         };
         fetchStats();
+
+        // Socket Connection for Real-Time Stats
+        const socket = io(`${import.meta.env.VITE_API_URL}`);
+        
+        socket.on('connect', () => {
+            console.log('Admin Socket Connected');
+            socket.emit('joinAdminRoom');
+        });
+
+        socket.on('stats_update', (data) => {
+            console.log('Real-time stat update:', data);
+            
+            // Log activity
+            let activityTitle = 'Activity';
+            let activityDesc = 'Update received';
+            let Icon = Activity;
+            let color = 'text-blue-500 bg-blue-50';
+
+            setStats(prev => {
+                const newStats = { ...prev };
+                if (data.type === 'new_user') {
+                    if (data.role === 'Authority') {
+                        newStats.activeAuthorities += 1;
+                        activityTitle = 'New Authority Registered';
+                        activityDesc = 'A new Authority account was created.';
+                        Icon = UserCheck;
+                        color = 'text-indigo-500 bg-indigo-50';
+                    } else {
+                        newStats.registeredCitizens += 1;
+                        activityTitle = 'New Citizen Registered';
+                        activityDesc = 'A new Citizen joined the platform.';
+                        Icon = Users;
+                        color = 'text-blue-500 bg-blue-50';
+                    }
+                } else if (data.type === 'new_complaint') {
+                    newStats.totalComplaints += 1;
+                    activityTitle = 'New Complaint Filed';
+                    activityDesc = 'A new issue has been reported.';
+                    Icon = AlertTriangle;
+                    color = 'text-rose-500 bg-rose-50';
+                } else if (data.type === 'complaint_resolved') {
+                    activityTitle = 'Complaint Resolved';
+                    activityDesc = 'An authority has marked a complaint as resolved.';
+                    Icon = CheckCircle2;
+                    color = 'text-emerald-500 bg-emerald-50';
+                }
+                
+                // Add to recent activities
+                setRecentActivities(prevActivities => {
+                    const newActivity = { title: activityTitle, time: 'Just now', desc: activityDesc, icon: Icon, color };
+                    return [newActivity, ...prevActivities].slice(0, 4); // Keep last 4
+                });
+
+                return newStats;
+            });
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
     const statCards = [
@@ -101,12 +166,7 @@ const AdminDashboard = () => {
                 <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
                     <h2 className="text-xl font-bold text-slate-800 mb-6">Recent Platform Activity</h2>
                     <div className="space-y-4">
-                        {[
-                            { title: 'New Authority Registered', time: '10 mins ago', desc: 'Rahul Verma registered as Junior Authority (Water Dept)', icon: UserCheck, color: 'text-indigo-500 bg-indigo-50' },
-                            { title: 'High Priority Complaint', time: '1 hour ago', desc: 'Severe water logging reported in Ward 42.', icon: AlertTriangle, color: 'text-rose-500 bg-rose-50' },
-                            { title: 'Complaint Escalated', time: '2 hours ago', desc: 'System automatically escalated Complaint #492 to Senior Level.', icon: TrendingUp, color: 'text-amber-500 bg-amber-50' },
-                            { title: 'Bulk Resolution', time: '3 hours ago', desc: '14 complaints marked as resolved by Waste Management Dept.', icon: CheckCircle2, color: 'text-emerald-500 bg-emerald-50' }
-                        ].map((activity, idx) => (
+                        {recentActivities.map((activity, idx) => (
                             <div key={idx} className="flex gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${activity.color}`}>
                                     <activity.icon size={20} />

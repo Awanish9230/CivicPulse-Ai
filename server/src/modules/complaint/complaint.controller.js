@@ -45,6 +45,7 @@ export const resolveComplaint = asyncHandler(async (req, res) => {
     try {
         const { getIo } = await import('../../config/socket.js');
         getIo().emit('complaint_status_update', complaint);
+        getIo().to('admin_room').emit('stats_update', { type: 'complaint_resolved' });
         
         await notificationService.createNotification({
             recipient: complaint.reportedBy,
@@ -222,6 +223,7 @@ If it is in another language, translate it fully and accurately to professional 
     try {
         const { getIo } = await import('../../config/socket.js');
         getIo().emit('new_complaint', complaint);
+        getIo().to('admin_room').emit('stats_update', { type: 'new_complaint' });
         
         await notificationService.createNotification({
             recipient: req.user._id,
