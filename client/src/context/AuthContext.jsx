@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import api from '../config/api';
 import toast from 'react-hot-toast';
@@ -104,8 +104,16 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const contextValue = useMemo(() => ({
+        user,
+        loading,
+        login,
+        logout,
+        fetchUser
+    }), [user, loading]);
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout, fetchUser }}>
+        <AuthContext.Provider value={contextValue}>
             {children}
         </AuthContext.Provider>
     );

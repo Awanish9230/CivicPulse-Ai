@@ -36,14 +36,30 @@ export default defineConfig({
     })
   ],
   build: {
+    target: 'esnext',
+    cssMinify: true,
+    sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['framer-motion', 'lucide-react', 'react-hot-toast'],
-          'map-vendor': ['leaflet', 'react-leaflet', 'leaflet.heat'],
-          'chart-vendor': ['recharts'],
-          'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('leaflet') || id.includes('react-leaflet')) {
+              return 'vendor-map';
+            }
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            return 'vendor-core'; // all other node_modules
+          }
         }
       }
     }

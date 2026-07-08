@@ -21,7 +21,7 @@ export const checkToxicity = async (text) => {
         }
 
         // Highly compressed prompt to save input tokens, utilizing system instruction style
-        const prompt = `Analyze message for severe toxicity, hate speech, or direct threats. Ignore mild frustration. Return JSON: {"isToxic": boolean, "reason": "brief"}. Msg: "${trimmedText}"`;
+        const prompt = `Analyze message for severe toxicity, hate speech, or direct threats. Ignore mild frustration. Return ONLY a valid JSON object with no markdown and no other text: {"isToxic": boolean, "reason": "brief"}. Msg: "${trimmedText}"`;
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -32,17 +32,20 @@ export const checkToxicity = async (text) => {
             body: JSON.stringify({
                 model: 'llama3-8b-8192',
                 messages: [{ role: 'user', content: prompt }],
-                temperature: 0.1,
-                response_format: { type: "json_object" }
+                temperature: 0.1
             })
         });
 
         if (!response.ok) {
-            throw new Error(`Groq API responded with status ${response.status}`);
+            const errText = await response.text();
+            throw new Error(`Groq API responded with status ${response.status}: ${errText}`);
         }
 
         const data = await response.json();
-        const content = data.choices[0].message.content;
+        let content = data.choices[0].message.content;
+        
+        // Strip markdown backticks if model wraps it
+        content = content.replace(/```json/g, '').replace(/```/g, '').trim();
         const result = JSON.parse(content);
         
         // Save to cache

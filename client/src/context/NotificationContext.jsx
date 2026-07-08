@@ -43,48 +43,46 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
+    const connectSocket = useCallback(() => {
+        if (!isAuthenticated || !user || socket) return;
+        
+        const newSocket = io(SOCKET_URL);
+        setSocket(newSocket);
+
+        newSocket.on('connect', () => {
+            newSocket.emit('join', user._id);
+            if (user.anonymousId) {
+                newSocket.emit('join', user.anonymousId);
+            }
+            newSocket.emit('joinRoom', 'local-community-general');
+            newSocket.emit('joinRoom', 'local-community-authority');
+        });
+
+        newSocket.on('notification', (notification) => {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(notification.title, {
+                    body: notification.message,
+                    icon: '/favicon.ico'
+                });
+            }
+            
+            toast.custom((t) => (
+                <div className="bg-white border border-slate-100 shadow-xl rounded-2xl p-4 flex flex-col gap-1 cursor-pointer min-w-[300px] max-w-md animate-enter" onClick={() => toast.dismiss(t.id)}>
+                    <p className="font-bold text-sm text-slate-800">{notification.title}</p>
+                    <p className="text-xs text-slate-500">{notification.message}</p>
+                </div>
+            ), { duration: 5000 });
+
+            setUnreadCount(prev => prev + 1);
+            setNotifications(prev => [notification, ...prev]);
+        });
+    }, [isAuthenticated, user, socket]);
+
     useEffect(() => {
         if (isAuthenticated && user) {
             fetchUnreadCount();
             fetchInitialNotifications();
             requestBrowserPermission();
-
-            // Initialize socket
-            const newSocket = io(SOCKET_URL);
-            setSocket(newSocket);
-
-            newSocket.on('connect', () => {
-                newSocket.emit('join', user._id);
-                if (user.anonymousId) {
-                    newSocket.emit('join', user.anonymousId);
-                }
-                newSocket.emit('joinRoom', 'local-community-general');
-                newSocket.emit('joinRoom', 'local-community-authority');
-            });
-
-            newSocket.on('notification', (notification) => {
-                // Play sound or show browser notification
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification(notification.title, {
-                        body: notification.message,
-                        icon: '/favicon.ico' // Ensure you have a favicon
-                    });
-                }
-                
-                // Show toast
-                toast.custom((t) => (
-                    <div className="bg-white border border-slate-100 shadow-xl rounded-2xl p-4 flex flex-col gap-1 cursor-pointer min-w-[300px] max-w-md animate-enter" onClick={() => toast.dismiss(t.id)}>
-                        <p className="font-bold text-sm text-slate-800">{notification.title}</p>
-                        <p className="text-xs text-slate-500">{notification.message}</p>
-                    </div>
-                ), { duration: 5000 });
-
-                // Update state
-                setUnreadCount(prev => prev + 1);
-                setNotifications(prev => [notification, ...prev]);
-            });
-
-            return () => newSocket.disconnect();
         } else {
             if (socket) {
                 socket.disconnect();
@@ -93,6 +91,10 @@ export const NotificationProvider = ({ children }) => {
             setUnreadCount(0);
             setNotifications([]);
         }
+        
+        return () => {
+            if (socket) socket.disconnect();
+        };
     }, [isAuthenticated, user, fetchUnreadCount, fetchInitialNotifications]);
 
     const markAsRead = async (id) => {
@@ -115,18 +117,21 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
+    const contextValue = React.useMemo(() => ({
+        notifications,
+        setNotifications,
+        unreadCount,
+        setUnreadCount,
+        markAsWindowAsRead: markAsRead,
+        markAsRead,
+        markAllAsRead,
+        fetchUnreadCount,
+        socket,
+        connectSocket
+    }), [notifications, unreadCount, socket, connectSocket, fetchUnreadCount]);
+
     return (
-        <NotificationContext.Provider value={{
-            notifications,
-            setNotifications,
-            unreadCount,
-            setUnreadCount,
-            markAsWindowAsRead: markAsRead, // avoid naming collision if needed, but it's fine
-            markAsRead,
-            markAllAsRead,
-            fetchUnreadCount,
-            socket
-        }}>
+        <NotificationContext.Provider value={contextValue}>
             {children}
         </NotificationContext.Provider>
     );

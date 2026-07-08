@@ -4,6 +4,7 @@ import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert,
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
+import { NotificationContext } from '../context/NotificationContext';
 import { io } from 'socket.io-client';
 import ImageCarousel from '../components/common/ImageCarousel';
 import Banned from './Banned';
@@ -228,6 +229,11 @@ const Community = () => {
 
     // Socket Initialization for Chat
     useEffect(() => {
+        if (activeChannel === 'issue') {
+            setSocket(null);
+            return;
+        }
+
         const newSocket = io(`${import.meta.env.VITE_API_URL}`);
         setSocket(newSocket);
 
@@ -258,6 +264,16 @@ const Community = () => {
                     [message.channel]: [...channelMsgs, message]
                 };
             });
+            
+            setTimeout(() => {
+                if (chatContainerRef.current) {
+                    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+                    // Auto-scroll if user is near bottom
+                    if (scrollHeight - scrollTop - clientHeight < 200) {
+                        chatContainerRef.current.scrollTop = scrollHeight;
+                    }
+                }
+            }, 100);
         });
 
         newSocket.on('roomData', ({ room, onlineCount }) => {
@@ -283,8 +299,11 @@ const Community = () => {
             }));
         });
 
-        return () => newSocket.close();
-    }, [radius, location]);
+        return () => {
+            newSocket.disconnect();
+            setSocket(null);
+        };
+    }, [radius, location, activeChannel]);
 
     // Standalone function to fetch chat history
     const loadHistory = async (channel) => {
@@ -312,6 +331,7 @@ const Community = () => {
                 console.error("Failed to load chat history", error);
             } finally {
                 setLoadingHistory(false);
+                setTimeout(scrollToBottom, 100);
             }
         }
     };
@@ -401,6 +421,7 @@ const Community = () => {
             socket.emit('sendMessage', messageData);
             setNewMessage('');
             setReplyingTo(null);
+            setTimeout(scrollToBottom, 100);
         }
     };
 

@@ -31,6 +31,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <div className={`px-6 flex items-center ${isOpen ? 'justify-between' : 'justify-center'} h-16 border-b border-border/50`}>
                 <div className="flex items-center gap-3">
                     <button 
+                        aria-label="Toggle Sidebar"
                         onClick={() => setIsOpen(!isOpen)}
                         className="p-2 rounded-xl bg-surface border border-border/50 hover:bg-border/50 transition-colors shrink-0"
                     >

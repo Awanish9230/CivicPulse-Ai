@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { LazyMotion, domAnimation } from 'framer-motion';
 import AppLayout from './components/layout/AppLayout';
 import AuthorityLayout from './components/layout/AuthorityLayout';
 import AdminLayout from './components/layout/AdminLayout';
@@ -73,10 +74,11 @@ const DynamicTitle = () => {
 
 function App() {
   return (
-    <BrowserRouter>
-      <DynamicTitle />
-      <Toaster position="top-right" />
-      <Suspense fallback={<PageLoader />}>
+    <LazyMotion features={domAnimation} strict>
+      <BrowserRouter>
+        <DynamicTitle />
+        <Toaster position="top-right" />
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -133,8 +135,9 @@ function App() {
           </Route>
 
         </Routes>
-      </Suspense>
-    </BrowserRouter>
+        </Suspense>
+      </BrowserRouter>
+    </LazyMotion>
   );
 }
 
