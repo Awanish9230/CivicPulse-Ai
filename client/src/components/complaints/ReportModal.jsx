@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { X, MapPin, Loader2, CheckCircle, Navigation } from 'lucide-react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import CustomSelect from '../common/CustomSelect';
 import L from 'leaflet';

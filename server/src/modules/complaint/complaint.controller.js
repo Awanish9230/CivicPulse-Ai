@@ -150,7 +150,41 @@ export const createComplaint = asyncHandler(async (req, res) => {
         }
     }
 
-    // 4. Validate images
+    // 4. Geo-spatial Deduplication & Merging
+    // Find active complaints of the same category within 50 meters
+    const existingIssue = await Complaint.findOne({
+        category,
+        status: { $in: ['Submitted', 'Verified', 'Assigned', 'In Progress'] },
+        location: {
+            $near: {
+                $geometry: {
+                    type: "Point",
+                    coordinates: parsedCoordinates
+                },
+                $maxDistance: 50 // 50 meters radius
+            }
+        }
+    });
+
+    if (existingIssue) {
+        // Prevent the same user from spamming the merge feature within a short time
+        if (existingIssue.reportedBy === req.user.anonymousId && (Date.now() - existingIssue.createdAt.getTime() < 5 * 60 * 1000)) {
+            throw new ApiError(409, "You have already submitted this exact complaint recently.");
+        }
+
+        // Merge this new report into the existing one
+        existingIssue.supportCount += 1;
+        if (!existingIssue.upvotedBy.includes(req.user.anonymousId)) {
+            existingIssue.upvotedBy.push(req.user.anonymousId);
+        }
+        await existingIssue.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, existingIssue, "Similar issue already reported in this exact location. We've added your report to boost its priority!")
+        );
+    }
+
+    // 5. Validate images
     const imageFiles = req.files;
 
     if (!imageFiles || imageFiles.length === 0) {
