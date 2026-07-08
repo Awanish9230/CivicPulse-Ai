@@ -35,4 +35,17 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion', 'lucide-react', 'react-hot-toast'],
+          'map-vendor': ['leaflet', 'react-leaflet', 'leaflet.heat'],
+          'chart-vendor': ['recharts'],
+          'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
+        }
+      }
+    }
+  }
 })

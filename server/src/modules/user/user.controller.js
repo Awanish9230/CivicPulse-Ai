@@ -56,6 +56,7 @@ export const rotateAnonymousId = asynchandler(async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: Number(process.env.COOKIE_EXPIRES_IN_DAYS || 7) * 24 * 60 * 60 * 1000,
     };
 
     return res
@@ -193,6 +194,7 @@ export const loginUser = asynchandler(async (req, res) => {
         process.env.NODE_ENV === "production"
             ? "none"
             : "lax",
+    maxAge: Number(process.env.COOKIE_EXPIRES_IN_DAYS || 7) * 24 * 60 * 60 * 1000,
     };
 
     // 9. Send response

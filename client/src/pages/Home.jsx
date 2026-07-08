@@ -1,34 +1,33 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import LazyLoad from '../components/common/LazyLoad';
 
-// Phase 1 Components
+// Phase 1 Components (Critical for FCP - Synchronous)
 import HeroSection from '../components/home/HeroSection';
 import TrustedStats from '../components/home/TrustedStats';
 import HowItWorks from '../components/home/HowItWorks';
 import KeyFeatures from '../components/home/KeyFeatures';
 
-// Phase 2 Components
-import ComplaintCategories from '../components/home/ComplaintCategories';
-import LiveComplaintMap from '../components/home/LiveComplaintMap';
-import RecentReports from '../components/home/RecentReports';
-import AIFeatures from '../components/home/AIFeatures';
-import AuthorityPerformance from '../components/home/AuthorityPerformance';
-import LiveActivityFeed from '../components/home/LiveActivityFeed';
+// Lazy Loaded Components (Deferred to avoid blocking main thread)
+const ComplaintCategories = React.lazy(() => import('../components/home/ComplaintCategories'));
+const LiveComplaintMap = React.lazy(() => import('../components/home/LiveComplaintMap'));
+const RecentReports = React.lazy(() => import('../components/home/RecentReports'));
+const AIFeatures = React.lazy(() => import('../components/home/AIFeatures'));
+const AuthorityPerformance = React.lazy(() => import('../components/home/AuthorityPerformance'));
+const LiveActivityFeed = React.lazy(() => import('../components/home/LiveActivityFeed'));
 
-// Phase 3 Components
-import SuccessStories from '../components/home/SuccessStories';
-import Testimonials from '../components/home/Testimonials';
-import PlatformScreenshots from '../components/home/PlatformScreenshots';
-import MobileAppSection from '../components/home/MobileAppSection';
-import SecurityPrivacy from '../components/home/SecurityPrivacy';
-import PartnersSection from '../components/home/PartnersSection';
-import AwardsRecognition from '../components/home/AwardsRecognition';
+const SuccessStories = React.lazy(() => import('../components/home/SuccessStories'));
+const Testimonials = React.lazy(() => import('../components/home/Testimonials'));
+const PlatformScreenshots = React.lazy(() => import('../components/home/PlatformScreenshots'));
+const MobileAppSection = React.lazy(() => import('../components/home/MobileAppSection'));
+const SecurityPrivacy = React.lazy(() => import('../components/home/SecurityPrivacy'));
+const PartnersSection = React.lazy(() => import('../components/home/PartnersSection'));
+const AwardsRecognition = React.lazy(() => import('../components/home/AwardsRecognition'));
 
-// Phase 4 Components
-import FAQSection from '../components/home/FAQSection';
-import CallToAction from '../components/home/CallToAction';
-import Newsletter from '../components/home/Newsletter';
-import FloatingButtons from '../components/home/FloatingButtons';
+const FAQSection = React.lazy(() => import('../components/home/FAQSection'));
+const CallToAction = React.lazy(() => import('../components/home/CallToAction'));
+const Newsletter = React.lazy(() => import('../components/home/Newsletter'));
+const FloatingButtons = React.lazy(() => import('../components/home/FloatingButtons'));
 
 const Home = () => {
     const location = useLocation();
@@ -44,43 +43,55 @@ const Home = () => {
     return (
         <div className="bg-white min-h-screen font-sans text-slate-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
-                {/* Phase 1: Core */}
+                {/* Phase 1: Core (Loaded instantly) */}
                 <HeroSection />
                 <div className="hidden md:block"><TrustedStats /></div>
                 <HowItWorks />
                 <KeyFeatures />
                 
                 {/* Phase 2: Interactive Modules */}
-                <div className="hidden md:block"><ComplaintCategories /></div>
-                <LiveComplaintMap />
-                <RecentReports />
+                <LazyLoad height="300px">
+                    <div className="hidden md:block"><ComplaintCategories /></div>
+                </LazyLoad>
+                <LazyLoad height="600px">
+                    <LiveComplaintMap />
+                </LazyLoad>
+                <LazyLoad height="400px">
+                    <RecentReports />
+                </LazyLoad>
                 <div className="hidden md:block">
-                    <AIFeatures />
-                    <AuthorityPerformance />
-                    <LiveActivityFeed />
+                    <LazyLoad height="400px"><AIFeatures /></LazyLoad>
+                    <LazyLoad height="400px"><AuthorityPerformance /></LazyLoad>
+                    <LazyLoad height="300px"><LiveActivityFeed /></LazyLoad>
                 </div>
 
                 {/* Phase 3: Social Proof & Trust */}
                 <div className="hidden md:block">
-                    <SuccessStories />
-                    <Testimonials />
-                    <PlatformScreenshots />
+                    <LazyLoad height="300px"><SuccessStories /></LazyLoad>
+                    <LazyLoad height="400px"><Testimonials /></LazyLoad>
+                    <LazyLoad height="600px"><PlatformScreenshots /></LazyLoad>
                 </div>
-                <MobileAppSection />
+                <LazyLoad height="500px"><MobileAppSection /></LazyLoad>
                 <div className="hidden md:block">
-                    <SecurityPrivacy />
-                    <PartnersSection />
-                    <AwardsRecognition />
+                    <LazyLoad height="400px"><SecurityPrivacy /></LazyLoad>
+                    <LazyLoad height="200px"><PartnersSection /></LazyLoad>
+                    <LazyLoad height="300px"><AwardsRecognition /></LazyLoad>
                 </div>
 
                 {/* Phase 4: Engagement */}
-                <div className="hidden md:block"><FAQSection /></div>
-                <CallToAction />
-                <div className="hidden md:block"><Newsletter /></div>
+                <div className="hidden md:block">
+                    <LazyLoad height="500px"><FAQSection /></LazyLoad>
+                </div>
+                <LazyLoad height="300px"><CallToAction /></LazyLoad>
+                <div className="hidden md:block">
+                    <LazyLoad height="200px"><Newsletter /></LazyLoad>
+                </div>
             </div>
 
             {/* Floating Buttons */}
-            <FloatingButtons />
+            <LazyLoad height="0px" rootMargin="0px">
+                <FloatingButtons />
+            </LazyLoad>
         </div>
     );
 };

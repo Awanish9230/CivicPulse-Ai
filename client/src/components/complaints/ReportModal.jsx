@@ -212,7 +212,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                         <h2 className="text-2xl font-black text-slate-800 tracking-tight">Finalize Report</h2>
                         <p className="text-sm font-medium text-slate-500 mt-1">Submit your captured issue to authorities.</p>
                     </div>
-                    <button onClick={onClose} className="p-2.5 bg-white shadow-sm border border-slate-100 rounded-full hover:bg-slate-50 transition-colors text-slate-500 hover:text-slate-800">
+                    <button aria-label="Close" onClick={onClose} className="p-2.5 bg-white shadow-sm border border-slate-100 rounded-full hover:bg-slate-50 transition-colors text-slate-500 hover:text-slate-800">
                         <X size={20} />
                     </button>
                 </div>

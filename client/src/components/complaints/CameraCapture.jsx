@@ -109,7 +109,7 @@ const CameraCapture = ({ onClose, onCapture }) => {
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
             {/* Header */}
             <div className="flex justify-between items-center p-6 bg-gradient-to-b from-black/80 to-transparent absolute top-0 w-full z-10">
-                <button onClick={() => { stopCamera(); onClose(); }} className="text-white p-2 rounded-full bg-white/10 backdrop-blur-md">
+                <button aria-label="Close" onClick={() => { stopCamera(); onClose(); }} className="text-white p-2 rounded-full bg-white/10 backdrop-blur-md">
                     <X size={24} />
                 </button>
                 <div className="bg-red-500/80 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md flex items-center gap-2 animate-pulse">

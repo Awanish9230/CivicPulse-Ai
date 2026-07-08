@@ -56,7 +56,7 @@ const Testimonials = () => {
                 </div>
 
                 <div className="flex justify-center gap-4 mt-8">
-                    <button onClick={prev} className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors shadow-sm">
+                    <button aria-label="Previous" onClick={prev} className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors shadow-sm">
                         <ChevronLeft size={20} className="text-slate-600" />
                     </button>
                     <div className="flex items-center gap-2">
@@ -64,7 +64,7 @@ const Testimonials = () => {
                             <div key={idx} className={`w-2.5 h-2.5 rounded-full transition-colors ${idx === current ? 'bg-indigo-500' : 'bg-slate-200'}`} />
                         ))}
                     </div>
-                    <button onClick={next} className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors shadow-sm">
+                    <button aria-label="Next" onClick={next} className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors shadow-sm">
                         <ChevronRight size={20} className="text-slate-600" />
                     </button>
                 </div>

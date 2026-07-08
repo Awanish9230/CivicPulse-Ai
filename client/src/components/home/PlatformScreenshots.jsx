@@ -37,10 +37,10 @@ const PlatformScreenshots = () => {
                         </div>
                         
                         <div className="flex gap-4 pt-4">
-                            <button onClick={prev} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/10 hover:text-white transition-all text-slate-400">
+                            <button aria-label="Previous" onClick={prev} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/10 hover:text-white transition-all text-slate-400">
                                 <ChevronLeft size={20} />
                             </button>
-                            <button onClick={next} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/10 hover:text-white transition-all text-slate-400">
+                            <button aria-label="Next" onClick={next} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/10 hover:text-white transition-all text-slate-400">
                                 <ChevronRight size={20} />
                             </button>
                         </div>
