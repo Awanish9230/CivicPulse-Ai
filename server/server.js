@@ -18,6 +18,7 @@ import messageRoutes from './src/modules/message/message.routes.js';
 import authorityRoutes from './src/modules/authority/authority.routes.js';
 import adminRoutes from './src/modules/admin/admin.routes.js';
 import publicRoutes from './src/modules/public/public.routes.js';
+import appealRoutes from './src/modules/appeal/appeal.routes.js';
 import startEscalationCron from './src/utils/escalationCron.js';
 
 // Connect to database
@@ -80,6 +81,7 @@ app.use("/api/v1/message", messageRoutes);
 app.use("/api/v1/authority", authorityRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/public", publicRoutes);
+app.use("/api/v1/appeal", appealRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);

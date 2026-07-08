@@ -47,3 +47,22 @@ export const authorizeRoles = (...roles) => {
         next();
     };
 };
+
+export const verifyAdmin = authorizeRoles("Admin");
+
+export const checkRestrictedFeature = (feature) => {
+    return (req, res, next) => {
+        if (!req.user) return next(new ApiError(401, "Unauthorized"));
+        
+        const isPermanentlyBanned = req.user.isBanned;
+        const isTemporarilyBanned = req.user.banUntil && new Date(req.user.banUntil) > Date.now();
+        
+        if (isPermanentlyBanned || isTemporarilyBanned) {
+            // Check if this specific feature is restricted for them
+            if (req.user.restrictedFeatures && req.user.restrictedFeatures.includes(feature)) {
+                return next(new ApiError(403, `You are currently banned from accessing the ${feature} feature. Please submit an appeal.`));
+            }
+        }
+        next();
+    };
+};

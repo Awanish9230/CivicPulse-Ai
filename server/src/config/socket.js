@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import logger from '../utils/logger.js';
 import Message from '../modules/message/message.model.js';
+import { checkToxicity } from '../services/aiModeration.js';
 
 let io;
 
@@ -55,6 +56,40 @@ export const initSocket = (server) => {
                 let channelName = 'general';
                 if (room === 'local-community-authority') channelName = 'ask-authority';
                 if (room === 'local-community-announcements') channelName = 'announcements';
+                
+                // --- AI TOXICITY FILTER & BAN SYSTEM ---
+                const toxicityCheck = await checkToxicity(message.text);
+                if (toxicityCheck.isToxic) {
+                    const User = (await import('../modules/user/user.model.js')).default;
+                    const user = await User.findById(message.senderId);
+                    
+                    if (user) {
+                        user.strikes = (user.strikes || 0) + 1;
+                        if (user.strikes === 1) {
+                            user.banUntil = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+                        } else if (user.strikes === 2) {
+                            user.banUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7d
+                        } else if (user.strikes >= 3) {
+                            user.isBanned = true; // Permanent
+                        }
+                        
+                        // Dynamic banning: default to blocking community page when banned
+                        user.restrictedFeatures = ['community']; 
+                        
+                        await user.save({ validateBeforeSave: false });
+                    }
+                    
+                    // Notify sender privately
+                    socket.emit('bannedNotification', {
+                        message: "Your message was flagged as highly toxic or abusive. A strike has been added to your account.",
+                        reason: toxicityCheck.reason,
+                        strikes: user?.strikes || 1
+                    });
+                    
+                    logger.warn(`User ${message.senderId} message blocked for toxicity. Strikes: ${user?.strikes}`);
+                    return; // Stop processing, do not broadcast
+                }
+                // --- END FILTER ---
                 
                 // Save to database
                 let locationObj = undefined;

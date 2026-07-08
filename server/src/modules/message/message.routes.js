@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { getChannelMessages, editMessage, deleteMessage } from "./message.controller.js";
-import { verifyJWT } from "../../middlewares/auth.middleware.js";
+import { verifyJWT, checkRestrictedFeature } from "../../middlewares/auth.middleware.js";
 
 const router = Router();
 
-// All message routes require authentication
-router.get("/:channel", verifyJWT, getChannelMessages);
-router.put("/:messageId", verifyJWT, editMessage);
-router.delete("/:messageId", verifyJWT, deleteMessage);
+// Apply community restriction to all message routes
+router.use(verifyJWT, checkRestrictedFeature('community'));
+
+router.get("/:channel", getChannelMessages);
+router.put("/:messageId", editMessage);
+router.delete("/:messageId", deleteMessage);
 
 export default router;

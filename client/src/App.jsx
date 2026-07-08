@@ -45,6 +45,8 @@ const APIManager = React.lazy(() => import('./pages/admin/APIManager'));
 const Integrations = React.lazy(() => import('./pages/admin/Integrations'));
 const Backups = React.lazy(() => import('./pages/admin/Backups'));
 const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
+const AdminAppeals = React.lazy(() => import('./pages/admin/AdminAppeals'));
+
 // Dynamic Title Component
 const DynamicTitle = () => {
   const location = useLocation();
@@ -125,6 +127,7 @@ function App() {
             <Route path="integrations" element={<Integrations />} />
             <Route path="backups" element={<Backups />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="appeals" element={<AdminAppeals />} />
             {/* The rest of the routes will be added as they are built */}
             <Route path="*" element={<div className="p-8"><h1 className="text-2xl font-bold">Coming Soon</h1><p>This module is under development.</p></div>} />
           </Route>

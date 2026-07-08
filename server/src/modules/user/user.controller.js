@@ -152,13 +152,8 @@ export const loginUser = asynchandler(async (req, res) => {
         }
     }
 
-    // 5. Check if account is banned
-    if (user.isBanned) {
-        throw new ApiError(
-            403,
-            "Your account has been banned. Please contact support."
-        );
-    }
+    // 5. Account ban status is checked dynamically by middlewares based on restrictedFeatures.
+    // We allow login so they can submit appeals.
 
     // 6. Verify password
     const isPasswordValid = await user.isPasswordCorrect(password);

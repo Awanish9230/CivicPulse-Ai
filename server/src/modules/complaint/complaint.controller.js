@@ -6,8 +6,7 @@ import asyncHandler from "../../utils/asynchandler.js";
 import uploadOnCloudinary, { deleteFromCloudinary } from "../../utils/cloudinary.js";
 import notificationService from "../notification/notification.service.js";
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+import { apiKeyManager } from '../../utils/apiKeyManager.js';
 
 export const resolveComplaint = asyncHandler(async (req, res) => {
     const { complaintId } = req.params;
@@ -187,10 +186,11 @@ export const createComplaint = asyncHandler(async (req, res) => {
     
     // Let's use Gemini to quickly check and translate if needed
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = `You are a civic translation AI. The user has submitted a complaint description: "${description}".
-If this description is already in English, reply with exactly the word "ENGLISH".
-If it is in another language, translate it fully and accurately to professional English. Reply ONLY with the translated English text, nothing else.`;
+        const geminiKey = apiKeyManager.getGeminiKey();
+        if (!geminiKey) throw new Error("No Gemini API Key available.");
+        const genAI = new GoogleGenerativeAI(geminiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const prompt = `Translate to professional English. If already English, reply "ENGLISH". Reply ONLY with translated text. Text: "${description}"`;
         
         const result = await model.generateContent(prompt);
         const translatedText = result.response.text().trim();
@@ -523,23 +523,23 @@ export const analyzeImage = asyncHandler(async (req, res) => {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = `You are a civic issue analyzer. I will provide a photo of a local civic issue (like a pothole, garbage, broken light).
-Your task is to identify the issue and return a JSON object with two fields:
-1. "category": Must be exactly one of: 'Road', 'Electricity', 'Garbage', 'Water', 'Drainage', 'Traffic', 'Illegal Dumping', 'Street Light', 'Construction', 'Animal', 'Others'. Choose the most fitting.
-2. "description": A concise, professional, one-sentence description of the issue shown in the image, in English.
-
-Return ONLY the raw JSON object, no markdown blocks.`;
+        const geminiKey = apiKeyManager.getGeminiKey();
+        if (!geminiKey) throw new ApiError(500, "No Gemini API Key available.");
+        const genAI = new GoogleGenerativeAI(geminiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const prompt = `Analyze image of a civic issue. Return JSON: {"category": "Road|Electricity|Garbage|Water|Drainage|Traffic|Illegal Dumping|Street Light|Construction|Animal|Others", "description": "Short professional English desc"}`;
 
         const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
 
         const result = await model.generateContent([
             prompt,
             { inlineData: { data: base64Data, mimeType: "image/jpeg" } }
-        ]);
+        ], {
+            generationConfig: { responseMimeType: "application/json" }
+        });
 
         const responseText = result.response.text();
-        const parsed = JSON.parse(responseText.replace(/```json/g, '').replace(/```/g, '').trim());
+        const parsed = JSON.parse(responseText.replace(/```json/gi, '').replace(/```/g, '').trim());
         
         return res.status(200).json(new ApiResponse(200, parsed, "Image analyzed successfully"));
     } catch (error) {

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import ImageCarousel from '../components/common/ImageCarousel';
+import Banned from './Banned';
 
 const IssueCardSkeleton = () => (
     <div className="bg-white/80 backdrop-blur-lg rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-3 mb-4">
@@ -484,6 +485,10 @@ const Community = () => {
         { id: 'ask-authority', name: 'ask-authority', icon: ShieldAlert, desc: 'Direct chat with authorities' },
         { id: 'announcements', name: 'announcements', icon: Megaphone, desc: 'Official city updates & alerts' }
     ];
+
+    if (user?.restrictedFeatures?.includes('community')) {
+        return <Banned feature="Community" />;
+    }
 
     return (
         <div className="flex h-[calc(100dvh-10rem)] md:h-[calc(100vh-7rem)] max-w-6xl mx-auto bg-white/70 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden relative z-10">
