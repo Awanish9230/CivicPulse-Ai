@@ -54,6 +54,9 @@ export default defineConfig({
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'vendor-react';
             }
+            if (id.includes('leaflet.heat')) {
+              return; // Allow dynamic import to work
+            }
             if (id.includes('framer-motion')) {
               return 'vendor-motion';
             }
