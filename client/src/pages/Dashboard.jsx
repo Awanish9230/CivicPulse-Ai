@@ -4,11 +4,19 @@ import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, MessageSquare, ThumbsUp, Shield, MapPin } from 'lucide-react';
-import { MapContainer, TileLayer, CircleMarker, Popup, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, Circle, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import ImageCarousel from '../components/common/ImageCarousel';
 import CustomSelect from '../components/common/CustomSelect';
 import { AuthContext } from '../context/AuthContext';
+
+const MapUpdater = ({ center, zoom }) => {
+    const map = useMap();
+    useEffect(() => {
+        map.flyTo(center, zoom, { duration: 1.5 });
+    }, [center, zoom, map]);
+    return null;
+};
 
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
@@ -311,6 +319,10 @@ const Dashboard = () => {
                             scrollWheelZoom={true} 
                             className="h-full w-full z-0"
                         >
+                            <MapUpdater 
+                                center={location ? [location.lat, location.lng] : [28.6139, 77.2090]}
+                                zoom={location ? (radius === 'All' ? 5 : (radius > 50 ? 7 : 11)) : 12}
+                            />
                             <TileLayer 
                                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
