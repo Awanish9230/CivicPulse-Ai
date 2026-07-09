@@ -9,6 +9,18 @@
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin="anonymous" />
     <link rel="dns-prefetch" href="https://res.cloudinary.com" />
     <title>CivicPulse - Community Complaint Resolution System</title>
+    <!-- PWA Fail-safe: Unregister SW on fatal errors -->
+    <script>
+      window.addEventListener('error', function(e) {
+        if (navigator.serviceWorker) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          });
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
