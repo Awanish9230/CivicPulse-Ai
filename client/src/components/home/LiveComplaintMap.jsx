@@ -3,7 +3,6 @@ import api from '../../config/api';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import 'leaflet.heat';
 
 // Fix for default marker icon in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -28,15 +27,27 @@ const HeatmapLayer = ({ points }) => {
     useEffect(() => {
         if (!points || points.length === 0) return;
         
-        const heatLayer = L.heatLayer(points, {
-            radius: 25,
-            blur: 15,
-            maxZoom: 15,
-            gradient: { 0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1: 'red' }
-        }).addTo(map);
+        let heatLayer = null;
+        window.L = L; // Important for leaflet.heat in production builds
+        
+        import('leaflet.heat').then(() => {
+            heatLayer = L.heatLayer(points, {
+                radius: 25,
+                blur: 15,
+                maxZoom: 15,
+                gradient: { 0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1: 'red' }
+            }).addTo(map);
+        }).catch(err => console.error('Failed to load leaflet.heat', err));
 
         return () => {
-            map.removeLayer(heatLayer);
+            if (heatLayer) {
+                map.removeLayer(heatLayer);
+            } else {
+                // Handle unmount before import resolves
+                setTimeout(() => {
+                    if (heatLayer) map.removeLayer(heatLayer);
+                }, 500);
+            }
         };
     }, [points, map]);
     return null;
