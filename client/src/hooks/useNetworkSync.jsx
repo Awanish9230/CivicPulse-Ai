@@ -94,6 +94,25 @@ export const useNetworkSync = () => {
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
 
+        // Register Periodic Sync if Supported
+        const registerPeriodicSync = async () => {
+            if ('serviceWorker' in navigator && 'periodicSync' in ServiceWorkerRegistration.prototype) {
+                try {
+                    const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+                    if (status.state === 'granted') {
+                        const registration = await navigator.serviceWorker.ready;
+                        await registration.periodicSync.register('sync-latest-complaints', {
+                            minInterval: 12 * 60 * 60 * 1000, // 12 hours
+                        });
+                        console.log('Periodic background sync registered!');
+                    }
+                } catch (error) {
+                    console.error('Periodic sync could not be registered', error);
+                }
+            }
+        };
+        registerPeriodicSync();
+
         return () => {
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);

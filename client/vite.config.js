@@ -16,8 +16,8 @@ export default defineConfig({
       manifest: {
         name: 'CivicPulse AI',
         short_name: 'CivicPulse',
-        description: 'AI-Powered Civic Engagement Platform',
-        theme_color: '#0F172A',
+        description: 'AI-powered platform for smart civic issue reporting and resolution.',
+        theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
@@ -33,51 +33,12 @@ export default defineConfig({
           }
         ]
       },
-      workbox: {
-        runtimeCaching: [
-          {
-            urlPattern: /^http:\/\/localhost:5000\/api\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/[a-c]\.tile\.openstreetmap\.org\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'map-tiles-cache',
-              expiration: {
-                maxEntries: 200, // cache up to 200 tiles
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/unpkg\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'unpkg-cache',
-              expiration: {
-                maxEntries: 20,
-                maxAgeSeconds: 60 * 60 * 24 * 30,
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
+      injectManifest: {
+        // Ensure large assets don't fail precache
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       }
     })
   ],
