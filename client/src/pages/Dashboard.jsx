@@ -3,7 +3,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, MessageSquare, ThumbsUp, Shield, MapPin } from 'lucide-react';
+import { AlertTriangle, Map, Clock, CheckCircle, Bell, Filter, User, Send, MessageSquare, ThumbsUp, Shield, MapPin, MapPinOff } from 'lucide-react';
 import { MapContainer, TileLayer, CircleMarker, Popup, Circle, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import ImageCarousel from '../components/common/ImageCarousel';
