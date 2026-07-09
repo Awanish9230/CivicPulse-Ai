@@ -98,9 +98,6 @@ export default defineConfig({
             if (id.includes('lucide-react')) {
               return 'vendor-icons';
             }
-            if (id.includes('leaflet') || id.includes('react-leaflet')) {
-              return 'vendor-map';
-            }
             if (id.includes('recharts')) {
               return 'vendor-charts';
             }
