@@ -7,6 +7,8 @@ import { AuthContext } from '../context/AuthContext';
 import { NotificationContext } from '../context/NotificationContext';
 import { io } from 'socket.io-client';
 import ImageCarousel from '../components/common/ImageCarousel';
+import CustomSelect from '../components/common/CustomSelect';
+import { saveToOutbox } from '../utils/db';
 import Banned from './Banned';
 import Leaderboard from './Leaderboard';
 
@@ -345,6 +347,18 @@ const Community = () => {
         loadHistory(activeChannel);
     }, [activeChannel, location, radius, locationDenied]);
 
+    useEffect(() => {
+        if (!socket) return;
+        
+        const handleSyncChat = (e) => {
+            const item = e.detail;
+            socket.emit('sendMessage', item.payload);
+        };
+        
+        window.addEventListener('sync-chat-message', handleSyncChat);
+        return () => window.removeEventListener('sync-chat-message', handleSyncChat);
+    }, [socket]);
+
     const scrollToBottom = () => {
         if (chatContainerRef.current) {
             chatContainerRef.current.scrollTo({
@@ -416,10 +430,15 @@ const Community = () => {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if ((!newMessage.trim() && !chatImage) || !socket || !user) return;
+        if ((!newMessage.trim() && !chatImage) || !user) return; // Removed socket check so offline works
 
         let finalType = 'Text';
         let finalText = newMessage.trim();
+
+        if (!navigator.onLine && chatImage) {
+            toast.error("Image upload requires an active internet connection.");
+            return;
+        }
 
         if (chatImage) {
             setIsUploadingImage(true);
@@ -460,7 +479,15 @@ const Community = () => {
                 } : null
             }
         };
-        socket.emit('sendMessage', messageData);
+
+        if (!navigator.onLine) {
+            messageData.message.isPending = true;
+            await saveToOutbox('chat', messageData);
+            setChatMessages(prev => [...prev, messageData.message]);
+            toast.success("Saved offline. Will send when reconnected.", { id: 'offline-chat' });
+        } else if (socket) {
+            socket.emit('sendMessage', messageData);
+        }
         setNewMessage('');
         setReplyingTo(null);
         setChatImage(null);

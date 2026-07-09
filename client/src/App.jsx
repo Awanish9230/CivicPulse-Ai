@@ -6,6 +6,39 @@ import AppLayout from './components/layout/AppLayout';
 import AuthorityLayout from './components/layout/AuthorityLayout';
 import AdminLayout from './components/layout/AdminLayout';
 import PageLoader from './components/common/PageLoader';
+import { useNetworkSync } from './hooks/useNetworkSync';
+import { AlertCircle } from 'lucide-react';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-lg border border-slate-100">
+            <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle size={32} />
+            </div>
+            <h2 className="text-xl font-black text-slate-800 mb-2">Page Unavailable Offline</h2>
+            <p className="text-slate-500 mb-6">
+              You need an internet connection to load this page for the first time. Please reconnect and refresh.
+            </p>
+            <button onClick={() => window.location.reload()} className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-colors">
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const Auth = React.lazy(() => import('./pages/Auth'));
 const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword'));
@@ -58,15 +91,9 @@ const DynamicTitle = () => {
     let pageName = 'CivicPulse AI';
 
     if (path === '/') pageName = 'Home | CivicPulse AI';
-    else if (path === '/auth') pageName = 'Sign In | CivicPulse AI';
-    else if (path.includes('/complaints')) pageName = 'My Complaints | CivicPulse AI';
-    else if (path.includes('/community')) pageName = 'Community | CivicPulse AI';
-    else if (path.includes('/petitions')) pageName = 'Petitions | CivicPulse AI';
-    else if (path.includes('/notifications')) pageName = 'Notifications | CivicPulse AI';
-    else if (path.includes('/profile')) pageName = 'Profile | CivicPulse AI';
-    else if (path.includes('/dashboard')) pageName = 'Dashboard | CivicPulse AI';
-    else if (path.includes('/authority')) pageName = 'Authority Portal | CivicPulse AI';
-    else if (path.includes('/admin')) pageName = 'Admin Portal | CivicPulse AI';
+    else if (path.startsWith('/admin')) pageName = 'Admin Portal | CivicPulse AI';
+    else if (path.startsWith('/authority')) pageName = 'Authority Portal | CivicPulse AI';
+    else pageName = `${path.split('/')[1].charAt(0).toUpperCase() + path.split('/')[1].slice(1)} | CivicPulse AI`;
 
     document.title = pageName;
   }, [location.pathname]);
@@ -74,12 +101,25 @@ const DynamicTitle = () => {
   return null;
 };
 
+const NetworkIndicator = () => {
+  const { isOnline, isSyncing } = useNetworkSync();
+  if (isOnline && !isSyncing) return null;
+  return (
+    <div className="fixed top-0 left-0 w-full z-[9999] text-center text-[11px] font-black tracking-wider py-1.5 shadow-md uppercase transition-colors"
+         style={{ backgroundColor: isOnline ? '#10B981' : '#EF4444', color: 'white' }}>
+        {!isOnline ? '⚠️ You are currently offline.' : '🔄 Syncing offline data...'}
+    </div>
+  );
+};
+
 function App() {
   return (
     <LazyMotion features={domAnimation} strict>
+      <NetworkIndicator />
       <BrowserRouter>
         <DynamicTitle />
         <Toaster position="top-right" />
+        <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/auth" element={<Auth />} />
@@ -139,6 +179,7 @@ function App() {
 
         </Routes>
         </Suspense>
+        </ErrorBoundary>
       </BrowserRouter>
     </LazyMotion>
   );

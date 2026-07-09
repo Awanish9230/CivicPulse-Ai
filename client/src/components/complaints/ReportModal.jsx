@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin, Loader2, CheckCircle, Navigation } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { saveToOutbox } from '../../utils/db';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import CustomSelect from '../common/CustomSelect';
 import L from 'leaflet';
@@ -163,6 +164,22 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
         setIsSubmitting(true);
 
         try {
+            if (!navigator.onLine) {
+                const offlinePayload = {
+                    photos: captureData?.photos || [],
+                    category,
+                    description,
+                    language,
+                    coords: [position.lng, position.lat],
+                    address: address
+                };
+                await saveToOutbox('complaint', offlinePayload);
+                toast.success("Saved offline! Will sync when internet returns.");
+                setIsSubmitting(false);
+                onClose();
+                return;
+            }
+
             const formData = new FormData();
             
             // Convert multiple Base64 photos to Blobs
