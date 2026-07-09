@@ -127,7 +127,7 @@ const Notifications = () => {
                 </div>
                 
                 <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="w-48 shrink-0 z-[60]">
+                    <div className="w-48 shrink-0 z-30">
                         <CustomSelect 
                             value={filterType}
                             onChange={(e) => setFilterType(e.target.value)}

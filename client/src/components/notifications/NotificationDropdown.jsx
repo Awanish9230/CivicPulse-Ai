@@ -1,11 +1,11 @@
 import React, { useContext, useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Check, CheckCircle2 } from 'lucide-react';
+import { Bell, Check, CheckCircle2, Trash2 } from 'lucide-react';
 import { NotificationContext } from '../../context/NotificationContext';
 import { NotificationCard } from './NotificationCard';
 
 export const NotificationDropdown = ({ isOpen, onClose }) => {
-    const { notifications, unreadCount, markAllAsRead, markAsRead } = useContext(NotificationContext);
+    const { notifications, unreadCount, markAllAsRead, markAsRead, clearAllNotifications } = useContext(NotificationContext);
     const dropdownRef = useRef(null);
 
     // Close when clicking outside
@@ -31,7 +31,7 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
     return (
         <div 
             ref={dropdownRef}
-            className="absolute right-0 top-12 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-4 duration-200"
+            className="absolute right-0 top-12 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-4 duration-200"
         >
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h3 className="font-semibold text-slate-800 flex items-center gap-2">
@@ -42,14 +42,25 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
                         </span>
                     )}
                 </h3>
-                {unreadCount > 0 && (
-                    <button 
-                        onClick={markAllAsRead}
-                        className="text-xs text-primary hover:text-primary-focus font-medium flex items-center gap-1 transition-colors"
-                    >
-                        <Check className="w-3 h-3" /> Mark all read
-                    </button>
-                )}
+                <div className="flex gap-3">
+                    {unreadCount > 0 && (
+                        <button 
+                            onClick={markAllAsRead}
+                            className="text-xs text-primary hover:text-primary-focus font-medium flex items-center gap-1 transition-colors"
+                        >
+                            <Check className="w-3 h-3" /> Mark all read
+                        </button>
+                    )}
+                    {notifications.length > 0 && (
+                        <button 
+                            onClick={clearAllNotifications}
+                            className="text-xs text-slate-500 hover:text-rose-500 font-medium flex items-center gap-1 transition-colors"
+                            title="Clear all notifications"
+                        >
+                            <Trash2 className="w-3 h-3" /> Clear
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="max-h-[360px] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-slate-200">

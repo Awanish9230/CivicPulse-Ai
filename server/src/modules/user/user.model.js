@@ -149,11 +149,24 @@ userSchema.statics.generateAnonymousId = function () {
     return `CP-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
 };
 
+const keyCache = new Map();
+
+function getDerivedKey(secret, isGlobalSecret = false) {
+    if (isGlobalSecret) {
+        if (!keyCache.has(secret)) {
+            keyCache.set(secret, crypto.scryptSync(secret, 'civicpulse_salt_2026', 32));
+        }
+        return keyCache.get(secret);
+    }
+    // Do not cache user passwords to prevent memory exhaustion (DoS) attacks
+    return crypto.scryptSync(secret, 'civicpulse_salt_2026', 32);
+}
+
 // Encrypt Identity using Global Secret
 userSchema.statics.encryptIdentity = function(plaintext) {
     if (!plaintext) return null;
     const globalSecret = process.env.ACCESS_TOKEN_SECRET || 'civicpulse_global_fallback_secret_2026';
-    const key = crypto.scryptSync(globalSecret, 'civicpulse_salt_2026', 32);
+    const key = getDerivedKey(globalSecret, true);
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
     let encrypted = cipher.update(plaintext, 'utf8', 'hex');
@@ -174,7 +187,7 @@ userSchema.statics.decryptIdentity = function(ciphertext, password) {
     // Attempt 1: Try decrypting with Global Secret (New Method)
     try {
         const globalSecret = process.env.ACCESS_TOKEN_SECRET || 'civicpulse_global_fallback_secret_2026';
-        const key = crypto.scryptSync(globalSecret, 'civicpulse_salt_2026', 32);
+        const key = getDerivedKey(globalSecret, true);
         const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
         decipher.setAuthTag(authTag);
         let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
@@ -184,7 +197,7 @@ userSchema.statics.decryptIdentity = function(ciphertext, password) {
         // Attempt 2: Try decrypting with User Password (Legacy Method)
         if (password) {
             try {
-                const key = crypto.scryptSync(password, 'civicpulse_salt_2026', 32);
+                const key = getDerivedKey(password, false);
                 const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
                 decipher.setAuthTag(authTag);
                 let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');

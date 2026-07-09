@@ -8,7 +8,9 @@ import { AuthContext } from './AuthContext';
 export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-    const { user, isAuthenticated } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
+    const isAuthenticated = !!user;
+    
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [socket, setSocket] = useState(null);
@@ -43,57 +45,63 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
-    const connectSocket = useCallback(() => {
-        if (!isAuthenticated || !user || socket) return;
-        
-        const newSocket = io(SOCKET_URL);
-        setSocket(newSocket);
-
-        newSocket.on('connect', () => {
-            newSocket.emit('join', user._id);
-            if (user.anonymousId) {
-                newSocket.emit('join', user.anonymousId);
-            }
-            newSocket.emit('joinRoom', 'local-community-general');
-            newSocket.emit('joinRoom', 'local-community-authority');
-        });
-
-        newSocket.on('notification', (notification) => {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification(notification.title, {
-                    body: notification.message,
-                    icon: '/favicon.ico'
-                });
-            }
-            
-            toast.custom((t) => (
-                <div className="bg-white border border-slate-100 shadow-xl rounded-2xl p-4 flex flex-col gap-1 cursor-pointer min-w-[300px] max-w-md animate-enter" onClick={() => toast.dismiss(t.id)}>
-                    <p className="font-bold text-sm text-slate-800">{notification.title}</p>
-                    <p className="text-xs text-slate-500">{notification.message}</p>
-                </div>
-            ), { duration: 5000 });
-
-            setUnreadCount(prev => prev + 1);
-            setNotifications(prev => [notification, ...prev]);
-        });
-    }, [isAuthenticated, user, socket]);
-
     useEffect(() => {
+        let newSocket = null;
+
         if (isAuthenticated && user) {
             fetchUnreadCount();
             fetchInitialNotifications();
             requestBrowserPermission();
+            
+            // Connect socket
+            newSocket = io(SOCKET_URL);
+            setSocket(newSocket);
+
+            newSocket.on('connect', () => {
+                newSocket.emit('join', user._id);
+                if (user.anonymousId) {
+                    newSocket.emit('join', user.anonymousId);
+                }
+                if (user.pastAnonymousIds && user.pastAnonymousIds.length > 0) {
+                    user.pastAnonymousIds.forEach(id => {
+                        newSocket.emit('join', id);
+                    });
+                }
+                newSocket.emit('joinRoom', 'local-community-general');
+                newSocket.emit('joinRoom', 'local-community-authority');
+            });
+
+            newSocket.on('notification', (notification) => {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(notification.title, {
+                        body: notification.message,
+                        icon: '/favicon.ico'
+                    });
+                }
+                
+                toast.custom((t) => (
+                    <div className="bg-white border border-slate-100 shadow-xl rounded-2xl p-4 flex flex-col gap-1 cursor-pointer min-w-[300px] max-w-md animate-enter" onClick={() => toast.dismiss(t.id)}>
+                        <p className="font-bold text-sm text-slate-800">{notification.title}</p>
+                        <p className="text-xs text-slate-500">{notification.message}</p>
+                    </div>
+                ), { duration: 5000 });
+
+                setUnreadCount(prev => prev + 1);
+                setNotifications(prev => {
+                    if (prev.some(n => n._id === notification._id)) return prev;
+                    return [notification, ...prev];
+                });
+            });
         } else {
-            if (socket) {
-                socket.disconnect();
-                setSocket(null);
-            }
             setUnreadCount(0);
             setNotifications([]);
+            setSocket(null);
         }
         
         return () => {
-            if (socket) socket.disconnect();
+            if (newSocket) {
+                newSocket.disconnect();
+            }
         };
     }, [isAuthenticated, user, fetchUnreadCount, fetchInitialNotifications]);
 
@@ -117,6 +125,16 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
+    const clearAllNotifications = async () => {
+        try {
+            await api.delete('/notification');
+            setNotifications([]);
+            setUnreadCount(0);
+        } catch (error) {
+            console.error('Failed to clear notifications', error);
+        }
+    };
+
     const contextValue = React.useMemo(() => ({
         notifications,
         setNotifications,
@@ -125,10 +143,10 @@ export const NotificationProvider = ({ children }) => {
         markAsWindowAsRead: markAsRead,
         markAsRead,
         markAllAsRead,
+        clearAllNotifications,
         fetchUnreadCount,
-        socket,
-        connectSocket
-    }), [notifications, unreadCount, socket, connectSocket, fetchUnreadCount]);
+        socket
+    }), [notifications, unreadCount, socket, fetchUnreadCount]);
 
     return (
         <NotificationContext.Provider value={contextValue}>

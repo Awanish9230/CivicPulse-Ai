@@ -286,11 +286,53 @@ export const createComplaint = asyncHandler(async (req, res) => {
         console.error("Socket error on create complaint", e);
     }
 
+    // Gamification for creating a complaint
+    let newlyEarnedBadges = [];
+    try {
+        const user = await User.findById(req.user._id);
+        if (user) {
+            user.points = (user.points || 0) + 10; // 10 points for a new complaint
+            
+            // Check for first complaint badge
+            if (!user.badges.includes("First Step")) {
+                user.badges.push("First Step");
+                newlyEarnedBadges.push("First Step");
+            }
+            
+            if (user.points >= 50 && !user.badges.includes("Rookie Watcher")) {
+                user.badges.push("Rookie Watcher");
+                newlyEarnedBadges.push("Rookie Watcher");
+            }
+            if (user.points >= 100 && !user.badges.includes("Neighborhood Hero")) {
+                user.badges.push("Neighborhood Hero");
+                newlyEarnedBadges.push("Neighborhood Hero");
+            }
+
+            if (newlyEarnedBadges.length > 0) {
+                await user.save();
+                for (const badge of newlyEarnedBadges) {
+                    await notificationService.createNotification({
+                        recipient: user._id,
+                        title: 'Badge Earned! 🏆',
+                        message: `Congratulations! You've earned the "${badge}" badge for your civic contributions.`,
+                        type: 'System Notification',
+                        priority: 'Low',
+                        actionUrl: `/profile`
+                    });
+                }
+            } else {
+                await user.save();
+            }
+        }
+    } catch (e) {
+        console.error("Failed to award gamification points for complaint creation", e);
+    }
+
     // 7. Send response
     return res.status(201).json(
         new ApiResponse(
             201,
-            complaint,
+            { complaint, newlyEarnedBadges },
             "Complaint submitted successfully"
         )
     );

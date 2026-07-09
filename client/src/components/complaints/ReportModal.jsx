@@ -185,12 +185,22 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                 formData.append('address', JSON.stringify(address));
             }
 
-            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/create`, formData, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/create`, formData, {
                 withCredentials: true,
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            toast.success("Issue reported successfully!");
+            const newlyEarnedBadges = response.data?.data?.newlyEarnedBadges || [];
+            
+            if (newlyEarnedBadges.length > 0) {
+                toast.success(`🎉 Issue reported! You earned: ${newlyEarnedBadges.join(', ')} badge(s)!`, {
+                    duration: 5000,
+                    icon: '🏆',
+                });
+            } else {
+                toast.success("Issue reported successfully!");
+            }
+            
             onSuccess();
         } catch (error) {
             console.error("Error submitting complaint:", error);
