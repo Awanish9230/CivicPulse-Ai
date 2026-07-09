@@ -12,10 +12,13 @@ import { AlertCircle } from 'lucide-react';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null };
   }
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
   render() {
     if (this.state.hasError) {
@@ -25,9 +28,9 @@ class ErrorBoundary extends React.Component {
             <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle size={32} />
             </div>
-            <h2 className="text-xl font-black text-slate-800 mb-2">Page Unavailable Offline</h2>
+            <h2 className="text-xl font-black text-slate-800 mb-2">Something went wrong</h2>
             <p className="text-slate-500 mb-6">
-              You need an internet connection to load this page for the first time. Please reconnect and refresh.
+              {this.state.error ? this.state.error.message : "You need an internet connection to load this page for the first time. Please reconnect and refresh."}
             </p>
             <button onClick={() => window.location.reload()} className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-colors">
               Refresh Page

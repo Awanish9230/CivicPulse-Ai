@@ -22,12 +22,21 @@ const MapUpdater = ({ center, zoom }) => {
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
     const [filter, setFilter] = useState('All');
+    const [socket, setSocket] = useState(null);
+
+    useEffect(() => {
+        const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
+            withCredentials: true
+        });
+        setSocket(newSocket);
+        return () => newSocket.close();
+    }, []);
     
     const fetchComplaintsCallback = useCallback(async (lat = null, lng = null, rds = null) => {
-        let url = `${import.meta.env.VITE_API_URL}/api/v1/complaint`;
+        let url = `${import.meta.env.VITE_API_URL}/api/v1/complaint/all`;
         
         if (lat && lng) {
-            url += `/nearby?lat=${lat}&lng=${lng}&radius=${rds || 10}`;
+            url += `?lat=${lat}&lng=${lng}&radius=${rds || 10}`;
         }
         
         const { data } = await axios.get(url, { withCredentials: true });
@@ -258,7 +267,7 @@ const Dashboard = () => {
 
             {/* Quick Stats - Bento Box */}
             <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {loading ? (
+                {complaintsLoading ? (
                     <>
                         <MetricSkeleton />
                         <MetricSkeleton />

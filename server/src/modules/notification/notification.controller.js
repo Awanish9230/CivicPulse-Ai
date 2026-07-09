@@ -80,6 +80,39 @@ export const deleteNotification = asynchandler(async (req, res) => {
 });
 
 export const deleteAllNotifications = asynchandler(async (req, res) => {
-    await Notification.deleteMany({ recipient: { $in: getRecipientIds(req.user) } });
-    return res.status(200).json(new ApiResponse(200, {}, 'All notifications deleted'));
+    const recipients = getRecipientIds(req.user);
+    await Notification.deleteMany({ recipient: { $in: recipients } });
+
+    res.status(200).json(new ApiResponse(200, null, "All notifications deleted successfully"));
+});
+
+export const subscribeToPush = asynchandler(async (req, res) => {
+    const { subscription } = req.body;
+    if (!subscription) {
+        return res.status(400).json(new ApiResponse(400, null, "Subscription object is required"));
+    }
+
+    const user = req.user;
+    
+    // Check if subscription already exists
+    const exists = user.pushSubscriptions.some(sub => sub.endpoint === subscription.endpoint);
+    if (!exists) {
+        user.pushSubscriptions.push(subscription);
+        await user.save();
+    }
+
+    res.status(200).json(new ApiResponse(200, null, "Subscribed to push notifications"));
+});
+
+export const unsubscribeFromPush = asynchandler(async (req, res) => {
+    const { endpoint } = req.body;
+    if (!endpoint) {
+        return res.status(400).json(new ApiResponse(400, null, "Endpoint is required"));
+    }
+
+    const user = req.user;
+    user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== endpoint);
+    await user.save();
+
+    res.status(200).json(new ApiResponse(200, null, "Unsubscribed from push notifications"));
 });

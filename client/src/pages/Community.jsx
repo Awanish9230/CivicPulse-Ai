@@ -350,9 +350,34 @@ const Community = () => {
     useEffect(() => {
         if (!socket) return;
         
-        const handleSyncChat = (e) => {
+        const handleSyncChat = async (e) => {
             const item = e.detail;
-            socket.emit('sendMessage', item.payload);
+            const payload = item.payload;
+            
+            if (payload.message && payload.message.type === 'Image_Offline') {
+                try {
+                    // Convert base64 back to file
+                    const res = await fetch(payload.message.text);
+                    const blob = await res.blob();
+                    const file = new File([blob], 'offline_image.jpg', { type: 'image/jpeg' });
+                    
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/message/upload-image`, formData, {
+                        withCredentials: true,
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    
+                    payload.message.text = data.data.imageUrl;
+                    payload.message.type = 'Image';
+                } catch (err) {
+                    console.error('Failed to upload offline image during sync', err);
+                    return; // Skip emitting if upload fails
+                }
+            }
+            
+            socket.emit('sendMessage', payload);
         };
         
         window.addEventListener('sync-chat-message', handleSyncChat);
@@ -435,30 +460,45 @@ const Community = () => {
         let finalType = 'Text';
         let finalText = newMessage.trim();
 
-        if (!navigator.onLine && chatImage) {
-            toast.error("Image upload requires an active internet connection.");
-            return;
-        }
-
         if (chatImage) {
-            setIsUploadingImage(true);
-            try {
-                const formData = new FormData();
-                formData.append('image', chatImage);
-
-                const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/message/upload-image`, formData, {
-                    withCredentials: true,
-                    headers: { 'Content-Type': 'multipart/form-data' }
+            if (!navigator.onLine) {
+                // Offline: Convert image to base64 and queue
+                const getBase64 = (file) => new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
                 });
+                
+                try {
+                    const base64 = await getBase64(chatImage);
+                    finalText = base64;
+                    finalType = 'Image_Offline';
+                } catch (err) {
+                    toast.error("Failed to process image for offline storage.");
+                    return;
+                }
+            } else {
+                // Online: Upload immediately
+                setIsUploadingImage(true);
+                try {
+                    const formData = new FormData();
+                    formData.append('image', chatImage);
 
-                finalText = data.data.imageUrl;
-                finalType = 'Image';
-            } catch (error) {
-                toast.error("Failed to upload image");
+                    const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/message/upload-image`, formData, {
+                        withCredentials: true,
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+
+                    finalText = data.data.imageUrl;
+                    finalType = 'Image';
+                } catch (error) {
+                    toast.error("Failed to upload image");
+                    setIsUploadingImage(false);
+                    return;
+                }
                 setIsUploadingImage(false);
-                return;
             }
-            setIsUploadingImage(false);
         }
 
         const messageData = {

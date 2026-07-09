@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         trim: true,
     },
+    pushSubscriptions: {
+        type: Array,
+        default: []
+    },
     authorityLevel: {
         type: String,
         enum: ['Junior', 'Senior', 'HOD'],

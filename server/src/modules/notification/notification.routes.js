@@ -5,7 +5,9 @@ import {
     markAllAsRead, 
     getUnreadCount, 
     deleteNotification, 
-    deleteAllNotifications 
+    deleteAllNotifications,
+    subscribeToPush,
+    unsubscribeFromPush
 } from './notification.controller.js';
 import { verifyJWT } from '../../middlewares/auth.middleware.js';
 
@@ -19,5 +21,9 @@ router.patch('/read-all', markAllAsRead);
 router.patch('/:id/read', markAsRead);
 router.delete('/', deleteAllNotifications);
 router.delete('/:id', deleteNotification);
+
+// Push Notification Routes
+router.post('/subscribe', subscribeToPush);
+router.post('/unsubscribe', unsubscribeFromPush);
 
 export default router;

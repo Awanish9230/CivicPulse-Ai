@@ -1,6 +1,8 @@
 import Notification from './notification.model.js';
 import { getIo } from '../../config/socket.js';
 import logger from '../../utils/logger.js';
+import User from '../user/user.model.js';
+import { sendPushNotification } from '../../utils/webPush.js';
 
 class NotificationService {
     /**
@@ -27,6 +29,23 @@ class NotificationService {
                 io.to(data.recipient.toString()).emit('notification', notification);
             } catch (socketError) {
                 logger.error('Socket.io error emitting notification:', socketError);
+            }
+
+            // Send Web Push Notification
+            try {
+                const user = await User.findById(data.recipient);
+                if (user && user.pushSubscriptions && user.pushSubscriptions.length > 0) {
+                    const payload = {
+                        title: data.title,
+                        body: data.message,
+                        url: data.actionUrl || '/'
+                    };
+                    
+                    const sendPromises = user.pushSubscriptions.map(sub => sendPushNotification(sub, payload));
+                    await Promise.allSettled(sendPromises);
+                }
+            } catch (pushError) {
+                logger.error('Web Push error:', pushError);
             }
 
             return notification;
