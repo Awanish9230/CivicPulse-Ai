@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, User } from 'lucide-react';
 import { useState, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import Sidebar from './Sidebar';
@@ -33,6 +33,11 @@ const AppLayout = () => {
                             </Link>
                         )}
                         <NotificationBell />
+                        {user && (
+                            <Link to="/profile" className="md:hidden w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 hover:bg-primary/20 transition-colors">
+                                <User size={18} />
+                            </Link>
+                        )}
                     </div>
                 </header>
 

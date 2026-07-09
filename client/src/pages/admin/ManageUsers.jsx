@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Filter, Eye, Ban, Trash2, ShieldAlert, Activity, CheckCircle, MapPin, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageLoader from '../../components/common/PageLoader';
+import CustomSelect from '../../components/common/CustomSelect';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -10,6 +12,18 @@ import io from 'socket.io-client';
 const ManageUsers = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    
+    const roleOptions = [
+        { value: 'Citizen', label: 'Citizen' },
+        { value: 'Authority', label: 'Authority' },
+        { value: 'Admin', label: 'Admin' },
+    ];
+
+    const statusOptions = [
+        { value: 'active', label: 'Active' },
+        { value: 'banned', label: 'Banned' },
+    ];
 
     // Modal State
     const [selectedMember, setSelectedMember] = useState(null);
@@ -123,6 +137,8 @@ const ManageUsers = () => {
                         <input 
                             type="text" 
                             placeholder="Search by Anonymous ID..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
                         />
                     </div>
@@ -160,7 +176,7 @@ const ManageUsers = () => {
                                         </td>
                                     </tr>
                                 ))
-                            ) : users.map((user) => (
+                            ) : users.filter(u => u.anonymousId.toLowerCase().includes(searchTerm.toLowerCase())).map((user) => (
                                 <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
@@ -212,7 +228,6 @@ const ManageUsers = () => {
                 </div>
             </div>
 
-            {/* Deep Dive Modal */}
             <AnimatePresence>
                 {selectedMember && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -266,7 +281,6 @@ const ManageUsers = () => {
 
                                     <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
                                         
-                                        {/* Edit Mode Panel */}
                                         <AnimatePresence>
                                             {isEditing && (
                                                 <motion.div 
@@ -280,26 +294,21 @@ const ManageUsers = () => {
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                                             <div>
                                                                 <label className="block text-sm font-bold text-slate-700 mb-2">System Role</label>
-                                                                <select 
+                                                                <CustomSelect 
                                                                     value={editForm.role}
                                                                     onChange={(e) => setEditForm({...editForm, role: e.target.value})}
-                                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-indigo-500"
-                                                                >
-                                                                    <option value="Citizen">Citizen</option>
-                                                                    <option value="Authority">Authority</option>
-                                                                    <option value="Admin">Admin</option>
-                                                                </select>
+                                                                    options={roleOptions}
+                                                                    className="w-full h-[38px]"
+                                                                />
                                                             </div>
                                                             <div>
                                                                 <label className="block text-sm font-bold text-slate-700 mb-2">Account Status</label>
-                                                                <select 
+                                                                <CustomSelect 
                                                                     value={editForm.isBanned ? 'banned' : 'active'}
                                                                     onChange={(e) => setEditForm({...editForm, isBanned: e.target.value === 'banned'})}
-                                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-indigo-500"
-                                                                >
-                                                                    <option value="active">Active</option>
-                                                                    <option value="banned">Suspended (Banned)</option>
-                                                                </select>
+                                                                    options={statusOptions}
+                                                                    className="w-full h-[38px]"
+                                                                />
                                                             </div>
                                                         </div>
                                                         <div className="flex justify-end gap-2">

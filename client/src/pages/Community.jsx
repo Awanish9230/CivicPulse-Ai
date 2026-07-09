@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp, Megaphone, ChevronDown, Pencil, Trash2, Check, RefreshCw, Trophy } from 'lucide-react';
+import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp, Megaphone, ChevronDown, Pencil, Trash2, Check, RefreshCw, Trophy, Image as ImageIcon } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
@@ -158,6 +158,9 @@ const Community = () => {
     const [onlineCounts, setOnlineCounts] = useState({});
     const [replyingTo, setReplyingTo] = useState(null);
     const [editingMsg, setEditingMsg] = useState(null);
+    const [chatImage, setChatImage] = useState(null);
+    const [chatImagePreview, setChatImagePreview] = useState(null);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const chatContainerRef = useRef(null);
@@ -399,31 +402,70 @@ const Community = () => {
         }
     };
 
-    const handleSendMessage = (e) => {
-        e.preventDefault();
-        if (newMessage.trim() && socket && user) {
-            const messageData = {
-                room: roomMap[activeChannel],
-                message: {
-                    id: Date.now().toString(),
-                    senderId: user._id,
-                    sender: user.role === 'Authority' ? (user.name || 'Authority') : (user.anonymousId || user.name || 'Anonymous Citizen'),
-                    role: user.role,
-                    text: newMessage,
-                    timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    channel: activeChannel,
-                    ...(location && { lat: location.lat, lng: location.lng }),
-                    replyTo: replyingTo ? {
-                        sender: replyingTo.sender,
-                        text: replyingTo.text
-                    } : null
-                }
-            };
-            socket.emit('sendMessage', messageData);
-            setNewMessage('');
-            setReplyingTo(null);
-            setTimeout(scrollToBottom, 100);
+    const handleImageSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error("Image must be less than 5MB");
+                return;
+            }
+            setChatImage(file);
+            setChatImagePreview(URL.createObjectURL(file));
         }
+    };
+
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        if ((!newMessage.trim() && !chatImage) || !socket || !user) return;
+
+        let finalType = 'Text';
+        let finalText = newMessage.trim();
+
+        if (chatImage) {
+            setIsUploadingImage(true);
+            try {
+                const formData = new FormData();
+                formData.append('image', chatImage);
+
+                const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/message/upload-image`, formData, {
+                    withCredentials: true,
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
+                finalText = data.data.imageUrl;
+                finalType = 'Image';
+            } catch (error) {
+                toast.error("Failed to upload image");
+                setIsUploadingImage(false);
+                return;
+            }
+            setIsUploadingImage(false);
+        }
+
+        const messageData = {
+            room: roomMap[activeChannel],
+            message: {
+                id: Date.now().toString(),
+                senderId: user._id,
+                sender: user.role === 'Authority' ? (user.name || 'Authority') : (user.anonymousId || user.name || 'Anonymous Citizen'),
+                role: user.role,
+                text: finalText,
+                type: finalType,
+                timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                channel: activeChannel,
+                ...(location && { lat: location.lat, lng: location.lng }),
+                replyTo: replyingTo ? {
+                    sender: replyingTo.sender,
+                    text: replyingTo.type === 'Image' ? '[Image]' : replyingTo.text
+                } : null
+            }
+        };
+        socket.emit('sendMessage', messageData);
+        setNewMessage('');
+        setReplyingTo(null);
+        setChatImage(null);
+        setChatImagePreview(null);
+        setTimeout(scrollToBottom, 100);
     };
 
     const handleEditMessage = async (msgId, newText) => {
@@ -477,8 +519,14 @@ const Community = () => {
         return `${Math.floor(diffInSeconds / 86400)}d ago`;
     };
 
-    // Regex to detect image URLs
-    const renderMessageContent = (text) => {
+    const renderMessageContent = (text, type) => {
+        if (type === 'Image') {
+            return (
+                <div className="rounded-xl overflow-hidden mt-1 cursor-pointer" onClick={() => window.open(text, '_blank')}>
+                    <img src={text} alt="Chat attachment" className="max-w-[200px] max-h-[200px] object-cover hover:opacity-90 transition-opacity" />
+                </div>
+            );
+        }
         const imgRegex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))/i;
         if (imgRegex.test(text)) {
             const parts = text.split(imgRegex);
@@ -486,7 +534,6 @@ const Community = () => {
                 if (imgRegex.test(part)) {
                     return <img key={i} src={part} alt="attachment" className="mt-2 rounded-lg max-w-full h-32 object-cover border border-border/50" />;
                 }
-                // Handle mentions for authority
                 if (activeChannel === 'ask-authority' && part.includes('@')) {
                     return <span key={i}>{part.split(/(@\w+)/g).map((p, j) => p.startsWith('@') ? <span key={j} className="text-blue-500 font-bold bg-blue-500/10 px-1 rounded">{p}</span> : p)}</span>;
                 }
@@ -841,7 +888,7 @@ const Community = () => {
                                                                 </button>
                                                             </div>
                                                         ) : (
-                                                            renderMessageContent(msg.text)
+                                                            renderMessageContent(msg.text, msg.type)
                                                         )}
                                                     </div>
                                                 </div>
@@ -929,21 +976,50 @@ const Community = () => {
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
+
+                                {/* Image Preview Indicator */}
+                                <AnimatePresence>
+                                    {chatImagePreview && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10, height: 0 }}
+                                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                                            exit={{ opacity: 0, y: 10, height: 0 }}
+                                            className={`bg-surface px-4 py-3 flex items-start gap-3 border-t border-l border-r border-border/50 ${replyingTo ? '' : 'rounded-t-xl'}`}
+                                        >
+                                            <div className="relative">
+                                                <img src={chatImagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-lg border border-slate-200 shadow-sm" />
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => { setChatImage(null); setChatImagePreview(null); }}
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                                 
                                 <div className="relative flex items-center">
+                                    <div className="absolute left-2 z-10">
+                                        <label className={`p-2 rounded-lg cursor-pointer transition-colors ${chatImage ? 'text-primary bg-primary/10' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}>
+                                            <ImageIcon size={20} />
+                                            <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+                                        </label>
+                                    </div>
                                     <input
                                         type="text"
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
                                         placeholder={`Message #${activeChannel}...`}
-                                        className={`w-full bg-slate-50/80 backdrop-blur-md border border-slate-200 pl-5 pr-14 py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all text-sm shadow-inner ${replyingTo ? 'rounded-b-2xl border-t-0' : 'rounded-2xl'}`}
+                                        className={`w-full bg-slate-50/80 backdrop-blur-md border border-slate-200 pl-12 pr-14 py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all text-sm shadow-inner ${(replyingTo || chatImagePreview) ? 'rounded-b-2xl border-t-0' : 'rounded-2xl'}`}
                                     />
                                     <button 
                                         type="submit" 
-                                        disabled={!newMessage.trim()}
-                                        className="absolute right-2 p-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-primary"
+                                        disabled={(!newMessage.trim() && !chatImage) || isUploadingImage}
+                                        className="absolute right-2 p-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-primary flex items-center justify-center min-w-[36px] min-h-[36px]"
                                     >
-                                        <Send size={16} />
+                                        {isUploadingImage ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} />}
                                     </button>
                                 </div>
                             </form>

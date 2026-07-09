@@ -106,7 +106,7 @@ export const initSocket = (server) => {
                     senderRole: message.role || 'Citizen',
                     channel: channelName,
                     content: message.text,
-                    type: 'Text',
+                    type: message.type || 'Text',
                     ...(locationObj && { location: locationObj })
                 });
 
@@ -115,7 +115,8 @@ export const initSocket = (server) => {
                     ...message,
                     _id: newMessage._id,
                     createdAt: newMessage.createdAt,
-                    channel: channelName
+                    channel: channelName,
+                    type: newMessage.type
                 };
 
                 io.to(room).emit('receiveMessage', emittedMessage);

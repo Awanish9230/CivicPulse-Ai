@@ -1,6 +1,7 @@
 import Message from "./message.model.js";
 import asyncHandler from "../../utils/asynchandler.js";
 import ApiError from "../../utils/ApiError.js";
+import { uploadOnCloudinary } from "../../utils/cloudinary.js";
 
 export const getChannelMessages = asyncHandler(async (req, res) => {
     const { channel } = req.params;
@@ -55,6 +56,7 @@ export const getChannelMessages = asyncHandler(async (req, res) => {
         timestamp: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
         createdAt: msg.createdAt,
         channel: msg.channel,
+        type: msg.type,
         isEdited: msg.isEdited || false,
         role: msg.senderRole || ((msg.senderName === 'Anonymous Citizen' || msg.senderName?.startsWith('CP-')) ? 'Citizen' : 'Authority')
     }));
@@ -122,5 +124,24 @@ export const deleteMessage = asyncHandler(async (req, res) => {
         success: true,
         data: { _id: messageId, channel },
         message: "Message deleted successfully"
+    });
+});
+
+export const uploadImage = asyncHandler(async (req, res) => {
+    if (!req.file) {
+        throw new ApiError(400, "Image file is required");
+    }
+
+    const uploadResult = await uploadOnCloudinary(req.file.path);
+    if (!uploadResult) {
+        throw new ApiError(500, "Failed to upload image to Cloudinary");
+    }
+
+    res.status(200).json({
+        success: true,
+        data: {
+            imageUrl: uploadResult.secure_url
+        },
+        message: "Image uploaded successfully"
     });
 });

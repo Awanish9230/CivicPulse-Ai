@@ -12,6 +12,7 @@ const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('./pages/ResetPassword'));
 const Home = React.lazy(() => import('./pages/Home'));
 const Community = React.lazy(() => import('./pages/Community'));
+const Petitions = React.lazy(() => import('./pages/Petitions'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Notifications = React.lazy(() => import('./pages/Notifications'));
 const MyComplaints = React.lazy(() => import('./pages/MyComplaints'));
@@ -60,6 +61,7 @@ const DynamicTitle = () => {
     else if (path === '/auth') pageName = 'Sign In | CivicPulse AI';
     else if (path.includes('/complaints')) pageName = 'My Complaints | CivicPulse AI';
     else if (path.includes('/community')) pageName = 'Community | CivicPulse AI';
+    else if (path.includes('/petitions')) pageName = 'Petitions | CivicPulse AI';
     else if (path.includes('/notifications')) pageName = 'Notifications | CivicPulse AI';
     else if (path.includes('/profile')) pageName = 'Profile | CivicPulse AI';
     else if (path.includes('/dashboard')) pageName = 'Dashboard | CivicPulse AI';
@@ -89,6 +91,7 @@ function App() {
             <Route index element={<Home />} />
             <Route path="complaints" element={<MyComplaints />} />
             <Route path="community" element={<Community />} />
+            <Route path="petitions" element={<Petitions />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="profile" element={<Profile />} />
             <Route path="dashboard" element={<Dashboard />} />

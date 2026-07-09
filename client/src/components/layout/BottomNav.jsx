@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Users, Bell, User, LayoutDashboard } from 'lucide-react';
+import { Home, FileText, Users, Bell, ClipboardList, LayoutDashboard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useContext } from 'react';
 import { NotificationContext } from '../../context/NotificationContext';
@@ -9,8 +9,8 @@ const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Complaints', path: '/complaints', icon: FileText },
     { name: 'Community', path: '/community', icon: Users },
+    { name: 'Petitions', path: '/petitions', icon: ClipboardList },
     { name: 'Notifications', path: '/notifications', icon: Bell },
-    { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const BottomNav = () => {

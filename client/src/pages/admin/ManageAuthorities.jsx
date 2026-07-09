@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Filter, Eye, Ban, ShieldAlert, CheckCircle2, Activity, CheckCircle, MapPin, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageLoader from '../../components/common/PageLoader';
+import CustomSelect from '../../components/common/CustomSelect';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -19,6 +21,27 @@ const ManageAuthorities = () => {
 
     // Edit State
     const [isEditing, setIsEditing] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const deptOptions = [
+        { value: 'Roads', label: 'Roads' },
+        { value: 'Water', label: 'Water' },
+        { value: 'Electricity', label: 'Electricity' },
+        { value: 'Sanitation', label: 'Sanitation' },
+        { value: 'Police', label: 'Police' },
+    ];
+
+    const levelOptions = [
+        { value: 'Junior', label: 'Junior' },
+        { value: 'Senior', label: 'Senior' },
+        { value: 'HOD', label: 'HOD (Head of Department)' },
+    ];
+
+    const statusOptions = [
+        { value: 'active', label: 'Active' },
+        { value: 'banned', label: 'Suspended (Blocked)' },
+    ];
+
     const [editForm, setEditForm] = useState({ department: '', authorityLevel: '', isBanned: false });
     const [saving, setSaving] = useState(false);
 
@@ -295,40 +318,30 @@ const ManageAuthorities = () => {
                                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                                                             <div>
                                                                 <label className="block text-sm font-bold text-slate-700 mb-2">Department</label>
-                                                                <select 
+                                                                <CustomSelect 
                                                                     value={editForm.department}
                                                                     onChange={(e) => setEditForm({...editForm, department: e.target.value})}
-                                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-indigo-500"
-                                                                >
-                                                                    <option value="Roads">Roads</option>
-                                                                    <option value="Water">Water</option>
-                                                                    <option value="Electricity">Electricity</option>
-                                                                    <option value="Sanitation">Sanitation</option>
-                                                                    <option value="Police">Police</option>
-                                                                </select>
+                                                                    options={deptOptions}
+                                                                    className="w-full h-[38px]"
+                                                                />
                                                             </div>
                                                             <div>
                                                                 <label className="block text-sm font-bold text-slate-700 mb-2">Authority Level</label>
-                                                                <select 
+                                                                <CustomSelect 
                                                                     value={editForm.authorityLevel}
                                                                     onChange={(e) => setEditForm({...editForm, authorityLevel: e.target.value})}
-                                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-indigo-500"
-                                                                >
-                                                                    <option value="Junior">Junior</option>
-                                                                    <option value="Senior">Senior</option>
-                                                                    <option value="HOD">HOD (Head of Department)</option>
-                                                                </select>
+                                                                    options={levelOptions}
+                                                                    className="w-full h-[38px]"
+                                                                />
                                                             </div>
                                                             <div>
                                                                 <label className="block text-sm font-bold text-slate-700 mb-2">Account Status</label>
-                                                                <select 
+                                                                <CustomSelect 
                                                                     value={editForm.isBanned ? 'banned' : 'active'}
                                                                     onChange={(e) => setEditForm({...editForm, isBanned: e.target.value === 'banned'})}
-                                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:border-indigo-500"
-                                                                >
-                                                                    <option value="active">Active</option>
-                                                                    <option value="banned">Suspended (Blocked)</option>
-                                                                </select>
+                                                                    options={statusOptions}
+                                                                    className="w-full h-[38px]"
+                                                                />
                                                             </div>
                                                         </div>
                                                         <div className="flex justify-end gap-2">
