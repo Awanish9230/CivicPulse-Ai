@@ -314,3 +314,27 @@ export const resetPassword = asynchandler(async (req, res) => {
 
     return res.status(200).json(new ApiResponse(200, {}, "Password updated successfully"));
 });
+
+// Gamification: Get Top Citizens
+export const getLeaderboard = asynchandler(async (req, res) => {
+    // Only get citizens (not authorities or admins)
+    const topUsers = await User.find({ role: 'Citizen' })
+        .select('points badges')
+        .sort({ points: -1 })
+        .limit(20)
+        .lean();
+
+    // Map to protect identity: only return a mocked/anonymous display name, points, and badges
+    const leaderboard = topUsers.map((u, index) => {
+        // Mock a display name based on rank and ID, since citizens are anonymous
+        return {
+            id: u._id,
+            rank: index + 1,
+            displayName: `Citizen #${u._id.toString().slice(-4)}`,
+            points: u.points || 0,
+            badges: u.badges || []
+        };
+    });
+
+    return res.status(200).json(new ApiResponse(200, leaderboard, "Leaderboard fetched successfully"));
+});

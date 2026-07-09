@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
@@ -8,8 +8,10 @@ import { MapContainer, TileLayer, CircleMarker, Popup, Circle } from 'react-leaf
 import 'leaflet/dist/leaflet.css';
 import ImageCarousel from '../components/common/ImageCarousel';
 import CustomSelect from '../components/common/CustomSelect';
+import { AuthContext } from '../context/AuthContext';
 
 const Dashboard = () => {
+    const { user } = useContext(AuthContext);
     const [filter, setFilter] = useState('All');
     const [complaints, setComplaints] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -184,16 +186,17 @@ const Dashboard = () => {
                     <p className="text-text/50 font-medium">Real-time overview of civic issues and SLA metrics.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="p-2.5 rounded-xl bg-white border border-border/50 text-text/60 hover:text-primary hover:border-primary/30 transition-all shadow-sm">
-                        <Bell size={20} />
-                    </button>
                     <div className="flex items-center gap-3 bg-white border border-border/50 px-4 py-2 rounded-xl shadow-sm">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                             <User size={16} className="text-primary" />
                         </div>
-                        <div>
-                            <div className="text-sm font-bold text-text leading-tight">AUTH-8291</div>
-                            <div className="text-[10px] text-text/50 font-bold uppercase tracking-wider">City Admin</div>
+                        <div className="truncate">
+                            <div className="text-sm font-bold text-text leading-tight truncate max-w-[120px]">
+                                {user ? (user.displayName || user.anonymousId || user.email) : 'Guest'}
+                            </div>
+                            <div className="text-[10px] text-text/50 font-bold uppercase tracking-wider">
+                                {user ? user.role : 'Visitor'}
+                            </div>
                         </div>
                     </div>
                 </div>

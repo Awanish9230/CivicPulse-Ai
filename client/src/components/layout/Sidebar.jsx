@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, FileText, Users, Bell, User, Map, LogOut, Menu } from 'lucide-react';
+import { Home, FileText, Users, Bell, User, Map, LogOut, Menu, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
@@ -28,7 +28,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
     return (
         <aside className={`hidden md:flex flex-col ${isOpen ? 'w-64' : 'w-20'} h-screen bg-white/80 backdrop-blur-xl border-r border-border fixed left-0 top-0 transition-all duration-300 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)]`}>
-            <div className={`px-6 flex items-center ${isOpen ? 'justify-between' : 'justify-center'} h-16 border-b border-border/50`}>
+            <div className={`px-6 flex items-center ${isOpen ? 'justify-between' : 'justify-center'} h-16 border-b border-border/50 shrink-0`}>
                 <div className="flex items-center gap-3">
                     <button 
                         aria-label="Toggle Sidebar"
@@ -45,7 +45,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 </div>
             </div>
             
-            <nav className={`flex-1 mt-6 ${isOpen ? 'px-3' : 'px-2'} space-y-2 overflow-y-auto no-scrollbar`}>
+            <nav className={`flex-1 min-h-0 mt-6 ${isOpen ? 'px-3' : 'px-2'} space-y-2 overflow-y-auto no-scrollbar pb-4`}>
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
                     const Icon = item.icon;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp, Megaphone, ChevronDown, Pencil, Trash2, Check, RefreshCw } from 'lucide-react';
+import { MapPin, Clock, ThumbsUp, MessageSquare, Hash, Send, Users, ShieldAlert, BadgeCheck, X, TrendingUp, Megaphone, ChevronDown, Pencil, Trash2, Check, RefreshCw, Trophy } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
@@ -8,6 +8,7 @@ import { NotificationContext } from '../context/NotificationContext';
 import { io } from 'socket.io-client';
 import ImageCarousel from '../components/common/ImageCarousel';
 import Banned from './Banned';
+import Leaderboard from './Leaderboard';
 
 const IssueCardSkeleton = () => (
     <div className="bg-white/80 backdrop-blur-lg rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-3 mb-4">
@@ -504,7 +505,8 @@ const Community = () => {
         { id: 'issue', name: 'issue', icon: MapPin, desc: 'Local complaints within 5km' },
         { id: 'general', name: 'general', icon: Users, desc: 'General community chat' },
         { id: 'ask-authority', name: 'ask-authority', icon: ShieldAlert, desc: 'Direct chat with authorities' },
-        { id: 'announcements', name: 'announcements', icon: Megaphone, desc: 'Official city updates & alerts' }
+        { id: 'announcements', name: 'announcements', icon: Megaphone, desc: 'Official city updates & alerts' },
+        { id: 'leaderboard', name: 'leaderboard', icon: Trophy, desc: 'Top citizens making a difference' }
     ];
 
     if (user?.restrictedFeatures?.includes('community')) {
@@ -556,6 +558,8 @@ const Community = () => {
                             );
                         })}
                     </div>
+
+
 
                     {/* Trending Widget */}
                     <div className="mt-4 bg-white/60 border border-white/80 rounded-3xl p-5 shadow-sm backdrop-blur-md shrink-0">
@@ -689,6 +693,7 @@ const Community = () => {
                                     {channel.id === 'general' ? 'Chat' : 
                                      channel.id === 'ask-authority' ? 'Authority' : 
                                      channel.id === 'announcements' ? 'Alerts' : 
+                                     channel.id === 'leaderboard' ? 'Rank' : 
                                      'Local'}
                                 </span>
                             </button>
@@ -736,6 +741,17 @@ const Community = () => {
                                     getTimeAgo={getTimeAgo}
                                 />
                             ))}
+                        </motion.div>
+                    ) : activeChannel === 'leaderboard' ? (
+                        <motion.div 
+                            key="leaderboard"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            className="w-full pb-8"
+                        >
+                            <Leaderboard />
                         </motion.div>
                     ) : (
                         <motion.div 

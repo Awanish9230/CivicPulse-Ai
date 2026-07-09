@@ -7,7 +7,8 @@ import {
     rotateAnonymousId,
     getMe,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    getLeaderboard
 } from "./user.controller.js";
 
 import { verifyJWT } from "../../middlewares/auth.middleware.js";
@@ -40,5 +41,6 @@ router.post("/reset-password/:token", passwordResetLimiter, resetPassword);
 router.post("/logout", verifyJWT, logoutUser);
 router.post("/rotate-anonymous-id", verifyJWT, authLimiter, rotateAnonymousId);
 router.get("/me", verifyJWT, getMe);
+router.get("/leaderboard", verifyJWT, getLeaderboard);
 
 export default router;

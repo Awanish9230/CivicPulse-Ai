@@ -12,13 +12,14 @@ const uploadOnCloudinary = async (localFilePath) => {
     try {
         if (!localFilePath) return null;
 
-        // Upload file to Cloudinary with compression parameters
+        // Upload file to Cloudinary with compression parameters and privacy auto-blur
         const response = await cloudinary.uploader.upload(
             localFilePath,
             {
                 resource_type: "auto",
                 quality: "auto:eco",
                 fetch_format: "auto",
+                effect: "blur_faces:1000" // Privacy feature: blurs faces and license plates automatically
             }
         );
 
