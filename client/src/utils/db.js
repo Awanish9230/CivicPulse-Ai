@@ -1,5 +1,5 @@
 const DB_NAME = 'CivicPulseOfflineDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Bumped version for new cache stores
 
 export const initDB = () => {
     return new Promise((resolve, reject) => {
@@ -26,6 +26,11 @@ export const initDB = () => {
                 const store = db.createObjectStore('outbox', { keyPath: 'id', autoIncrement: true });
                 store.createIndex('type', 'type', { unique: false });
                 store.createIndex('timestamp', 'timestamp', { unique: false });
+            }
+            
+            // Key-value store for Local-First data caching
+            if (!db.objectStoreNames.contains('local_cache')) {
+                db.createObjectStore('local_cache', { keyPath: 'key' });
             }
         };
     });
@@ -73,6 +78,31 @@ export const removeFromOutbox = async (id) => {
         const request = store.delete(id);
         
         request.onsuccess = () => resolve();
+        request.onerror = (event) => reject(event.target.error);
+    });
+};
+
+// Local-First Caching Helpers
+export const setCachedData = async (key, data) => {
+    const db = await initDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['local_cache'], 'readwrite');
+        const store = transaction.objectStore('local_cache');
+        const request = store.put({ key, data, timestamp: Date.now() });
+        
+        request.onsuccess = () => resolve();
+        request.onerror = (event) => reject(event.target.error);
+    });
+};
+
+export const getCachedData = async (key) => {
+    const db = await initDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['local_cache'], 'readonly');
+        const store = transaction.objectStore('local_cache');
+        const request = store.get(key);
+        
+        request.onsuccess = () => resolve(request.result ? request.result.data : null);
         request.onerror = (event) => reject(event.target.error);
     });
 };

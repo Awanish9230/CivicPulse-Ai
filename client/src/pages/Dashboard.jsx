@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
@@ -9,6 +9,7 @@ import 'leaflet/dist/leaflet.css';
 import ImageCarousel from '../components/common/ImageCarousel';
 import CustomSelect from '../components/common/CustomSelect';
 import { AuthContext } from '../context/AuthContext';
+import { useLocalFirst } from '../hooks/useLocalFirst';
 
 const MapUpdater = ({ center, zoom }) => {
     const map = useMap();
@@ -21,8 +22,27 @@ const MapUpdater = ({ center, zoom }) => {
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
     const [filter, setFilter] = useState('All');
-    const [complaints, setComplaints] = useState([]);
-    const [loading, setLoading] = useState(true);
+    
+    const fetchComplaintsCallback = useCallback(async (lat = null, lng = null, rds = null) => {
+        let url = `${import.meta.env.VITE_API_URL}/api/v1/complaint`;
+        
+        if (lat && lng) {
+            url += `/nearby?lat=${lat}&lng=${lng}&radius=${rds || 10}`;
+        }
+        
+        const { data } = await axios.get(url, { withCredentials: true });
+        const fetchedComplaints = data.data;
+        calculateStats(fetchedComplaints);
+        return fetchedComplaints;
+    }, []);
+
+    const { 
+        data: complaints, 
+        setData: setComplaints, 
+        loading: complaintsLoading,
+        refresh: fetchComplaints
+    } = useLocalFirst('dashboard_complaints', fetchComplaintsCallback, []);
+
     const [stats, setStats] = useState({
         today: 0,
         pending: 0,
@@ -41,6 +61,30 @@ const Dashboard = () => {
     const [replyContent, setReplyContent] = useState('');
     const [replying, setReplying] = useState(false);
 
+    const handleUpvote = async (complaintId) => {
+        // Optimistic local update using LocalFirst setter
+        setComplaints(prev => prev.map(c => 
+            c._id === complaintId 
+                ? { ...c, supportCount: (c.supportCount || 0) + 1, isSupported: true } 
+                : c
+        ));
+
+        try {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/${complaintId}/upvote`, {}, {
+                withCredentials: true
+            });
+            toast.success("Impact footprint recorded!");
+        } catch (error) {
+            // Revert on failure
+            setComplaints(prev => prev.map(c => 
+                c._id === complaintId 
+                    ? { ...c, supportCount: Math.max(0, (c.supportCount || 1) - 1), isSupported: false } 
+                    : c
+            ));
+            toast.error("Failed to record footprint");
+        }
+    };
+
     const handleReply = async (complaintId) => {
         if (!replyContent.trim()) return;
         setReplying(true);
@@ -57,33 +101,6 @@ const Dashboard = () => {
             toast.error(error.response?.data?.message || "Failed to post reply");
         } finally {
             setReplying(false);
-        }
-    };
-
-    const fetchComplaints = async (lat, lng, rds) => {
-        try {
-            setLoading(true);
-            const params = {};
-            if (lat && lng) {
-                params.lat = lat;
-                params.lng = lng;
-            }
-            if (rds && rds !== 'All') {
-                params.radius = rds;
-            }
-
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/complaint/all`, {
-                withCredentials: true,
-                params
-            });
-            const fetchedComplaints = data.data;
-            setComplaints(fetchedComplaints);
-            calculateStats(fetchedComplaints);
-        } catch (error) {
-            console.error("Failed to fetch complaints:", error);
-            toast.error("Failed to load dashboard data");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -111,6 +128,35 @@ const Dashboard = () => {
         if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
         return `${Math.floor(diffInSeconds / 86400)}d ago`;
     };
+
+    useEffect(() => {
+        // Socket listeners
+        if (socket) {
+            const handleNewComplaint = (complaint) => {
+                setComplaints(prev => [complaint, ...prev]);
+            };
+
+            const handleComplaintUpdate = (updatedComplaint) => {
+                setComplaints(prev => prev.map(c => 
+                    c._id === updatedComplaint._id ? updatedComplaint : c
+                ));
+            };
+
+            const handleComplaintResolved = () => {
+                fetchComplaints(); // Refresh to see updates
+            };
+
+            socket.on('newComplaint', handleNewComplaint);
+            socket.on('complaintUpdated', handleComplaintUpdate);
+            socket.on('complaintResolved', handleComplaintResolved);
+
+            return () => {
+                socket.off('newComplaint', handleNewComplaint);
+                socket.off('complaintUpdated', handleComplaintUpdate);
+                socket.off('complaintResolved', handleComplaintResolved);
+            };
+        }
+    }, [socket, setComplaints, fetchComplaints]);
 
     useEffect(() => {
         if ("geolocation" in navigator) {
