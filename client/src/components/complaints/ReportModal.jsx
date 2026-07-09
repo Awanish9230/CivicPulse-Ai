@@ -127,6 +127,16 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
         // Reverse Geocode
         const fetchAddress = async () => {
             try {
+                if (!navigator.onLine) {
+                    setAddress({
+                        line1: "Location acquired (Offline Mode)",
+                        line2: "",
+                        district: "",
+                        state: "",
+                        pinCode: ""
+                    });
+                    return;
+                }
                 const { lat, lng } = captureData.gps;
                 // Using OpenStreetMap Nominatim for free reverse geocoding
                 const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
@@ -143,7 +153,9 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                 }
             } catch (error) {
                 console.error("Failed to fetch address", error);
-                toast.error("Could not determine exact address from GPS.");
+                if (navigator.onLine) {
+                    toast.error("Could not determine exact address from GPS.");
+                }
             } finally {
                 setIsFetchingAddress(false);
             }
