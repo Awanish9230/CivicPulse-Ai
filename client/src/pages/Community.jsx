@@ -638,23 +638,35 @@ const Community = () => {
                     <p className="text-slate-600 max-w-md mb-6">
                         You must enable location permissions in your browser to access the Community chat and local feeds. Please click the lock icon in your URL bar to allow location access.
                     </p>
-                    <button 
-                        onClick={() => {
-                            if ("geolocation" in navigator) {
-                                navigator.geolocation.getCurrentPosition(
-                                    (pos) => {
-                                        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                                        setLocationDenied(false);
-                                        toast.success("Location enabled!");
-                                    },
-                                    (err) => toast.error("Still blocked. Please allow location in your browser settings.")
-                                );
-                            }
-                        }}
-                        className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/30"
-                    >
-                        Retry Location Access
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <button 
+                            onClick={() => {
+                                if ("geolocation" in navigator) {
+                                    navigator.geolocation.getCurrentPosition(
+                                        (pos) => {
+                                            setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                                            setLocationDenied(false);
+                                            toast.success("Location enabled!");
+                                        },
+                                        (err) => toast.error("Still blocked. In the PWA, please go to your phone's Settings > Apps > CivicPulse > Permissions to enable Location.")
+                                    );
+                                }
+                            }}
+                            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/30"
+                        >
+                            Retry Location Access
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setLocation({ lat: 28.6139, lng: 77.2090 });
+                                setLocationDenied(false);
+                                toast.success("Using default location (New Delhi)");
+                            }}
+                            className="px-6 py-3 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-xl transition-colors shadow-lg border border-slate-200"
+                        >
+                            Use Default Location
+                        </button>
+                    </div>
                 </div>
             )}
 
