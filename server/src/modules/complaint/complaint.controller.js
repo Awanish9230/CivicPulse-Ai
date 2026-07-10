@@ -201,7 +201,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
     // 5. Upload images to Cloudinary
     const uploadedImages = [];
     for (const file of imageFiles) {
-        const uploaded = await uploadOnCloudinary(file.path);
+        const uploaded = await uploadOnCloudinary(file.buffer);
         if (uploaded) {
             uploadedImages.push(uploaded.secure_url);
         }

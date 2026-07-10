@@ -187,7 +187,7 @@ export const updateTask = asyncHandler(async (req, res) => {
 
         const uploadedImages = [];
         for (const file of req.files) {
-            const uploaded = await uploadOnCloudinary(file.path);
+            const uploaded = await uploadOnCloudinary(file.buffer);
             if (uploaded) {
                 uploadedImages.push(uploaded.secure_url);
             }

@@ -51,6 +51,7 @@ router.delete("/:complaintId", verifyJWT, deleteComplaint);
 // Authority Routes (can add role middleware later)
 router.get(
     "/all",
+    verifyJWT,
     getAllComplaints
 );
 
