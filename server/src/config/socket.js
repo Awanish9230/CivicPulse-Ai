@@ -144,9 +144,9 @@ export const initSocket = (server) => {
 
                 logger.info(`Saved ${savedNotifications.length} chat notifications to DB and broadcasting...`);
                 
-                // We emit using io.to(room) so EVERYONE in the room (including sender) gets the live notification.
-                // This makes it much easier to test the app without needing two accounts!
-                io.to(room).emit('notification', {
+                // Emitting using socket.to(room) sends to EVERYONE in the room EXCEPT the sender.
+                // This ensures the sender does not receive a push notification for their own chat message.
+                socket.to(room).emit('notification', {
                     _id: 'chat_' + Date.now(),
                     title: `New message in ${channelName}`,
                     message: `${message.sender}: ${message.text.substring(0, 40)}${message.text.length > 40 ? '...' : ''}`,

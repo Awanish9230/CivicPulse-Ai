@@ -392,30 +392,48 @@ const Dashboard = () => {
                                 />
                             )}
 
-                            {filteredComplaints.map(c => {
-                                if (!c.location?.coordinates) return null;
-                                const isCritical = c.priority === 'Critical';
-                                const isResolved = c.status === 'Resolved' || c.status === 'Closed';
-                                const color = isResolved ? '#22c55e' : isCritical ? '#ef4444' : '#f97316';
+                            {Object.entries(
+                                filteredComplaints.reduce((acc, c) => {
+                                    if (!c.location?.coordinates) return acc;
+                                    const key = `${c.location.coordinates[1]},${c.location.coordinates[0]}`;
+                                    if (!acc[key]) acc[key] = [];
+                                    acc[key].push(c);
+                                    return acc;
+                                }, {})
+                            ).map(([coordKey, groupComplaints]) => {
+                                const [lat, lng] = coordKey.split(',').map(Number);
+                                const hasCritical = groupComplaints.some(c => c.priority === 'Critical');
+                                const hasPending = groupComplaints.some(c => c.status !== 'Resolved' && c.status !== 'Closed');
+                                const color = hasCritical ? '#ef4444' : hasPending ? '#f97316' : '#22c55e';
+                                const glowOpacity = Math.min(0.15 + (groupComplaints.length - 1) * 0.05, 0.5);
                                 
                                 return (
-                                    <React.Fragment key={c._id}>
+                                    <React.Fragment key={coordKey}>
                                         {/* Heatmap Glow (large, transparent) */}
                                         <CircleMarker 
-                                            center={[c.location.coordinates[1], c.location.coordinates[0]]}
-                                            pathOptions={{ color: 'transparent', fillColor: color, fillOpacity: 0.15 }}
-                                            radius={25}
+                                            center={[lat, lng]}
+                                            pathOptions={{ color: 'transparent', fillColor: color, fillOpacity: glowOpacity }}
+                                            radius={25 + Math.min(groupComplaints.length * 2, 10)}
                                         />
                                         {/* Core Point (small, solid) */}
                                         <CircleMarker 
-                                            center={[c.location.coordinates[1], c.location.coordinates[0]]}
+                                            center={[lat, lng]}
                                             pathOptions={{ color: 'white', weight: 1, fillColor: color, fillOpacity: 0.8 }}
-                                            radius={6}
+                                            radius={6 + (groupComplaints.length > 1 ? 2 : 0)}
                                         >
                                             <Popup>
-                                                <div className="font-bold text-sm text-slate-800">{c.category} Issue</div>
-                                                <div className="text-xs text-slate-500 mb-2">{c.status} | {c.priority} Priority</div>
-                                                <div className="text-[10px] text-slate-400">ID: {c._id.slice(-6).toUpperCase()}</div>
+                                                <div className="max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                                    <div className="font-bold text-xs text-slate-500 mb-2 border-b border-slate-200 pb-1 sticky top-0 bg-white">
+                                                        {groupComplaints.length} Issue{groupComplaints.length > 1 ? 's' : ''} reported here
+                                                    </div>
+                                                    {groupComplaints.map(c => (
+                                                        <div key={c._id} className="mb-2 pb-2 border-b border-slate-100 last:border-0 last:mb-0 last:pb-0">
+                                                            <div className="font-bold text-sm text-slate-800">{c.category} Issue</div>
+                                                            <div className="text-xs text-slate-500 mb-1">{c.status} | {c.priority} Priority</div>
+                                                            <div className="text-[10px] text-slate-400">ID: {c._id.slice(-6).toUpperCase()}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </Popup>
                                         </CircleMarker>
                                     </React.Fragment>
