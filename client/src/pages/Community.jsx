@@ -523,7 +523,10 @@ const Community = () => {
         if (!navigator.onLine) {
             messageData.message.isPending = true;
             await saveToOutbox('chat', messageData);
-            setChatMessages(prev => [...prev, messageData.message]);
+            setMessages(prev => ({
+                ...prev,
+                [activeChannel]: [...(prev[activeChannel] || []), messageData.message]
+            }));
             toast.success("Saved offline. Will send when reconnected.", { id: 'offline-chat' });
         } else if (socket) {
             socket.emit('sendMessage', messageData);
@@ -928,13 +931,14 @@ const Community = () => {
                                     const isAdmin = user?.role === 'Admin';
                                     const canEdit = isMe;
                                     const canDelete = isMe || isAdmin;
-                                    const isCurrentlyEditing = editingMsg?._id === msg._id;
+                                    const msgId = msg._id || msg.id;
+                                    const isCurrentlyEditing = editingMsg && editingMsg._id === msgId;
 
                                     return (
                                         <motion.div 
                                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            key={msg._id || msg.id} 
+                                            key={msgId} 
                                             className={`flex gap-4 group ${isMe ? 'flex-row-reverse text-right' : ''}`}
                                         >
                                             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-1 shadow-sm border ${isAuthority ? 'bg-gradient-to-br from-yellow-400 to-amber-500 border-amber-300 text-white shadow-amber-500/30' : 'bg-white border-slate-100 text-slate-500'}`}>
@@ -970,13 +974,13 @@ const Community = () => {
                                                                     value={editingMsg.text}
                                                                     onChange={(e) => setEditingMsg({ ...editingMsg, text: e.target.value })}
                                                                     onKeyDown={(e) => {
-                                                                        if (e.key === 'Enter') handleEditMessage(msg._id, editingMsg.text);
+                                                                        if (e.key === 'Enter') handleEditMessage(msgId, editingMsg.text);
                                                                         if (e.key === 'Escape') setEditingMsg(null);
                                                                     }}
                                                                     autoFocus
                                                                     className={`flex-1 bg-transparent outline-none text-sm ${isMe ? 'text-white placeholder-white/50' : 'text-slate-800'}`}
                                                                 />
-                                                                <button onClick={() => handleEditMessage(msg._id, editingMsg.text)} className="p-1 rounded-full hover:bg-black/10 transition-colors">
+                                                                <button onClick={() => handleEditMessage(msgId, editingMsg.text)} className="p-1 rounded-full hover:bg-black/10 transition-colors">
                                                                     <Check size={13} />
                                                                 </button>
                                                                 <button onClick={() => setEditingMsg(null)} className="p-1 rounded-full hover:bg-black/10 transition-colors">
@@ -1001,7 +1005,7 @@ const Community = () => {
                                                     )}
                                                     {canEdit && !isCurrentlyEditing && (
                                                         <button 
-                                                            onClick={() => setEditingMsg({ _id: msg._id, text: msg.text })}
+                                                            onClick={() => setEditingMsg({ _id: msgId, text: msg.text })}
                                                             className="text-[10px] font-bold text-text/40 hover:text-amber-600 transition-colors px-1.5 py-0.5 rounded hover:bg-amber-50 flex items-center gap-0.5"
                                                         >
                                                             <Pencil size={10} /> Edit
@@ -1009,7 +1013,7 @@ const Community = () => {
                                                     )}
                                                     {canDelete && (
                                                         <button 
-                                                            onClick={() => handleDeleteMessage(msg._id)}
+                                                            onClick={() => handleDeleteMessage(msgId)}
                                                             className="text-[10px] font-bold text-text/40 hover:text-red-600 transition-colors px-1.5 py-0.5 rounded hover:bg-red-50 flex items-center gap-0.5"
                                                         >
                                                             <Trash2 size={10} /> Delete

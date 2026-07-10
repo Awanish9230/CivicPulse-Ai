@@ -68,6 +68,18 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
     const [isFetchingAddress, setIsFetchingAddress] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+    useEffect(() => {
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
 
     // AI Analysis
     const handleAutoFill = async () => {
@@ -101,6 +113,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
 
     // Reverse Geocode
     const fetchAddress = async (lat, lng) => {
+        if (!isOnline) return;
         setIsFetchingAddress(true);
         try {
             const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
@@ -125,9 +138,9 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
 
     useEffect(() => {
         // Reverse Geocode
-        const fetchAddress = async () => {
+        const fetchInitialAddress = async () => {
             try {
-                if (!navigator.onLine) {
+                if (!isOnline) {
                     setAddress({
                         line1: "Location acquired (Offline Mode)",
                         line2: "",
@@ -153,7 +166,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                 }
             } catch (error) {
                 console.error("Failed to fetch address", error);
-                if (navigator.onLine) {
+                if (isOnline) {
                     toast.error("Could not determine exact address from GPS.");
                 }
             } finally {
@@ -162,9 +175,9 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
         };
 
         if (captureData?.gps) {
-            fetchAddress();
+            fetchInitialAddress();
         }
-    }, [captureData]);
+    }, [captureData, isOnline]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -304,7 +317,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                         value={address.line1} 
                                         onChange={(e) => setAddress({...address, line1: e.target.value})}
                                         className="w-full bg-white border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-sm shadow-sm transition-all font-medium text-slate-700"
-                                        required
+                                        required={isOnline}
                                     />
                                 </div>
                                 <div>
@@ -323,7 +336,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                         value={address.district} 
                                         onChange={(e) => setAddress({...address, district: e.target.value})}
                                         className="w-full bg-white border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-sm shadow-sm transition-all font-medium text-slate-700"
-                                        required
+                                        required={isOnline}
                                     />
                                     <input 
                                         type="text" 
@@ -331,7 +344,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                         value={address.state} 
                                         onChange={(e) => setAddress({...address, state: e.target.value})}
                                         className="w-full bg-white border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-sm shadow-sm transition-all font-medium text-slate-700"
-                                        required
+                                        required={isOnline}
                                     />
                                 </div>
                                 <div>
@@ -341,7 +354,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                                         value={address.pinCode} 
                                         onChange={(e) => setAddress({...address, pinCode: e.target.value})}
                                         className="w-full bg-white border border-slate-200 rounded-xl p-3.5 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-sm shadow-sm transition-all font-medium text-slate-700"
-                                        required
+                                        required={isOnline}
                                     />
                                 </div>
                             </div>
