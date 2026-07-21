@@ -6,6 +6,7 @@ import ApiResponse from "../../utils/ApiResponse.js";
 import notificationService from "../notification/notification.service.js";
 import uploadOnCloudinary from "../../utils/cloudinary.js";
 import { calculateDistance } from '../../utils/geo.js';
+import { getCategoriesForDepartment } from "../../utils/departmentMapping.js";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -71,10 +72,25 @@ export const getTasks = asyncHandler(async (req, res) => {
 
     let filter = { status: { $nin: ['Resolved', 'Closed', 'Rejected'] } };
 
-    // Admin sees all active tasks. Authorities only see tasks at their escalation level.
+    // Admin sees all active tasks. Authorities see restricted views.
     if (req.user.role !== 'Admin') {
+        // 1. Department Filtering
+        const allowedCategories = getCategoriesForDepartment(req.user.department);
+        filter.category = { $in: allowedCategories };
+
+        // 2. Hierarchy Filtering
         const level = req.user.authorityLevel || 'Junior';
-        filter.escalationLevel = level;
+        
+        if (level === 'Junior') {
+            // Juniors can see all Junior level tasks in their department
+            filter.escalationLevel = 'Junior';
+        } else if (level === 'Senior') {
+            // Seniors can see Junior and Senior level tasks in their department
+            filter.escalationLevel = { $in: ['Junior', 'Senior'] };
+        } else if (level === 'HOD') {
+            // HODs can see ALL tasks in their department regardless of escalationLevel
+            // No additional escalationLevel filter needed
+        }
     }
 
     const complaints = await Complaint.find(filter)
@@ -463,18 +479,20 @@ export const getAnalytics = asyncHandler(async (req, res) => {
     let filter = {};
 
     if (req.user.role !== 'Admin') {
-        // Map department back to categories
-        const department = req.user.department;
-        let categories = [];
-        
-        if (department === 'Public Works') categories = ['Road', 'Construction'];
-        else if (department === 'Power') categories = ['Electricity', 'Street Light'];
-        else if (department === 'Water & Sanitation') categories = ['Garbage', 'Water', 'Drainage', 'Illegal Dumping'];
-        else if (department === 'Traffic & Safety') categories = ['Traffic'];
-        else if (department === 'Animal Control') categories = ['Animal'];
-        else categories = ['Others']; // General Administration
+        // 1. Department Filtering
+        const allowedCategories = getCategoriesForDepartment(req.user.department);
+        filter.category = { $in: allowedCategories };
 
-        filter.category = { $in: categories };
+        // 2. Hierarchy Filtering
+        const level = req.user.authorityLevel || 'Junior';
+        
+        if (level === 'Junior') {
+            filter.escalationLevel = 'Junior';
+        } else if (level === 'Senior') {
+            filter.escalationLevel = { $in: ['Junior', 'Senior'] };
+        } else if (level === 'HOD') {
+            // HODs see all
+        }
     }
 
     const complaints = await Complaint.find(filter)

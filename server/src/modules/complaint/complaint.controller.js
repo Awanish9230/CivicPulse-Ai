@@ -3,6 +3,7 @@ import User from "../user/user.model.js";
 import ApiError from "../../utils/ApiError.js";
 import ApiResponse from "../../utils/ApiResponse.js";
 import asyncHandler from "../../utils/asynchandler.js";
+import { getCategoriesForDepartment } from "../../utils/departmentMapping.js";
 import uploadOnCloudinary, { deleteFromCloudinary } from "../../utils/cloudinary.js";
 import notificationService from "../notification/notification.service.js";
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -430,6 +431,18 @@ export const getAllComplaints = asyncHandler(async (req, res) => {
                 }
             }
         };
+    }
+
+    // Role-based feed filtering
+    if (req.user && req.user.role === 'Authority') {
+        const allowedCategories = getCategoriesForDepartment(req.user.department);
+        // If there's an existing category query, merge it with $and, otherwise just set it.
+        // But currently there isn't, so we just set or overwrite.
+        if (Object.keys(query).length === 0) {
+            query.category = { $in: allowedCategories };
+        } else {
+            query = { $and: [query, { category: { $in: allowedCategories } }] };
+        }
     }
 
     const complaints = await Complaint.find(query).sort({

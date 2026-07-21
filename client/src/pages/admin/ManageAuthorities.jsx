@@ -24,11 +24,12 @@ const ManageAuthorities = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const deptOptions = [
-        { value: 'Roads', label: 'Roads' },
-        { value: 'Water', label: 'Water' },
-        { value: 'Electricity', label: 'Electricity' },
-        { value: 'Sanitation', label: 'Sanitation' },
-        { value: 'Police', label: 'Police' },
+        { value: 'Public Works', label: 'Public Works' },
+        { value: 'Water & Sanitation', label: 'Water & Sanitation' },
+        { value: 'Power', label: 'Power' },
+        { value: 'Traffic & Safety', label: 'Traffic & Safety' },
+        { value: 'Animal Control', label: 'Animal Control' },
+        { value: 'General Administration', label: 'General Administration' },
     ];
 
     const levelOptions = [
