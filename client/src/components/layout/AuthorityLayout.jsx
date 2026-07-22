@@ -5,6 +5,7 @@ import { useState, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import AuthorityBottomNav from './AuthorityBottomNav';
 import { NotificationBell } from '../notifications/NotificationBell';
+import PageLoader from '../common/PageLoader';
 
 const authNavItems = [
     { name: 'Dashboard', path: '/authority', icon: Map },
@@ -65,13 +66,17 @@ const AuthoritySidebar = ({ onLogout }) => {
 
 const AuthorityLayout = () => {
     const location = useLocation();
-    const { user, login, logout } = useContext(AuthContext);
+    const { user, loading: authLoading, login, logout } = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     
     const isAuthority = user && (user.role === 'Authority' || user.role === 'Admin');
+
+    if (authLoading) {
+        return <PageLoader />;
+    }
 
     const handleLogin = async (e) => {
         e.preventDefault();
