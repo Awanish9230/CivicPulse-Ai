@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
     },
     authorityLevel: {
         type: String,
-        enum: ['Junior', 'Senior', 'HOD'],
+        enum: ['Junior', 'Senior', 'ChiefOfficer'],
     },
     department: {
         type: String,

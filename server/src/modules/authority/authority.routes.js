@@ -10,7 +10,9 @@ import {
     updateTask,
     assignTask,
     getDepartmentMembers,
-    getEmployeeReport
+    getEmployeeReport,
+    updateAuthorityMember,
+    deleteAuthorityMember
 } from "./authority.controller.js";
 
 const router = Router();
@@ -18,6 +20,10 @@ const router = Router();
 // Only officer@city.gov can access these (checked in controller/middleware)
 router.post("/create", verifyJWT, createAuthorityMember);
 router.get("/members", verifyJWT, getAuthorityMembers);
+
+// Member Update & Delete (Chief Officer only)
+router.put("/members/:memberId", verifyJWT, updateAuthorityMember);
+router.delete("/members/:memberId", verifyJWT, deleteAuthorityMember);
 
 // Department specific
 router.get("/department-members", verifyJWT, getDepartmentMembers);

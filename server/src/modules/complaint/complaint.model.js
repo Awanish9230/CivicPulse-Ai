@@ -87,7 +87,7 @@ const complaintSchema = new mongoose.Schema({
     },
     escalationLevel: {
         type: String,
-        enum: ['Junior', 'Senior', 'HOD'],
+        enum: ['Junior', 'Senior', 'ChiefOfficer'],
         default: 'Junior',
     },
     lastActivityAt: {

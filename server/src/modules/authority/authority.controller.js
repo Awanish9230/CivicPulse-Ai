@@ -11,20 +11,25 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Middleware-like check, can be extracted to auth.middleware.js if needed
-const checkSuperOfficer = (req) => {
-    if (req.user.email !== 'officer@city.gov') {
-        throw new ApiError(403, "Access denied. Only the chief officer can perform this action.");
-    }
-};
-
 export const createAuthorityMember = asyncHandler(async (req, res) => {
-    checkSuperOfficer(req);
+    // Only Chief Officer can create authority members for their department
+    if (req.user.role !== 'Authority' || req.user.authorityLevel !== 'ChiefOfficer') {
+        throw new ApiError(403, "Access denied. Only Chief Officers can perform this action.");
+    }
 
-    const { email, password, name, authorityLevel, department } = req.body;
+    const { email, password, name, authorityLevel } = req.body;
 
-    if (!email || !password || !name || !authorityLevel || !department) {
+    if (!email || !password || !name || !authorityLevel) {
         throw new ApiError(400, "All fields are required");
+    }
+
+    // Chief Officers cannot create other Chief Officers
+    if (authorityLevel === 'ChiefOfficer') {
+        throw new ApiError(403, "Chief Officers cannot create other Chief Officers.");
+    }
+
+    if (authorityLevel !== 'Junior' && authorityLevel !== 'Senior') {
+        throw new ApiError(400, "Can only create Junior or Senior officers.");
     }
 
     const existedUser = await User.findOne({ email });
@@ -32,16 +37,16 @@ export const createAuthorityMember = asyncHandler(async (req, res) => {
         throw new ApiError(409, "Authority member with this email already exists");
     }
 
-    // Generate an anonymous ID even for authorities just to satisfy the schema required constraint
     const anonymousId = User.generateAnonymousId();
 
+    // Department must always be inherited from req.user.department
     const user = await User.create({
         email,
         password,
         name,
         role: "Authority",
         authorityLevel,
-        department,
+        department: req.user.department,
         anonymousId
     });
 
@@ -49,6 +54,82 @@ export const createAuthorityMember = asyncHandler(async (req, res) => {
 
     return res.status(201).json(
         new ApiResponse(201, createdUser, "Authority member created successfully")
+    );
+});
+
+export const updateAuthorityMember = asyncHandler(async (req, res) => {
+    // Only Chief Officer or Admin can update authority members
+    if (req.user.role !== 'Admin' && (req.user.role !== 'Authority' || req.user.authorityLevel !== 'ChiefOfficer')) {
+        throw new ApiError(403, "Access denied. Only Chief Officers or Admins can perform this action.");
+    }
+
+    const { memberId } = req.params;
+    const { name, email, authorityLevel } = req.body;
+
+    const targetUser = await User.findById(memberId);
+    if (!targetUser) {
+        throw new ApiError(404, "Authority member not found");
+    }
+
+    // Verify department isolation (skip for Admin)
+    if (req.user.role !== 'Admin' && targetUser.department !== req.user.department) {
+        throw new ApiError(403, "Access denied. Cannot manage members outside your department.");
+    }
+
+    // Admins or Chief Officers can only edit Junior/Senior officers
+    if (targetUser.role !== 'Authority' || (targetUser.authorityLevel !== 'Junior' && targetUser.authorityLevel !== 'Senior')) {
+        throw new ApiError(403, "Access denied. You can only manage Junior or Senior officers.");
+    }
+
+    if (authorityLevel && authorityLevel !== 'Junior' && authorityLevel !== 'Senior') {
+        throw new ApiError(400, "Can only update officer level to Junior or Senior.");
+    }
+
+    if (name) targetUser.name = name;
+    if (email) {
+        const emailExists = await User.findOne({ email, _id: { $ne: targetUser._id } });
+        if (emailExists) {
+            throw new ApiError(409, "Email is already taken by another user.");
+        }
+        targetUser.email = email;
+    }
+    if (authorityLevel) targetUser.authorityLevel = authorityLevel;
+
+    await targetUser.save();
+    const updatedUser = await User.findById(targetUser._id).select("-password");
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedUser, "Authority member updated successfully")
+    );
+});
+
+export const deleteAuthorityMember = asyncHandler(async (req, res) => {
+    // Only Chief Officer or Admin can delete authority members
+    if (req.user.role !== 'Admin' && (req.user.role !== 'Authority' || req.user.authorityLevel !== 'ChiefOfficer')) {
+        throw new ApiError(403, "Access denied. Only Chief Officers or Admins can perform this action.");
+    }
+
+    const { memberId } = req.params;
+
+    const targetUser = await User.findById(memberId);
+    if (!targetUser) {
+        throw new ApiError(404, "Authority member not found");
+    }
+
+    // Verify department isolation (skip for Admin)
+    if (req.user.role !== 'Admin' && targetUser.department !== req.user.department) {
+        throw new ApiError(403, "Access denied. Cannot manage members outside your department.");
+    }
+
+    // Admins or Chief Officers can only delete Junior/Senior officers
+    if (targetUser.role !== 'Authority' || (targetUser.authorityLevel !== 'Junior' && targetUser.authorityLevel !== 'Senior')) {
+        throw new ApiError(403, "Access denied. You can only manage Junior or Senior officers.");
+    }
+
+    await User.findByIdAndDelete(memberId);
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Authority member deleted successfully")
     );
 });
 
@@ -87,8 +168,8 @@ export const getTasks = asyncHandler(async (req, res) => {
         } else if (level === 'Senior') {
             // Seniors can see Junior and Senior level tasks in their department
             filter.escalationLevel = { $in: ['Junior', 'Senior'] };
-        } else if (level === 'HOD') {
-            // HODs can see ALL tasks in their department regardless of escalationLevel
+        } else if (level === 'ChiefOfficer') {
+            // Chief Officers can see ALL tasks in their department regardless of escalationLevel
             // No additional escalationLevel filter needed
         }
     }
@@ -124,9 +205,9 @@ export const escalateTask = asyncHandler(async (req, res) => {
     if (currentLevel === 'Junior') {
         nextLevel = 'Senior';
     } else if (currentLevel === 'Senior') {
-        nextLevel = 'HOD';
+        nextLevel = 'ChiefOfficer';
     } else {
-        throw new ApiError(400, "Complaint is already at the highest escalation level (HOD)");
+        throw new ApiError(400, "Complaint is already at the highest escalation level (ChiefOfficer)");
     }
 
     complaint.escalationLevel = nextLevel;
@@ -357,9 +438,9 @@ export const assignTask = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Cannot assign tasks outside your department");
     }
 
-    // HOD can assign to Senior/Junior. Senior can assign to Junior (or another Senior maybe?).
+    // Chief Officer can assign to Senior/Junior. Senior can assign to Junior (or another Senior maybe?).
     if (req.user.role !== 'Admin') {
-        const levelMap = { 'Junior': 1, 'Senior': 2, 'HOD': 3 };
+        const levelMap = { 'Junior': 1, 'Senior': 2, 'ChiefOfficer': 3 };
         if (levelMap[assignee.authorityLevel] > levelMap[req.user.authorityLevel]) {
              throw new ApiError(403, "Cannot assign tasks to a higher ranking official");
         }
@@ -490,8 +571,8 @@ export const getAnalytics = asyncHandler(async (req, res) => {
             filter.escalationLevel = 'Junior';
         } else if (level === 'Senior') {
             filter.escalationLevel = { $in: ['Junior', 'Senior'] };
-        } else if (level === 'HOD') {
-            // HODs see all
+        } else if (level === 'ChiefOfficer') {
+            // Chief Officers see all
         }
     }
 

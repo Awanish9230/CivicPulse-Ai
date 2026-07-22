@@ -11,7 +11,7 @@ const DEPARTMENTS = [
     'General Administration'
 ];
 
-const LEVELS = ['Junior', 'Senior', 'HOD'];
+const LEVELS = ['Junior', 'Senior', 'ChiefOfficer'];
 
 async function seed() {
     try {

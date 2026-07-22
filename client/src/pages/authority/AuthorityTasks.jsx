@@ -39,7 +39,7 @@ const AuthorityTasks = () => {
     const [testModeBypass, setTestModeBypass] = useState(false);
     const [resolving, setResolving] = useState(false);
 
-    const isSeniorOrHOD = user?.role === 'Admin' || user?.authorityLevel === 'Senior' || user?.authorityLevel === 'HOD';
+    const isSeniorOrHOD = user?.role === 'Admin' || user?.authorityLevel === 'Senior' || user?.authorityLevel === 'ChiefOfficer';
 
     const fetchTasks = async () => {
         try {
@@ -225,11 +225,11 @@ const AuthorityTasks = () => {
                 
                 // Rank rules: 
                 // Admin can assign to anyone
-                // HOD can assign to Senior, Junior
+                // ChiefOfficer can assign to Senior, Junior
                 // Senior can assign to Junior
                 let isCorrectRank = false;
                 if (user?.role === 'Admin') isCorrectRank = true;
-                else if (user?.authorityLevel === 'HOD') isCorrectRank = ['Senior', 'Junior'].includes(member.authorityLevel);
+                else if (user?.authorityLevel === 'ChiefOfficer') isCorrectRank = ['Senior', 'Junior'].includes(member.authorityLevel);
                 else if (user?.authorityLevel === 'Senior') isCorrectRank = member.authorityLevel === 'Junior';
                 
                 return isCorrectDepartment && isCorrectRank;
@@ -558,7 +558,7 @@ const AuthorityTasks = () => {
                                             </button>
                                         )}
 
-                                        {task.escalationLevel !== 'HOD' && (
+                                        {task.escalationLevel !== 'ChiefOfficer' && (
                                             <button 
                                                 onClick={() => handleEscalate(task._id)}
                                                 className="bg-amber-100 text-amber-700 hover:bg-amber-200 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center transition-colors flex-1 justify-center"

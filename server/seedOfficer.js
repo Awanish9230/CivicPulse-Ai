@@ -24,8 +24,6 @@ const seedOfficer = async () => {
             password: officerPassword,
             name: 'Chief Officer',
             role: 'Admin',
-            authorityLevel: 'HOD',
-            department: 'Master Admin',
             anonymousId: User.generateAnonymousId()
         });
 

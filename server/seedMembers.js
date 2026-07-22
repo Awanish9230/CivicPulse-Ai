@@ -39,11 +39,11 @@ const seedMembers = async () => {
 
             const membersToCreate = [];
 
-            // 1 HOD
+            // 1 Chief Officer
             membersToCreate.push({
-                email: `hod.${slug}@gmail.com`,
-                name: `HOD ${dept}`,
-                authorityLevel: 'HOD',
+                email: `chief.${slug}@gmail.com`,
+                name: `Chief Officer ${dept}`,
+                authorityLevel: 'ChiefOfficer',
                 department: dept
             });
 

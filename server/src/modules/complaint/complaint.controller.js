@@ -565,8 +565,8 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
         // Escalate
         const currentLevel = complaint.escalationLevel;
         let nextLevel = 'Senior'; // Default to Senior if Junior
-        if (currentLevel === 'Senior') nextLevel = 'HOD';
-        else if (currentLevel === 'HOD') nextLevel = 'HOD'; // Max level
+        if (currentLevel === 'Senior') nextLevel = 'ChiefOfficer';
+        else if (currentLevel === 'ChiefOfficer') nextLevel = 'ChiefOfficer'; // Max level
 
         complaint.escalationLevel = nextLevel;
 

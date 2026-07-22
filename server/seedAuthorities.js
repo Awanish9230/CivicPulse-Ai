@@ -22,20 +22,20 @@ const seedAuthorities = async () => {
 
         // Helper to format names
         const formatName = (level, deptName, index = '') => {
-            if (level === 'HOD') return `Chief of ${deptName}`;
+            if (level === 'ChiefOfficer') return `Chief of ${deptName}`;
             return `${level} Officer ${index} - ${deptName}`;
         };
 
         const authoritiesToInsert = [];
 
         for (const dept of departments) {
-            // 1 HOD
+            // 1 Chief Officer
             authoritiesToInsert.push({
                 email: `chief_${dept.prefix}@city.gov`,
                 password: defaultPassword,
-                name: formatName('HOD', dept.name),
+                name: formatName('ChiefOfficer', dept.name),
                 role: 'Authority',
-                authorityLevel: 'HOD',
+                authorityLevel: 'ChiefOfficer',
                 department: dept.name,
                 anonymousId: User.generateAnonymousId()
             });

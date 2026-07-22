@@ -8,7 +8,8 @@ import {
     getAiInsights,
     getMemberDetails,
     updateUser,
-    deleteComplaintAdmin
+    deleteComplaintAdmin,
+    createChiefOfficer
 } from './admin.controller.js';
 
 const router = express.Router();
@@ -28,6 +29,9 @@ router.route('/members/:memberId')
     .put(updateUser);
 router.route('/complaints').get(getAllComplaints);
 router.route('/complaints/:complaintId').delete(deleteComplaintAdmin);
+
+// Chief Officer Lifecycle Management (Admin Only)
+router.route('/chief-officer').post(createChiefOfficer);
 
 // AI
 router.route('/ai/insights').get(getAiInsights);

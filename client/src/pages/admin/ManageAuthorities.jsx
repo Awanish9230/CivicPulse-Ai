@@ -23,6 +23,11 @@ const ManageAuthorities = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Appoint Chief Officer Modal State
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [addForm, setAddForm] = useState({ name: '', email: '', password: '', department: 'Public Works' });
+    const [adding, setAdding] = useState(false);
+
     const deptOptions = [
         { value: 'Public Works', label: 'Public Works' },
         { value: 'Water & Sanitation', label: 'Water & Sanitation' },
@@ -35,7 +40,7 @@ const ManageAuthorities = () => {
     const levelOptions = [
         { value: 'Junior', label: 'Junior' },
         { value: 'Senior', label: 'Senior' },
-        { value: 'HOD', label: 'HOD (Head of Department)' },
+        { value: 'ChiefOfficer', label: 'Chief Officer' },
     ];
 
     const statusOptions = [
@@ -119,6 +124,22 @@ const ManageAuthorities = () => {
         }
     };
 
+    const handleAddChief = async (e) => {
+        e.preventDefault();
+        setAdding(true);
+        try {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/admin/chief-officer`, addForm, { withCredentials: true });
+            toast.success("Chief Officer appointed successfully");
+            setShowAddModal(false);
+            setAddForm({ name: '', email: '', password: '', department: 'Public Works' });
+            fetchAuthorities();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to appoint Chief Officer");
+        } finally {
+            setAdding(false);
+        }
+    };
+
     const getPriorityColor = (priority) => {
         switch(priority) {
             case 'Critical': return 'text-red-600 bg-red-100';
@@ -137,8 +158,11 @@ const ManageAuthorities = () => {
                     <p className="text-slate-500 mt-1">Manage officials, approve registrations, and assign departments.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-xl text-white hover:bg-indigo-700 font-medium shadow-lg shadow-indigo-200">
-                        Add Authority
+                    <button 
+                        onClick={() => setShowAddModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-xl text-white hover:bg-indigo-700 font-medium shadow-lg shadow-indigo-200"
+                    >
+                        Appoint Chief Officer
                     </button>
                 </div>
             </div>
@@ -198,7 +222,7 @@ const ManageAuthorities = () => {
                                     <td className="px-6 py-4">{auth.department}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                                            auth.level === 'HOD' ? 'bg-red-50 text-red-700' :
+                                            auth.level === 'ChiefOfficer' ? 'bg-red-50 text-red-700' :
                                             auth.level === 'Senior' ? 'bg-purple-50 text-purple-700' :
                                             'bg-indigo-50 text-indigo-700'
                                         }`}>
@@ -475,6 +499,100 @@ const ManageAuthorities = () => {
                                     </div>
                                 </>
                             )}
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Appoint Chief Officer Modal */}
+            <AnimatePresence>
+                {showAddModal && (
+                    <div className="fixed inset-0 z-50 overflow-y-auto flex items-start justify-center p-4 md:py-12">
+                        <motion.div 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+                            onClick={() => setShowAddModal(false)}
+                        />
+                        
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+                            animate={{ scale: 1, opacity: 1, y: 0 }} 
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            className="bg-white rounded-3xl w-full max-w-md shadow-2xl z-10 flex flex-col p-8 border border-slate-100"
+                        >
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-black text-slate-900">Appoint Chief Officer</h2>
+                                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleAddChief} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Name</label>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        value={addForm.name}
+                                        onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                                        placeholder="Officer Name"
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-colors text-sm text-slate-800"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Official Email</label>
+                                    <input 
+                                        type="email" 
+                                        required
+                                        value={addForm.email}
+                                        onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                                        placeholder="officer@department.gov"
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-colors text-sm text-slate-800"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
+                                    <input 
+                                        type="password" 
+                                        required
+                                        value={addForm.password}
+                                        onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
+                                        placeholder="••••••••"
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-colors text-sm text-slate-800"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Department</label>
+                                    <CustomSelect 
+                                        value={addForm.department}
+                                        onChange={(e) => setAddForm({ ...addForm, department: e.target.value })}
+                                        options={deptOptions}
+                                        className="w-full h-[38px] text-slate-800"
+                                    />
+                                </div>
+
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowAddModal(false)}
+                                        className="px-5 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors font-bold text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        disabled={adding}
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors font-bold text-sm disabled:opacity-50"
+                                    >
+                                        {adding ? 'Appointing...' : 'Appoint Officer'}
+                                    </button>
+                                </div>
+                            </form>
                         </motion.div>
                     </div>
                 )}

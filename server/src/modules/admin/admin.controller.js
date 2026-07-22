@@ -209,6 +209,23 @@ export const updateUser = asynchandler(async (req, res) => {
         throw new ApiError(404, "User not found");
     }
 
+    // Ensure updateUser remains a generic user management endpoint and cannot assign or modify Chief Officer role
+    if (user.role === 'Authority' && user.authorityLevel === 'ChiefOfficer') {
+        if (role && role !== 'Authority') {
+            throw new ApiError(400, "Cannot change the role of a Chief Officer through generic update. Please use the dedicated Chief Officer endpoints.");
+        }
+        if (department && department !== user.department) {
+            throw new ApiError(400, "Cannot change the department of a Chief Officer through generic update. Please use the dedicated Chief Officer endpoints.");
+        }
+        if (authorityLevel && authorityLevel !== 'ChiefOfficer') {
+            throw new ApiError(400, "Cannot change the authority level of a Chief Officer through generic update. Please use the dedicated Chief Officer endpoints.");
+        }
+    }
+
+    if (authorityLevel === 'ChiefOfficer' && user.authorityLevel !== 'ChiefOfficer') {
+        throw new ApiError(400, "Cannot promote a user to Chief Officer through generic update. Please use the dedicated Chief Officer creation/appointment endpoint.");
+    }
+
     if (name) user.name = name;
     if (email) user.email = email;
     if (role) {
@@ -260,5 +277,49 @@ export const deleteComplaintAdmin = asynchandler(async (req, res) => {
 
     return res.status(200).json(
         new ApiResponse(200, {}, "Complaint permanently deleted by Admin")
+    );
+});
+
+// Appoint/Create Chief Officer (Admin Only)
+export const createChiefOfficer = asynchandler(async (req, res) => {
+    const { name, email, password, department } = req.body;
+
+    if (!name || !email || !password || !department) {
+        throw new ApiError(400, "All fields (name, email, password, department) are required");
+    }
+
+    // Check if the department already has a Chief Officer
+    const existingChief = await User.findOne({
+        role: 'Authority',
+        authorityLevel: 'ChiefOfficer',
+        department
+    });
+
+    if (existingChief) {
+        throw new ApiError(400, `Department "${department}" already has a Chief Officer (Active: ${existingChief.name})`);
+    }
+
+    // Check if user with email already exists
+    const existedUser = await User.findOne({ email });
+    if (existedUser) {
+        throw new ApiError(409, "User with this email already exists");
+    }
+
+    const anonymousId = User.generateAnonymousId();
+
+    const chiefOfficer = await User.create({
+        name,
+        email,
+        password,
+        role: 'Authority',
+        authorityLevel: 'ChiefOfficer',
+        department,
+        anonymousId
+    });
+
+    const createdChief = await User.findById(chiefOfficer._id).select("-password");
+
+    return res.status(201).json(
+        new ApiResponse(201, createdChief, "Chief Officer created and appointed successfully")
     );
 });

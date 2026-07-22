@@ -22,7 +22,12 @@ const ManageMembers = () => {
     const [reportData, setReportData] = useState(null);
     const [loadingReport, setLoadingReport] = useState(false);
 
-    const isHODorAdmin = user?.role === 'Admin' || user?.authorityLevel === 'HOD';
+    // Edit Member State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({ name: '', email: '', authorityLevel: 'Junior' });
+    const [saving, setSaving] = useState(false);
+
+    const isChiefOrAdmin = user?.role === 'Admin' || user?.authorityLevel === 'ChiefOfficer';
 
     const fetchMembers = async () => {
         try {
@@ -42,6 +47,12 @@ const ManageMembers = () => {
         fetchMembers();
     }, []);
 
+    useEffect(() => {
+        if (user && user.role !== 'Admin') {
+            setFormData(prev => ({ ...prev, department: user.department }));
+        }
+    }, [user]);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -54,10 +65,57 @@ const ManageMembers = () => {
             });
             toast.success(data.message);
             setShowModal(false);
-            setFormData({ name: '', email: '', password: '', authorityLevel: 'Junior', department: 'General Administration' });
+            setFormData({ 
+                name: '', 
+                email: '', 
+                password: '', 
+                authorityLevel: 'Junior', 
+                department: user?.role !== 'Admin' ? (user?.department || 'General Administration') : 'General Administration' 
+            });
             fetchMembers(); // Refresh the list
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to create member');
+        }
+    };
+
+    const startEdit = (employee) => {
+        setEditForm({
+            name: employee.name || '',
+            email: employee.email || '',
+            authorityLevel: employee.authorityLevel || 'Junior'
+        });
+        setIsEditing(true);
+    };
+
+    const handleSaveEdit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            await axios.put(`${import.meta.env.VITE_API_URL}/api/v1/authority/members/${selectedEmployee}`, editForm, {
+                withCredentials: true
+            });
+            toast.success("Officer updated successfully");
+            setIsEditing(false);
+            openEmployeeReport(selectedEmployee); // Refresh report modal
+            fetchMembers(); // Refresh personnel list
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to update officer");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteOfficer = async (employeeId) => {
+        if (!window.confirm("Are you sure you want to remove this officer?")) return;
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/v1/authority/members/${employeeId}`, {
+                withCredentials: true
+            });
+            toast.success("Officer removed successfully");
+            setSelectedEmployee(null); // Close modal
+            fetchMembers(); // Refresh personnel list
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to remove officer");
         }
     };
 
@@ -84,7 +142,7 @@ const ManageMembers = () => {
                     <h1 className="text-3xl font-black text-slate-900">Manage Members</h1>
                     <p className="text-slate-500 mt-1">Review department personnel and their performance.</p>
                 </div>
-                {isHODorAdmin && (
+                {isChiefOrAdmin && (
                     <button 
                         onClick={() => setShowModal(true)}
                         className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
@@ -150,7 +208,7 @@ const ManageMembers = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center w-max gap-1
-                                                    ${member.authorityLevel === 'HOD' ? 'bg-red-100 text-red-600 border border-red-200' : 
+                                                    ${member.authorityLevel === 'ChiefOfficer' ? 'bg-red-100 text-red-600 border border-red-200' : 
                                                       member.authorityLevel === 'Senior' ? 'bg-purple-100 text-purple-600 border border-purple-200' : 
                                                       'bg-emerald-100 text-emerald-600 border border-emerald-200'}`}>
                                                     <Shield size={12} />
@@ -185,11 +243,11 @@ const ManageMembers = () => {
             {/* Employee Detailed Report Modal */}
             <AnimatePresence>
                 {selectedEmployee && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-50 overflow-y-auto flex items-start justify-center p-4 md:py-12">
                         <motion.div 
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-                            onClick={() => setSelectedEmployee(null)}
+                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+                            onClick={() => { setSelectedEmployee(null); setIsEditing(false); }}
                         />
                         
                         <motion.div 
@@ -216,65 +274,143 @@ const ManageMembers = () => {
                                                 </p>
                                             </div>
                                         </div>
-                                        <button onClick={() => setSelectedEmployee(null)} className="p-2 hover:bg-white rounded-full text-slate-400 transition-colors">
-                                            <X size={24} />
-                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            {isChiefOrAdmin && reportData.employee.role === 'Authority' && ['Junior', 'Senior'].includes(reportData.employee.authorityLevel) && (
+                                                <div className="flex gap-2 mr-2">
+                                                    <button 
+                                                        onClick={() => startEdit(reportData.employee)}
+                                                        className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-bold shadow-sm transition-colors"
+                                                    >
+                                                        Edit Officer
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDeleteOfficer(reportData.employee._id)}
+                                                        className="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 rounded-lg text-sm font-bold shadow-sm transition-colors"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            )}
+                                            <button onClick={() => { setSelectedEmployee(null); setIsEditing(false); }} className="p-2 hover:bg-white rounded-full text-slate-400 transition-colors">
+                                                <X size={24} />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center">
-                                                <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
-                                                    <Activity size={24} />
-                                                </div>
+                                        {isEditing ? (
+                                            <form onSubmit={handleSaveEdit} className="space-y-4 max-w-md mx-auto bg-white p-8 rounded-3xl border border-slate-200 shadow-sm mt-4">
+                                                <h3 className="text-lg font-black text-slate-900 mb-4">Edit Officer Profile</h3>
+                                                
                                                 <div>
-                                                    <div className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Active Load</div>
-                                                    <div className="text-3xl font-black text-slate-900">{reportData.stats.activeCount}</div>
+                                                    <label className="block text-sm font-bold text-slate-700 mb-1">Full Name</label>
+                                                    <input 
+                                                        type="text" 
+                                                        required
+                                                        value={editForm.name}
+                                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 text-slate-800 text-sm font-medium"
+                                                    />
                                                 </div>
-                                            </div>
-                                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center">
-                                                <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mr-4">
-                                                    <CheckCircle size={24} />
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Total Completed</div>
-                                                    <div className="text-3xl font-black text-slate-900">{reportData.stats.completedCount}</div>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center">
-                                            <Clock size={18} className="mr-2 text-emerald-500" />
-                                            Currently Active Tasks
-                                        </h3>
-                                        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-8">
-                                            {reportData.activeTasks.length === 0 ? (
-                                                <div className="p-6 text-center text-slate-500 text-sm">No active tasks assigned to this employee.</div>
-                                            ) : (
-                                                <table className="w-full text-left">
-                                                    <thead>
-                                                        <tr className="bg-slate-50 border-b border-slate-100">
-                                                            <th className="px-4 py-3 text-xs font-bold text-slate-500">ID</th>
-                                                            <th className="px-4 py-3 text-xs font-bold text-slate-500">Category</th>
-                                                            <th className="px-4 py-3 text-xs font-bold text-slate-500">Priority</th>
-                                                            <th className="px-4 py-3 text-xs font-bold text-slate-500">Status</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {reportData.activeTasks.map(task => (
-                                                            <tr key={task._id} className="border-b border-slate-50 last:border-0">
-                                                                <td className="px-4 py-3 text-xs font-mono text-slate-400">{task._id.slice(-6).toUpperCase()}</td>
-                                                                <td className="px-4 py-3 text-sm font-bold text-slate-700">{task.category}</td>
-                                                                <td className="px-4 py-3">
-                                                                    <span className="text-xs font-bold px-2 py-1 rounded bg-slate-100 text-slate-600">{task.priority}</span>
-                                                                </td>
-                                                                <td className="px-4 py-3 text-sm text-slate-600">{task.status}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            )}
-                                        </div>
+                                                <div>
+                                                    <label className="block text-sm font-bold text-slate-700 mb-1">Official Email</label>
+                                                    <input 
+                                                        type="email" 
+                                                        required
+                                                        value={editForm.email}
+                                                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                                                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 text-slate-800 text-sm font-medium"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm font-bold text-slate-700 mb-1">Level</label>
+                                                    <CustomSelect 
+                                                        value={editForm.authorityLevel}
+                                                        onChange={(e) => setEditForm({ ...editForm, authorityLevel: e.target.value })}
+                                                        options={[
+                                                            { value: 'Junior', label: 'Junior' },
+                                                            { value: 'Senior', label: 'Senior' }
+                                                        ]}
+                                                        className="w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 text-slate-800 text-sm font-medium"
+                                                    />
+                                                </div>
+
+                                                <div className="flex justify-end gap-3 mt-6">
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => setIsEditing(false)}
+                                                        className="px-5 py-2.5 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors text-sm"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button 
+                                                        type="submit"
+                                                        disabled={saving}
+                                                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-md text-sm disabled:opacity-50"
+                                                    >
+                                                        {saving ? 'Saving...' : 'Save Changes'}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        ) : (
+                                            <>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center">
+                                                        <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
+                                                            <Activity size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Active Load</div>
+                                                            <div className="text-3xl font-black text-slate-900">{reportData.stats.activeCount}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center">
+                                                        <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mr-4">
+                                                            <CheckCircle size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Total Completed</div>
+                                                            <div className="text-3xl font-black text-slate-900">{reportData.stats.completedCount}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center">
+                                                    <Clock size={18} className="mr-2 text-emerald-500" />
+                                                    Currently Active Tasks
+                                                </h3>
+                                                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-8">
+                                                    {reportData.activeTasks.length === 0 ? (
+                                                        <div className="p-6 text-center text-slate-500 text-sm">No active tasks assigned to this employee.</div>
+                                                    ) : (
+                                                        <table className="w-full text-left">
+                                                            <thead>
+                                                                <tr className="bg-slate-50 border-b border-slate-100">
+                                                                    <th className="px-4 py-3 text-xs font-bold text-slate-500">ID</th>
+                                                                    <th className="px-4 py-3 text-xs font-bold text-slate-500">Category</th>
+                                                                    <th className="px-4 py-3 text-xs font-bold text-slate-500">Priority</th>
+                                                                    <th className="px-4 py-3 text-xs font-bold text-slate-500">Status</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {reportData.activeTasks.map(task => (
+                                                                    <tr key={task._id} className="border-b border-slate-50 last:border-0">
+                                                                        <td className="px-4 py-3 text-xs font-mono text-slate-400">{task._id.slice(-6).toUpperCase()}</td>
+                                                                        <td className="px-4 py-3 text-sm font-bold text-slate-700">{task.category}</td>
+                                                                        <td className="px-4 py-3">
+                                                                            <span className="text-xs font-bold px-2 py-1 rounded bg-slate-100 text-slate-600">{task.priority}</span>
+                                                                        </td>
+                                                                        <td className="px-4 py-3 text-sm text-slate-600">{task.status}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </>
                             )}
@@ -283,9 +419,9 @@ const ManageMembers = () => {
                 )}
             </AnimatePresence>
 
-            {/* Add Member Modal (Only HOD or Admin can add members) */}
+            {/* Add Member Modal (Only ChiefOfficer or Admin can add members) */}
             {showModal && (
-                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm overflow-y-auto flex items-start justify-center z-50 p-4 md:py-12">
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -341,27 +477,35 @@ const ManageMembers = () => {
                                         onChange={(e) => handleChange({ target: { name: 'authorityLevel', value: e.target.value } })}
                                         options={[
                                             { value: 'Junior', label: 'Junior' },
-                                            { value: 'Senior', label: 'Senior' },
-                                            { value: 'HOD', label: 'Head of Dept (HOD)' }
+                                            { value: 'Senior', label: 'Senior' }
                                         ]}
-                                        className="w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                                        className="w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 text-slate-800"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
-                                    <CustomSelect 
-                                        value={formData.department}
-                                        onChange={(e) => handleChange({ target: { name: 'department', value: e.target.value } })}
-                                        options={[
-                                            { value: 'Public Works', label: 'Public Works' },
-                                            { value: 'Water & Sanitation', label: 'Water & Sanitation' },
-                                            { value: 'Power', label: 'Power' },
-                                            { value: 'Traffic & Safety', label: 'Traffic & Safety' },
-                                            { value: 'Animal Control', label: 'Animal Control' },
-                                            { value: 'General Administration', label: 'General Administration' }
-                                        ]}
-                                        className="w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-                                    />
+                                    {user?.role === 'Admin' ? (
+                                        <CustomSelect 
+                                            value={formData.department}
+                                            onChange={(e) => handleChange({ target: { name: 'department', value: e.target.value } })}
+                                            options={[
+                                                { value: 'Public Works', label: 'Public Works' },
+                                                { value: 'Water & Sanitation', label: 'Water & Sanitation' },
+                                                { value: 'Power', label: 'Power' },
+                                                { value: 'Traffic & Safety', label: 'Traffic & Safety' },
+                                                { value: 'Animal Control', label: 'Animal Control' },
+                                                { value: 'General Administration', label: 'General Administration' }
+                                            ]}
+                                            className="w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 text-slate-800"
+                                        />
+                                    ) : (
+                                        <input 
+                                            type="text" 
+                                            readOnly 
+                                            value={user?.department || ''} 
+                                            className="w-full border border-slate-200 bg-slate-50 text-slate-500 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none"
+                                        />
+                                    )}
                                 </div>
                             </div>
 
