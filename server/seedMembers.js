@@ -71,12 +71,10 @@ const seedMembers = async () => {
                 // Check if exists
                 const existing = await User.findOne({ email: member.email });
                 if (!existing) {
-                    const anonymousId = User.generateAnonymousId();
                     const newUser = new User({
                         ...member,
                         password: 'password123',
-                        role: 'Authority',
-                        anonymousId
+                        role: 'Authority'
                     });
                     await newUser.save();
                     console.log(`Created: ${member.email}`);

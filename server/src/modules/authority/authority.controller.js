@@ -37,8 +37,6 @@ export const createAuthorityMember = asyncHandler(async (req, res) => {
         throw new ApiError(409, "Authority member with this email already exists");
     }
 
-    const anonymousId = User.generateAnonymousId();
-
     // Department must always be inherited from req.user.department
     const user = await User.create({
         email,
@@ -47,7 +45,6 @@ export const createAuthorityMember = asyncHandler(async (req, res) => {
         role: "Authority",
         authorityLevel,
         department: req.user.department,
-        anonymousId
     });
 
     const createdUser = await User.findById(user._id).select("-password");

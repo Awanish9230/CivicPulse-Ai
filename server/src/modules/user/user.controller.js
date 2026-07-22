@@ -1,16 +1,16 @@
 import asynchandler from "../../utils/asynchandler.js" 
 import ApiError from "../../utils/ApiError.js"
-import User from "./user.model.js"
+import User, { getDecryptedAnonymousId, getDecryptedPastAnonymousIds } from "./user.model.js"
 import ApiResponse from "../../utils/ApiResponse.js"
 import crypto from "crypto";
 import { sendWelcomeEmail, sendPasswordResetEmail } from "../../services/emailService.js";
 import { getIo } from "../../config/socket.js";
   
-const generateAccessAndRefreshTokens = async (userId, plainAnonymousId, plainPastIds = []) => {
+const generateAccessAndRefreshTokens = async (userId) => {
     try {
         const user = await User.findById(userId);
 
-        const accessToken = user.generateAccessToken(plainAnonymousId, plainPastIds);
+        const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
 
         user.refreshToken = refreshToken;
@@ -38,6 +38,10 @@ export const rotateAnonymousId = asynchandler(async (req, res) => {
         throw new ApiError(401, "Unauthorized request");
     }
 
+    if (user.role !== 'Citizen') {
+        throw new ApiError(403, "Only citizens can rotate anonymous IDs");
+    }
+
     const plainAnonymousId = User.generateAnonymousId();
     user.pastAnonymousIds.push(user.anonymousId); // Save the old encrypted ID
     user.anonymousId = User.encryptIdentity(plainAnonymousId);
@@ -46,11 +50,7 @@ export const rotateAnonymousId = asynchandler(async (req, res) => {
         validateBeforeSave: false
     });
 
-    // Decrypt all past IDs to send in the new token
-    // We pass password (if they provided one for manual rotation) just in case they have legacy encrypted IDs
-    const { password } = req.body || {};
-    const plainPastIds = (user.pastAnonymousIds || []).map(enc => User.decryptIdentity(enc, password)).filter(Boolean);
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id, plainAnonymousId, plainPastIds);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
     const options = {
         httpOnly: true,
@@ -162,24 +162,30 @@ export const loginUser = asynchandler(async (req, res) => {
         throw new ApiError(401, "Invalid email or password");
     }
 
-    // Decrypt Identity
-    const plainAnonymousId = User.decryptIdentity(user.anonymousId, password) || user.anonymousId;
-    const plainPastIds = (user.pastAnonymousIds || []).map(enc => User.decryptIdentity(enc, password)).filter(Boolean);
+    // Decrypt Identity if Citizen
+    let plainAnonymousId;
+    if (user.role === 'Citizen') {
+        plainAnonymousId = User.decryptIdentity(user.anonymousId, password) || user.anonymousId;
+        const plainPastIds = (user.pastAnonymousIds || []).map(enc => User.decryptIdentity(enc, password)).filter(Boolean);
 
-    // MIGRATION: Automatically migrate to Global Secret encryption on login
-    user.anonymousId = User.encryptIdentity(plainAnonymousId);
-    user.pastAnonymousIds = plainPastIds.map(id => User.encryptIdentity(id));
-    await user.save({ validateBeforeSave: false });
+        // MIGRATION: Automatically migrate to Global Secret encryption on login
+        user.anonymousId = User.encryptIdentity(plainAnonymousId);
+        user.pastAnonymousIds = plainPastIds.map(id => User.encryptIdentity(id));
+        await user.save({ validateBeforeSave: false });
+    }
 
     // 6. Generate tokens
     const { accessToken, refreshToken } =
-        await generateAccessAndRefreshTokens(user._id, plainAnonymousId, plainPastIds);
+        await generateAccessAndRefreshTokens(user._id);
 
     // 7. Fetch updated user without sensitive fields
     const loggedInUser = await User.findById(user._id).select(
         "-password -refreshToken"
     ).lean();
-    loggedInUser.anonymousId = plainAnonymousId;
+    
+    if (user.role === 'Citizen') {
+        loggedInUser.anonymousId = plainAnonymousId;
+    }
 
     // 8. Cookie options
    const options = {
@@ -253,7 +259,11 @@ export const getMe = asynchandler(async (req, res) => {
     if (!user) {
         throw new ApiError(404, "User not found");
     }
-    user.anonymousId = req.user.anonymousId;
+    
+    if (user.role === 'Citizen') {
+        user.anonymousId = getDecryptedAnonymousId(req.user);
+        user.pastAnonymousIds = getDecryptedPastAnonymousIds(req.user);
+    }
 
     return res.status(200).json(
         new ApiResponse(200, user, "User profile fetched successfully")

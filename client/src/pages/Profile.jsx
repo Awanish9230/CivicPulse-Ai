@@ -151,15 +151,15 @@ const Profile = () => {
                                 <div className="space-y-2 flex-1 min-w-0">
                                     <div className="flex items-center gap-3">
                                         <p className="text-white/80 font-bold text-xs md:text-sm tracking-[0.2em] uppercase">
-                                            {isAuthority ? 'Official Designation ID' : 'Encrypted Alias'}
+                                            {user.role === 'Citizen' ? 'Encrypted Alias' : 'Official Designation'}
                                         </p>
                                         <div className="flex items-center gap-1.5 bg-black/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
                                             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                                             <span className="text-[10px] font-bold tracking-wider text-green-300">LIVE</span>
                                         </div>
                                     </div>
-                                    <h2 className="text-4xl md:text-6xl font-black font-mono tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] truncate bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
-                                        {user.anonymousId || "N/A"}
+                                    <h2 className="text-4xl md:text-5xl font-black tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] truncate bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
+                                        {user.role === 'Citizen' ? (user.anonymousId || "N/A") : (user.name || user.email)}
                                     </h2>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-xl px-5 py-3 rounded-2xl flex items-center gap-3 border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] shrink-0 group-hover:bg-white/20 transition-colors">
@@ -175,7 +175,7 @@ const Profile = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-white/10">
                                 {/* Rotation Timer */}
-                                {!isAuthority ? (
+                                {user.role === 'Citizen' ? (
                                     <div className="bg-black/10 rounded-2xl p-4 border border-white/5 backdrop-blur-sm relative overflow-hidden">
                                         <div className={`absolute top-0 left-0 h-1 bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-1000`} style={{ width: `${(timeLeft / ROTATION_INTERVAL) * 100}%` }}></div>
                                         <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -193,7 +193,7 @@ const Profile = () => {
                                             <Zap size={14} /> System Access
                                         </p>
                                         <div className="font-mono text-xl font-black text-yellow-300">
-                                            Global Overseer
+                                            {user.role === 'Admin' ? 'Super Admin' : (user.authorityLevel || 'Official')}
                                         </div>
                                     </div>
                                 )}
@@ -224,7 +224,7 @@ const Profile = () => {
                     </motion.div>
 
                     {/* Trust Score / Strikes */}
-                    {!isAuthority && (
+                    {user.role === 'Citizen' && (
                         <motion.div 
                             variants={itemVariants}
                             whileHover={{ y: -5 }}
@@ -285,7 +285,7 @@ const Profile = () => {
                     )}
 
                     {/* Gamification / Civic Impact */}
-                    {!isAuthority && (
+                    {user.role === 'Citizen' && (
                         <motion.div 
                             variants={itemVariants}
                             whileHover={{ y: -5 }}

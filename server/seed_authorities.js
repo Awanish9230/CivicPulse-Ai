@@ -37,7 +37,6 @@ async function seed() {
                     password,
                     role: 'Authority',
                     name: `${level} ${dept} Official`,
-                    anonymousId: User.generateAnonymousId(),
                     authorityLevel: level,
                     department: dept,
                 });
@@ -56,7 +55,6 @@ async function seed() {
                 password,
                 role: 'Admin',
                 name: 'Super Admin',
-                anonymousId: User.generateAnonymousId(),
                 department: 'Master Admin'
             });
             await admin.save();

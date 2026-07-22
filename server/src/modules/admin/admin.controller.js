@@ -305,8 +305,6 @@ export const createChiefOfficer = asynchandler(async (req, res) => {
         throw new ApiError(409, "User with this email already exists");
     }
 
-    const anonymousId = User.generateAnonymousId();
-
     const chiefOfficer = await User.create({
         name,
         email,
@@ -314,7 +312,6 @@ export const createChiefOfficer = asynchandler(async (req, res) => {
         role: 'Authority',
         authorityLevel: 'ChiefOfficer',
         department,
-        anonymousId
     });
 
     const createdChief = await User.findById(chiefOfficer._id).select("-password");

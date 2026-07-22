@@ -36,8 +36,7 @@ const seedAuthorities = async () => {
                 name: formatName('ChiefOfficer', dept.name),
                 role: 'Authority',
                 authorityLevel: 'ChiefOfficer',
-                department: dept.name,
-                anonymousId: User.generateAnonymousId()
+                department: dept.name
             });
 
             // 2 Seniors
@@ -48,8 +47,7 @@ const seedAuthorities = async () => {
                     name: formatName('Senior', dept.name, i),
                     role: 'Authority',
                     authorityLevel: 'Senior',
-                    department: dept.name,
-                    anonymousId: User.generateAnonymousId()
+                    department: dept.name
                 });
             }
 
@@ -61,8 +59,7 @@ const seedAuthorities = async () => {
                     name: formatName('Junior', dept.name, i),
                     role: 'Authority',
                     authorityLevel: 'Junior',
-                    department: dept.name,
-                    anonymousId: User.generateAnonymousId()
+                    department: dept.name
                 });
             }
         }

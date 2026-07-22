@@ -93,13 +93,15 @@ export const NotificationProvider = ({ children }) => {
 
             newSocket.on('connect', () => {
                 newSocket.emit('join', user._id);
-                if (user.anonymousId) {
-                    newSocket.emit('join', user.anonymousId);
-                }
-                if (user.pastAnonymousIds && user.pastAnonymousIds.length > 0) {
-                    user.pastAnonymousIds.forEach(id => {
-                        newSocket.emit('join', id);
-                    });
+                if (user.role === 'Citizen') {
+                    if (user.anonymousId) {
+                        newSocket.emit('join', user.anonymousId);
+                    }
+                    if (user.pastAnonymousIds && user.pastAnonymousIds.length > 0) {
+                        user.pastAnonymousIds.forEach(id => {
+                            newSocket.emit('join', id);
+                        });
+                    }
                 }
                 newSocket.emit('joinRoom', 'local-community-general');
                 newSocket.emit('joinRoom', 'local-community-authority');

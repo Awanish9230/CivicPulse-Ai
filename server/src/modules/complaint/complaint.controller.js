@@ -1,5 +1,5 @@
 import Complaint from "./complaint.model.js";
-import User from "../user/user.model.js";
+import User, { getDecryptedAnonymousId, getDecryptedPastAnonymousIds } from "../user/user.model.js";
 import ApiError from "../../utils/ApiError.js";
 import ApiResponse from "../../utils/ApiResponse.js";
 import asyncHandler from "../../utils/asynchandler.js";
@@ -74,8 +74,10 @@ export const addOfficialReply = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Reply content is required");
     }
     
-    // Use the current user's anonymous ID or default to "City Official"
-    const authorityName = req.user?.anonymousId || "City Official";
+    // Use decrypted anonymous ID for Citizen, or real name for officials
+    const authorityName = req.user.role === 'Citizen' 
+        ? getDecryptedAnonymousId(req.user) 
+        : (req.user.name || "City Official");
     
     const complaint = await Complaint.findById(complaintId);
     if (!complaint) {
@@ -109,6 +111,12 @@ export const addOfficialReply = asyncHandler(async (req, res) => {
 });
 
 export const createComplaint = asyncHandler(async (req, res) => {
+    // Only citizens can submit complaints
+    if (req.user.role !== 'Citizen') {
+        throw new ApiError(403, "Only citizens can submit complaints");
+    }
+
+    const plainAnonId = getDecryptedAnonymousId(req.user);
 
     // 1. Get complaint details
     const {
@@ -169,14 +177,14 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
     if (existingIssue) {
         // Prevent the same user from spamming the merge feature within a short time
-        if (existingIssue.reportedBy === req.user.anonymousId && (Date.now() - existingIssue.createdAt.getTime() < 5 * 60 * 1000)) {
+        if (existingIssue.reportedBy === plainAnonId && (Date.now() - existingIssue.createdAt.getTime() < 5 * 60 * 1000)) {
             throw new ApiError(409, "You have already submitted this exact complaint recently.");
         }
 
         // Merge this new report into the existing one
         existingIssue.supportCount += 1;
-        if (!existingIssue.upvotedBy.includes(req.user.anonymousId)) {
-            existingIssue.upvotedBy.push(req.user.anonymousId);
+        if (!existingIssue.upvotedBy.includes(plainAnonId)) {
+            existingIssue.upvotedBy.push(plainAnonId);
         }
         await existingIssue.save();
 
@@ -239,7 +247,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
     // 7. Create complaint
     const complaint = await Complaint.create({
-        reportedBy: req.user.anonymousId,
+        reportedBy: plainAnonId,
         category,
         location: {
             type: "Point",
@@ -341,9 +349,14 @@ export const createComplaint = asyncHandler(async (req, res) => {
 });
 
 export const getMyComplaints = asyncHandler(async (req, res) => {
+    // Only citizens have personalized complaint feeds
+    if (req.user.role !== 'Citizen') {
+        throw new ApiError(403, "Only citizens have personalized complaint feeds");
+    }
 
-    // Fetch all complaints created by the logged-in user (including past rotated identities)
-    const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
+    const plainAnonId = getDecryptedAnonymousId(req.user);
+    const plainPastIds = getDecryptedPastAnonymousIds(req.user);
+    const allUserIdentities = [plainAnonId, ...plainPastIds];
 
     const complaints = await Complaint.find({
         reportedBy: { $in: allUserIdentities },
@@ -363,6 +376,10 @@ export const getMyComplaints = asyncHandler(async (req, res) => {
 
 
 export const deleteComplaint = asyncHandler(async (req, res) => {
+    // Only citizens can delete their complaints
+    if (req.user.role !== 'Citizen') {
+        throw new ApiError(403, "Only citizens can delete their complaints");
+    }
 
     // 1. Get complaint id
     const { complaintId } = req.params;
@@ -375,7 +392,9 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
     }
 
     // 3. Check ownership
-    const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
+    const plainAnonId = getDecryptedAnonymousId(req.user);
+    const plainPastIds = getDecryptedPastAnonymousIds(req.user);
+    const allUserIdentities = [plainAnonId, ...plainPastIds];
     if (!allUserIdentities.includes(complaint.reportedBy)) {
         throw new ApiError(
             403,
@@ -413,10 +432,16 @@ export const getAllComplaints = asyncHandler(async (req, res) => {
     
     let query = {};
     
-    // If no location is provided, restrict to ONLY the user's own complaints
+    // If no location is provided, restrict to ONLY the user's own complaints (only for Citizens)
     if (!lat || !lng) {
-        const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
-        query = { reportedBy: { $in: allUserIdentities } };
+        if (req.user.role === 'Citizen') {
+            const plainAnonId = getDecryptedAnonymousId(req.user);
+            const plainPastIds = getDecryptedPastAnonymousIds(req.user);
+            const allUserIdentities = [plainAnonId, ...plainPastIds];
+            query = { reportedBy: { $in: allUserIdentities } };
+        } else {
+            query = {};
+        }
     } 
     // If location is provided and a specific radius (not 'All') is selected
     else if (radius && radius !== 'All') {
@@ -481,6 +506,11 @@ export const upvoteComplaint = asyncHandler(async (req, res) => {
 });
 
 export const editComplaint = asyncHandler(async (req, res) => {
+    // Only citizens can edit their complaints
+    if (req.user.role !== 'Citizen') {
+        throw new ApiError(403, "Only citizens can edit their complaints");
+    }
+
     const { complaintId } = req.params;
     const { category, description } = req.body;
 
@@ -490,7 +520,9 @@ export const editComplaint = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Complaint not found");
     }
 
-    const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
+    const plainAnonId = getDecryptedAnonymousId(req.user);
+    const plainPastIds = getDecryptedPastAnonymousIds(req.user);
+    const allUserIdentities = [plainAnonId, ...plainPastIds];
     if (!allUserIdentities.includes(complaint.reportedBy)) {
         throw new ApiError(403, "You are not authorized to edit this complaint");
     }
@@ -509,6 +541,11 @@ export const editComplaint = asyncHandler(async (req, res) => {
     );
 });
 export const submitResolutionFeedback = asyncHandler(async (req, res) => {
+    // Only citizens can submit resolution feedback
+    if (req.user.role !== 'Citizen') {
+        throw new ApiError(403, "Only citizens can submit resolution feedback");
+    }
+
     const { complaintId } = req.params;
     const { action, comment } = req.body;
 
@@ -517,7 +554,9 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
         throw new ApiError(404, 'Complaint not found');
     }
 
-    const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
+    const plainAnonId = getDecryptedAnonymousId(req.user);
+    const plainPastIds = getDecryptedPastAnonymousIds(req.user);
+    const allUserIdentities = [plainAnonId, ...plainPastIds];
     if (!allUserIdentities.includes(complaint.reportedBy)) {
         throw new ApiError(403, 'Only the reporter can provide feedback');
     }

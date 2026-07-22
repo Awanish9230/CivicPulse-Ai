@@ -1,12 +1,17 @@
 import Notification from './notification.model.js';
 import asynchandler from '../../utils/asynchandler.js';
 import ApiResponse from '../../utils/ApiResponse.js';
+import { getDecryptedAnonymousId, getDecryptedPastAnonymousIds } from '../user/user.model.js';
 
 const getRecipientIds = (user) => {
     const ids = [user._id.toString()];
-    if (user.anonymousId) ids.push(user.anonymousId);
-    if (user.pastAnonymousIds && user.pastAnonymousIds.length > 0) {
-        ids.push(...user.pastAnonymousIds);
+    if (user.role === 'Citizen') {
+        const plainAnonId = getDecryptedAnonymousId(user);
+        if (plainAnonId) ids.push(plainAnonId);
+        const plainPastIds = getDecryptedPastAnonymousIds(user);
+        if (plainPastIds && plainPastIds.length > 0) {
+            ids.push(...plainPastIds);
+        }
     }
     return ids;
 };

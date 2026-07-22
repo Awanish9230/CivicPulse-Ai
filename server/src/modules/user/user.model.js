@@ -18,8 +18,9 @@ const userSchema = new mongoose.Schema({
     },
     anonymousId: {
         type: String,
-        required: true,
+        required: function() { return this.role === 'Citizen'; },
         unique: true,
+        sparse: true,
         index: true,
     },
     pastAnonymousIds: {
@@ -105,12 +106,10 @@ userSchema.methods.isPasswordCorrect = async function(password){
 }
 
 // generating access token and refresh token
-userSchema.methods.generateAccessToken = function (plainAnonymousId, plainPastIds = []) {    
+userSchema.methods.generateAccessToken = function () {    
     return jwt.sign(
         {
             _id: this._id,
-            anonymousId: plainAnonymousId || this.anonymousId, // Fallback if plain isn't provided
-            pastAnonymousIds: plainPastIds
         },
         process.env.JWT_SECRET,
         {
@@ -215,6 +214,16 @@ userSchema.statics.decryptIdentity = function(ciphertext, password) {
     }
 };
 
- const User = mongoose.model('User', userSchema);
+  const User = mongoose.model('User', userSchema);
 
- export default User;
+  export const getDecryptedAnonymousId = (user) => {
+      if (!user || user.role !== 'Citizen' || !user.anonymousId) return null;
+      return User.decryptIdentity(user.anonymousId);
+  };
+
+  export const getDecryptedPastAnonymousIds = (user) => {
+      if (!user || user.role !== 'Citizen' || !user.pastAnonymousIds) return [];
+      return (user.pastAnonymousIds || []).map(enc => User.decryptIdentity(enc)).filter(Boolean);
+  };
+
+  export default User;

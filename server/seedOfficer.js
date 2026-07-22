@@ -23,8 +23,7 @@ const seedOfficer = async () => {
             email: officerEmail,
             password: officerPassword,
             name: 'Chief Officer',
-            role: 'Admin',
-            anonymousId: User.generateAnonymousId()
+            role: 'Admin'
         });
 
         console.log(`Successfully created ${officerEmail} with password "${officerPassword}"`);
