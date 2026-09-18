@@ -1,0 +1,128 @@
+import mongoose from 'mongoose';
+
+function arrayLimit(val) {
+    return val.length <= 5;
+}
+
+const complaintSchema = new mongoose.Schema({
+    reportedBy: {
+        type: String, // Store anonymousId directly instead of User ref
+        required: true,
+    },
+    category: {
+        type: String,
+        enum: ['Road', 'Electricity', 'Garbage', 'Water', 'Drainage', 'Traffic', 'Illegal Dumping', 'Street Light', 'Construction', 'Animal', 'Others'],
+        required: true,
+    },
+    location: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point',
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            required: true,
+        }
+    },
+    address: {
+        ward: String,
+        district: String,
+        pinCode: String,
+        fullAddress: String,
+    },
+    description: {
+        type: String,
+        required: true, // This will store the English translated version
+    },
+    originalDescription: {
+        type: String, // Stores the user's native text
+    },
+    originalLanguage: {
+        type: String,
+        default: 'en',
+    },
+    imageUrl: {
+        type: String,
+        required: false, // Make optional for backward compatibility
+    },
+    imageUrls: {
+        type: [String], // Array of secure URLs from Cloudinary
+        default: [],
+        validate: [arrayLimit, 'Exceeds the limit of 5 photos']
+    },
+    voiceNoteUrl: {
+        type: String,
+    },
+    priority: {
+        type: String,
+        enum: ['Low', 'Medium', 'High', 'Critical'],
+        default: 'Medium',
+    },
+    status: {
+        type: String,
+        enum: ['Submitted', 'Verified', 'Assigned', 'In Progress', 'Resolved', 'Closed', 'Rejected'],
+        default: 'Submitted',
+    },
+    expectedCompletionDate: {
+        type: Date,
+    },
+    upvotedBy: {
+        type: [String], // Array of anonymousIds
+        default: [],
+    },
+    supportCount: {
+        type: Number,
+        default: 1, // Represents number of merged duplicate reports
+    },
+    mergedWith: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Complaint',
+        default: null,
+    },
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+    },
+    escalationLevel: {
+        type: String,
+        enum: ['Junior', 'Senior', 'HOD'],
+        default: 'Junior',
+    },
+    lastActivityAt: {
+        type: Date,
+        default: Date.now,
+    },
+    officialReplies: [{
+        authorityName: { type: String, required: true },
+        content: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }],
+    resolutionImages: {
+        type: [String],
+        default: [],
+        validate: [arrayLimit, 'Exceeds the limit of 5 photos']
+    },
+    resolutionFeedback: {
+        status: {
+            type: String,
+            enum: ['Pending', 'Accepted', 'Rejected'],
+            default: 'Pending',
+        },
+        comment: {
+            type: String,
+        },
+        updatedAt: {
+            type: Date,
+        }
+    }
+}, {
+    timestamps: true,
+});
+
+// Geospatial index for duplicate detection & mapping
+complaintSchema.index({ location: '2dsphere' });
+
+const Complaint = mongoose.model('Complaint', complaintSchema);
+export default Complaint;

@@ -1,0 +1,66 @@
+import { Outlet, useLocation, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, User } from 'lucide-react';
+import { useState, useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
+import Sidebar from './Sidebar';
+import BottomNav from './BottomNav';
+import { NotificationBell } from '../notifications/NotificationBell';
+
+import InstallPromptBanner from './InstallPromptBanner';
+
+const AppLayout = () => {
+    const location = useLocation();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { user } = useContext(AuthContext);
+
+    return (
+        <div className="flex min-h-screen bg-[#F8FAFC]">
+            <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+            
+            <main className={`flex-1 min-w-0 pb-16 md:pb-0 transition-[margin] duration-300 ease-in-out ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
+                <header className="h-14 md:h-16 border-b border-border/50 glass flex items-center px-4 md:px-10 justify-between sticky top-0 z-[100] gap-2 md:gap-4">
+                    <div className="flex items-center gap-2 md:gap-4 truncate">
+                        <div className="md:hidden font-black text-xl md:text-2xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 tracking-tight truncate">
+                            CivicPulse
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                        {!user && (
+                            <Link to="/auth" className="md:hidden bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/30 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center whitespace-nowrap">
+                                Login
+                            </Link>
+                        )}
+                        <NotificationBell />
+                        {user && (
+                            <Link to="/profile" className="md:hidden w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 hover:bg-primary/20 transition-colors">
+                                <User size={18} />
+                            </Link>
+                        )}
+                    </div>
+                </header>
+
+                <div className="p-4 md:py-6 md:px-8 max-w-6xl mx-auto min-h-[calc(100vh-5rem)]">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={location.pathname}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -15 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="min-h-full"
+                        >
+                            <Outlet />
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </main>
+            
+            <BottomNav />
+            <InstallPromptBanner />
+        </div>
+    );
+};
+
+export default AppLayout;
