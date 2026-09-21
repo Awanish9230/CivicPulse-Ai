@@ -108,3 +108,170 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* =========================================================
+   CivicPulse Theme Support
+   ========================================================= */
+
+html {
+  transition: background-color 250ms ease, color 250ms ease;
+}
+
+html.dark,
+html.dark body {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  transition: background-color 250ms ease, color 250ms ease;
+}
+
+/* Common existing light surfaces */
+html.dark .bg-white {
+  background-color: var(--color-surface) !important;
+}
+
+html.dark .bg-white\/70,
+html.dark .bg-white\/80,
+html.dark .bg-white\/90 {
+  background-color: rgb(15 23 42 / 0.90) !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-gray-50,
+html.dark .bg-zinc-50,
+html.dark .bg-neutral-50 {
+  background-color: var(--color-surface) !important;
+}
+
+html.dark .bg-slate-100,
+html.dark .bg-gray-100,
+html.dark .bg-zinc-100,
+html.dark .bg-neutral-100 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-slate-200,
+html.dark .bg-gray-200,
+html.dark .bg-zinc-200,
+html.dark .bg-neutral-200 {
+  background-color: #334155 !important;
+}
+
+/* Common existing text colors */
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700,
+html.dark .text-gray-900,
+html.dark .text-gray-800,
+html.dark .text-gray-700,
+html.dark .text-zinc-900,
+html.dark .text-zinc-800,
+html.dark .text-zinc-700 {
+  color: var(--color-text) !important;
+}
+
+html.dark .text-slate-600,
+html.dark .text-gray-600,
+html.dark .text-zinc-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-500,
+html.dark .text-slate-400,
+html.dark .text-gray-500,
+html.dark .text-gray-400,
+html.dark .text-zinc-500,
+html.dark .text-zinc-400 {
+  color: #94a3b8 !important;
+}
+
+/* Common existing borders */
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-zinc-100,
+html.dark .border-zinc-200 {
+  border-color: var(--color-border) !important;
+}
+
+/* Hover surfaces */
+html.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-gray-50:hover,
+html.dark .hover\:bg-zinc-50:hover {
+  background-color: #1e293b !important;
+}
+
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-gray-100:hover,
+html.dark .hover\:bg-zinc-100:hover {
+  background-color: #334155 !important;
+}
+
+/* Form controls */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #0f172a;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b;
+}
+
+html.dark option {
+  background-color: #0f172a;
+  color: var(--color-text);
+}
+
+/* Glass surfaces */
+html.dark .glass {
+  background: rgba(15, 23, 42, 0.75);
+  border-color: rgba(148, 163, 184, 0.20);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.20);
+}
+
+/* Skeleton loading */
+html.dark .skeleton-box {
+  background: #1e293b;
+  background-image: linear-gradient(
+    to right,
+    #1e293b 0%,
+    #334155 20%,
+    #1e293b 40%,
+    #1e293b 100%
+  );
+}
+
+/* Toast notifications */
+html.dark [data-sonner-toast],
+html.dark .Toastify__toast {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+
+/* Leaflet controls */
+html.dark .leaflet-control-zoom,
+html.dark .leaflet-control-attribution,
+html.dark .leaflet-control-zoom a {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+
+html.dark .leaflet-control-zoom a:hover {
+  background: #1e293b !important;
+}
+
+/* Selection */
+html.dark ::selection {
+  background: rgb(96 165 250 / 0.30);
+  color: #ffffff;
+}

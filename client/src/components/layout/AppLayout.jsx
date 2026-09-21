@@ -8,6 +8,7 @@ import BottomNav from './BottomNav';
 import { NotificationBell } from '../notifications/NotificationBell';
 
 import InstallPromptBanner from './InstallPromptBanner';
+import ThemeToggle from '../common/ThemeToggle';
 
 const AppLayout = () => {
     const location = useLocation();
@@ -15,7 +16,7 @@ const AppLayout = () => {
     const { user } = useContext(AuthContext);
 
     return (
-        <div className="flex min-h-screen bg-[#F8FAFC]">
+        <div className="flex min-h-screen bg-surface text-text">
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
             <main className={`flex-1 min-w-0 pb-16 md:pb-0 transition-[margin] duration-300 ease-in-out ${isSidebarOpen ? 'md:ml-64' : 'md:ml-20'}`}>
@@ -27,6 +28,7 @@ const AppLayout = () => {
                     </div>
 
                     <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                        <ThemeToggle compact />
                         {!user && (
                             <Link to="/auth" className="md:hidden bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/30 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center whitespace-nowrap">
                                 Login

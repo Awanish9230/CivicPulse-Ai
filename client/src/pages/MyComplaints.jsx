@@ -151,7 +151,7 @@ const MyComplaints = () => {
                     return (
                         <div key={step} className="flex items-center gap-1.5 shrink-0 group relative">
                             <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${bg} ${isCurrent ? 'scale-125' : ''}`}></div>
-                            <span className={`text-[10px] font-bold ${isActive ? 'text-slate-700' : 'text-slate-400'}`}>
+                            <span className={`text-[10px] font-bold ${isActive ? 'text-text/80' : 'text-text/40'}`}>
                                 {isRejected && isCurrent ? 'Rejected' : step}
                             </span>
                             {idx < steps.length - 1 && <div className={`w-4 h-[2px] rounded-full mx-1 ${idx < currentIdx ? (isFailed ? 'bg-red-200' : 'bg-blue-200') : 'bg-slate-100'}`}></div>}
@@ -167,22 +167,22 @@ const MyComplaints = () => {
     return (
         <div className="max-w-[1600px] mx-auto pb-20 px-4 md:px-6">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-[#F8FAFC]/90 backdrop-blur-xl pt-6 pb-4 border-b border-slate-200/50 mb-6">
+            <div className="sticky top-0 z-30 bg-[#F8FAFC]/90 backdrop-blur-xl pt-6 pb-4 border-b border-border/50 mb-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h1 className="text-2xl font-black text-slate-800 tracking-tight">My Reports</h1>
-                        <p className="text-sm text-slate-500 font-medium mt-0.5">Track your complaints</p>
+                        <p className="text-sm text-text/50 font-medium mt-0.5">Track your complaints</p>
                     </div>
                     
                     <div className="flex items-center gap-3 w-full md:w-auto">
                         <div className="relative flex-1 md:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text/40" size={16} />
                             <input 
                                 type="text"
                                 placeholder="Search..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             />
                         </div>
                         <button 
@@ -196,15 +196,15 @@ const MyComplaints = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="flex items-center gap-1 mt-5 overflow-x-auto no-scrollbar bg-slate-100/50 p-1 rounded-xl w-full md:w-max border border-slate-200/50">
+                <div className="flex items-center gap-1 mt-5 overflow-x-auto no-scrollbar bg-slate-100/50 p-1 rounded-xl w-full md:w-max border border-border/50">
                     {['All', 'Active', 'Verified', 'In Progress', 'Resolved'].map(f => (
                         <button 
                             key={f}
                             onClick={() => setFilter(f)}
                             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                                 filter === f 
-                                    ? 'bg-white text-primary shadow-sm border border-slate-200/60' 
-                                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                                    ? 'bg-surface text-primary shadow-sm border border-border/60'
+                                    : 'text-text/50 hover:text-text/80 hover:bg-slate-200/50'
                             }`}
                         >
                             {f}
@@ -217,7 +217,7 @@ const MyComplaints = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
                 {loading ? (
                     Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="bg-white rounded-[1rem] p-4 border border-slate-100 shadow-sm animate-pulse h-80 flex flex-col gap-3">
+                        <div key={i} className="bg-surface rounded-[1rem] p-4 border border-border/50 shadow-sm animate-pulse h-80 flex flex-col gap-3">
                             <div className="flex justify-between"><div className="w-16 h-6 bg-slate-200 rounded"></div><div className="w-20 h-6 bg-slate-200 rounded"></div></div>
                             <div className="w-full h-32 bg-slate-200 rounded-xl mt-2"></div>
                             <div className="w-3/4 h-4 bg-slate-200 rounded mt-2"></div>
@@ -228,10 +228,10 @@ const MyComplaints = () => {
                 ) : filteredComplaints.length === 0 ? (
                     <div className="col-span-full py-20 text-center">
                         <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <FileText size={24} className="text-slate-400" />
+                            <FileText size={24} className="text-text/40" />
                         </div>
                         <h2 className="text-lg font-bold text-slate-800 mb-2">No Reports Found</h2>
-                        <p className="text-slate-500 text-sm mb-6">You don't have any complaints matching your criteria.</p>
+                        <p className="text-text/50 text-sm mb-6">You don't have any complaints matching your criteria.</p>
                         <button onClick={() => setIsCameraOpen(true)} className="text-sm font-bold text-primary bg-primary/10 hover:bg-primary/20 px-6 py-2.5 rounded-xl transition-colors">Raise First Complaint</button>
                     </div>
                 ) : (
@@ -249,13 +249,13 @@ const MyComplaints = () => {
                                     exit={{ opacity: 0, scale: 0.98 }}
                                     transition={{ duration: 0.2 }}
                                     key={c._id}
-                                    className="bg-white rounded-[1rem] p-4 border border-slate-200/60 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition-all flex flex-col group relative"
+                                    className="bg-surface rounded-[1rem] p-4 border border-border/60 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition-all flex flex-col group relative"
                                 >
                                     {slaRisk && <div className="absolute top-0 left-0 w-full h-1 bg-red-500 rounded-t-[1rem]"></div>}
                                     
                                     {/* Header Inline */}
                                     <div className="flex items-center gap-2 mb-3">
-                                        <span className="text-[10px] font-bold text-slate-400 font-mono tracking-wider">#{c._id.slice(-6).toUpperCase()}</span>
+                                        <span className="text-[10px] font-bold text-text/40 font-mono tracking-wider">#{c._id.slice(-6).toUpperCase()}</span>
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ml-auto ${
                                             isResolved ? 'bg-green-50 text-green-700 border border-green-200' : isRejected ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
                                         }`}>
@@ -266,7 +266,7 @@ const MyComplaints = () => {
                                     
                                     {/* Image */}
                                     {(c.imageUrls?.length > 0 || c.imageUrl) && (
-                                        <div className="mb-3 rounded-xl overflow-hidden border border-slate-100 bg-slate-50 shrink-0 h-36 relative">
+                                        <div className="mb-3 rounded-xl overflow-hidden border border-border/50 bg-slate-50 shrink-0 h-36 relative">
                                             <ImageCarousel images={c.imageUrls?.length > 0 ? c.imageUrls : [c.imageUrl]} />
                                             <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] text-white font-bold flex items-center gap-1 z-10">
                                                 <MapPin size={10} /> {c.category}
@@ -276,13 +276,13 @@ const MyComplaints = () => {
 
                                     {/* Description */}
                                     <div className="mb-3 flex-1 min-h-[40px]">
-                                        <p className="text-slate-700 text-sm leading-relaxed line-clamp-2" title={c.description}>
+                                        <p className="text-text/80 text-sm leading-relaxed line-clamp-2" title={c.description}>
                                             {c.description}
                                         </p>
                                     </div>
                                     
                                     {/* Metadata */}
-                                    <div className="flex items-center gap-4 mb-4 text-[11px] font-bold text-slate-500">
+                                    <div className="flex items-center gap-4 mb-4 text-[11px] font-bold text-text/50">
                                         <span className="flex items-center gap-1"><Clock size={12} /> {new Date(c.createdAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})}</span>
                                         <span className="flex items-center gap-1"><ThumbsUp size={12} /> {c.supportCount || c.upvotes || 0}</span>
                                         {c.expectedCompletionDate && <span className="flex items-center gap-1 text-blue-600"><CheckCircle size={12} /> ETA: {new Date(c.expectedCompletionDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>}
@@ -307,7 +307,7 @@ const MyComplaints = () => {
                                     )}
 
                                     {/* Status Progress */}
-                                    <div className="mb-4 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                    <div className="mb-4 bg-slate-50 rounded-xl p-3 border border-border/50">
                                         {renderStatusDots(c.status, isRejected, slaRisk)}
                                     </div>
 
@@ -343,7 +343,7 @@ const MyComplaints = () => {
                                                 </button>
                                                 <button 
                                                     onClick={() => handleFeedback(c._id, 'Reject')}
-                                                    className="flex-1 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 font-bold py-2 px-3 rounded-lg text-xs transition-colors"
+                                                    className="flex-1 bg-surface hover:bg-rose-500/10 text-rose-600 border border-rose-200 font-bold py-2 px-3 rounded-lg text-xs transition-colors"
                                                 >
                                                     Reject & Reopen
                                                 </button>
@@ -364,10 +364,10 @@ const MyComplaints = () => {
                                             {expandedReplies[c._id] && (
                                                 <div className="mt-2 space-y-2 max-h-32 overflow-y-auto pr-1 no-scrollbar text-xs">
                                                     {c.officialReplies.map((reply, idx) => (
-                                                        <div key={idx} className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-slate-600 leading-relaxed">
+                                                        <div key={idx} className="bg-slate-50 p-2.5 rounded-lg border border-border/50 text-text/60 leading-relaxed">
                                                             <div className="flex justify-between items-center mb-1 font-bold text-[10px]">
                                                                 <span className="text-slate-800">{reply.authorityName}</span>
-                                                                <span className="text-slate-400">{new Date(reply.createdAt).toLocaleDateString()}</span>
+                                                                <span className="text-text/40">{new Date(reply.createdAt).toLocaleDateString()}</span>
                                                             </div>
                                                             {reply.content}
                                                         </div>
@@ -378,18 +378,18 @@ const MyComplaints = () => {
                                     )}
                                     
                                     {/* Footer Actions */}
-                                    <div className="mt-auto flex items-center gap-2 pt-3 border-t border-slate-100">
+                                    <div className="mt-auto flex items-center gap-2 pt-3 border-t border-border/50">
                                         {(c.status !== 'Resolved' && c.status !== 'Closed') && (
                                             <>
-                                                <button onClick={() => setEditingComplaint({...c})} className="h-8 px-2.5 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all">
+                                                <button onClick={() => setEditingComplaint({...c})} className="h-8 px-2.5 bg-surface border border-border text-text/60 hover:text-blue-600 hover:border-blue-200 hover:bg-primary/10 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all">
                                                     <Edit2 size={12} /> Edit
                                                 </button>
-                                                <button onClick={() => handleDelete(c._id)} className="h-8 px-2.5 bg-white border border-slate-200 text-slate-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all">
+                                                <button onClick={() => handleDelete(c._id)} className="h-8 px-2.5 bg-surface border border-border text-text/60 hover:text-red-600 hover:border-red-200 hover:bg-red-500/10 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all">
                                                     <Trash2 size={12} /> Delete
                                                 </button>
                                             </>
                                         )}
-                                        <button onClick={() => setExpandedMapComplaint(c)} className="h-8 px-2.5 ml-auto bg-slate-100 text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all">
+                                        <button onClick={() => setExpandedMapComplaint(c)} className="h-8 px-2.5 ml-auto bg-slate-100 text-text/60 hover:text-slate-800 hover:bg-slate-200 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all">
                                             <Map size={12} /> Map
                                         </button>
                                     </div>
@@ -415,18 +415,18 @@ const MyComplaints = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
                             onClick={e => e.stopPropagation()}
-                            className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative flex flex-col"
+                            className="bg-surface rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative flex flex-col"
                         >
-                            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+                            <div className="p-4 border-b border-border/50 flex justify-between items-center bg-surface z-10">
                                 <div>
                                     <h3 className="font-black text-slate-800">Location Map</h3>
                                     {expandedMapComplaint.address && (
-                                        <p className="text-xs text-slate-500 font-medium">
+                                        <p className="text-xs text-text/50 font-medium">
                                             {expandedMapComplaint.address.line1}, {expandedMapComplaint.address.district}
                                         </p>
                                     )}
                                 </div>
-                                <button onClick={() => setExpandedMapComplaint(null)} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-colors">
+                                <button onClick={() => setExpandedMapComplaint(null)} className="p-2 hover:bg-slate-100 rounded-xl text-text/40 transition-colors">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -460,11 +460,11 @@ const MyComplaints = () => {
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl relative"
+                            className="bg-surface rounded-2xl p-6 w-full max-w-md shadow-2xl relative"
                         >
                             <button 
                                 onClick={() => setEditingComplaint(null)}
-                                className="absolute top-4 right-4 text-slate-400 hover:bg-slate-100 p-2 rounded-xl transition-colors"
+                                className="absolute top-4 right-4 text-text/40 hover:bg-slate-100 p-2 rounded-xl transition-colors"
                             >
                                 <X size={20} />
                             </button>
@@ -472,7 +472,7 @@ const MyComplaints = () => {
                             
                             <form onSubmit={handleEditSubmit} className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
+                                    <label className="block text-xs font-bold text-text/50 uppercase tracking-wider mb-2">Category</label>
                                     <CustomSelect 
                                         value={editingComplaint.category}
                                         onChange={(e) => setEditingComplaint({...editingComplaint, category: e.target.value})}
@@ -489,11 +489,11 @@ const MyComplaints = () => {
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
+                                    <label className="block text-xs font-bold text-text/50 uppercase tracking-wider mb-2">Description</label>
                                     <textarea 
                                         value={editingComplaint.description}
                                         onChange={(e) => setEditingComplaint({...editingComplaint, description: e.target.value})}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium h-32 resize-none"
+                                        className="w-full px-4 py-3 rounded-xl border border-border bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium h-32 resize-none"
                                         required
                                     ></textarea>
                                 </div>
@@ -502,7 +502,7 @@ const MyComplaints = () => {
                                     <button 
                                         type="button" 
                                         onClick={() => setEditingComplaint(null)}
-                                        className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors"
+                                        className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-text/80 rounded-xl font-bold text-sm transition-colors"
                                     >
                                         Cancel
                                     </button>

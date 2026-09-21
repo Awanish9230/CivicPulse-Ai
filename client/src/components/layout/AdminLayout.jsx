@@ -11,6 +11,7 @@ import {
     History, UserCircle, Search, LogOut, ChevronDown, ChevronRight, Eye, EyeOff
 } from 'lucide-react';
 import { NotificationBell } from '../notifications/NotificationBell';
+import ThemeToggle from '../common/ThemeToggle';
 
 const adminNavGroups = [
     {
@@ -243,6 +244,7 @@ const AdminLayout = () => {
                         />
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
+                        <ThemeToggle compact />
                         <NotificationBell />
                         <div className="hidden md:flex items-center gap-3 pl-4 border-l border-slate-200">
                             <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold">
