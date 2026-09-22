@@ -24,6 +24,10 @@
 
 ---
 
+## 🎬 Project Demo
+
+[▶️ Watch the 20-second CivicPulse AI demo](./civicpulse-ai-demo.mp4)
+
 ## 📌 Overview
 
 **CivicPulse AI** is a full-stack civic technology platform designed to bridge the gap between citizens and municipal authorities.
