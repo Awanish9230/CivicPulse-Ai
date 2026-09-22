@@ -26,7 +26,7 @@
 
 ## 🎬 Project Demo
 
-[![CivicPulse AI Demo](https://youtu.be/q6MfrdSDaZY)
+[CivicPulse AI Demo](https://youtu.be/q6MfrdSDaZY)
 
 **▶️ Watch the CivicPulse AI Demo**
 
