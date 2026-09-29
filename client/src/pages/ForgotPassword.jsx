@@ -9,7 +9,6 @@ const ForgotPassword = () => {
     const [searchParams] = useSearchParams();
     const role = searchParams.get('role') || 'citizen';
     
-    // Determine styles and links based on role
     const isAuthority = role === 'authority';
     const isAdmin = role === 'admin';
     
@@ -44,7 +43,7 @@ const ForgotPassword = () => {
 
     return (
         <div className={`min-h-screen relative overflow-hidden flex items-center justify-center p-2 sm:p-4 md:p-8 ${isAdmin ? 'bg-orange-950' : isAuthority ? 'bg-emerald-950' : 'bg-[#0F172A]'}`}>
-            {/* Optimized Background without expensive blurs/mix-blend-modes */}
+            {}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <motion.div 
                     animate={{ opacity: [0.4, 0.6, 0.4] }}

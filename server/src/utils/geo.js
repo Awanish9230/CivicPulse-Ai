@@ -1,8 +1,7 @@
 export const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    // Haversine formula
     const toRad = (value) => (value * Math.PI) / 180;
     
-    const R = 6371e3; // Earth radius in meters
+    const R = 6371e3; 
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
     
@@ -13,5 +12,5 @@ export const calculateDistance = (lat1, lon1, lat2, lon2) => {
         
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     
-    return R * c; // distance in meters
+    return R * c; 
 };

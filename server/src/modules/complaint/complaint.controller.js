@@ -12,7 +12,6 @@ import { apiKeyManager } from '../../utils/apiKeyManager.js';
 export const resolveComplaint = asyncHandler(async (req, res) => {
     const { complaintId } = req.params;
 
-    // Check authority role (assuming `req.user.role === 'Authority'`)
     if (req.user.role !== 'Authority') {
         throw new ApiError(403, "Only authorities can resolve complaints");
     }
@@ -27,21 +26,17 @@ export const resolveComplaint = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Complaint is already resolved");
     }
 
-    // Delete excess images from Cloudinary to free up storage limits
     if (complaint.imageUrls && complaint.imageUrls.length > 1) {
-        // Keep the first image, destroy the rest
         for (let i = 1; i < complaint.imageUrls.length; i++) {
             await deleteFromCloudinary(complaint.imageUrls[i]);
         }
         
-        // Update database array to only contain the first image
         complaint.imageUrls = [complaint.imageUrls[0]];
     }
 
     complaint.status = "Resolved";
     await complaint.save();
 
-    // Broadcast to users that it's resolved
     try {
         const { getIo } = await import('../../config/socket.js');
         getIo().emit('complaint_status_update', complaint);
@@ -74,7 +69,6 @@ export const addOfficialReply = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Reply content is required");
     }
     
-    // Use the current user's anonymous ID or default to "City Official"
     const authorityName = req.user?.anonymousId || "City Official";
     
     const complaint = await Complaint.findById(complaintId);
@@ -110,16 +104,14 @@ export const addOfficialReply = asyncHandler(async (req, res) => {
 
 export const createComplaint = asyncHandler(async (req, res) => {
 
-    // 1. Get complaint details
     const {
         category,
         description,
         coordinates,
-        address, // stringified JSON
-        language = 'en' // Pass language from frontend if possible
+        address, 
+        language = 'en' 
     } = req.body;
 
-    // 2. Validate required fields
     if (!category || !description || !coordinates) {
         throw new ApiError(
             400,
@@ -127,7 +119,6 @@ export const createComplaint = asyncHandler(async (req, res) => {
         );
     }
 
-    // 3. Parse and validate coordinates
     let parsedCoordinates = coordinates;
     try {
         if (typeof parsedCoordinates === "string") {
@@ -141,7 +132,6 @@ export const createComplaint = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Coordinates must be [longitude, latitude]");
     }
 
-    // Parse address if provided
     let parsedAddress = null;
     if (address) {
         try {
@@ -151,8 +141,6 @@ export const createComplaint = asyncHandler(async (req, res) => {
         }
     }
 
-    // 4. Geo-spatial Deduplication & Merging
-    // Find active complaints of the same category within 50 meters
     const existingIssue = await Complaint.findOne({
         category,
         status: { $in: ['Submitted', 'Verified', 'Assigned', 'In Progress'] },
@@ -162,18 +150,16 @@ export const createComplaint = asyncHandler(async (req, res) => {
                     type: "Point",
                     coordinates: parsedCoordinates
                 },
-                $maxDistance: 50 // 50 meters radius
+                $maxDistance: 50 
             }
         }
     });
 
     if (existingIssue) {
-        // Prevent the same user from spamming the merge feature within a short time
         if (existingIssue.reportedBy === req.user.anonymousId && (Date.now() - existingIssue.createdAt.getTime() < 5 * 60 * 1000)) {
             throw new ApiError(409, "You have already submitted this exact complaint recently.");
         }
 
-        // Merge this new report into the existing one
         existingIssue.supportCount += 1;
         if (!existingIssue.upvotedBy.includes(req.user.anonymousId)) {
             existingIssue.upvotedBy.push(req.user.anonymousId);
@@ -185,7 +171,6 @@ export const createComplaint = asyncHandler(async (req, res) => {
         );
     }
 
-    // 5. Validate images
     const imageFiles = req.files;
 
     if (!imageFiles || imageFiles.length === 0) {
@@ -199,7 +184,6 @@ export const createComplaint = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Maximum of 5 images allowed");
     }
 
-    // 5. Upload images to Cloudinary
     const uploadedImages = [];
     for (const file of imageFiles) {
         const uploaded = await uploadOnCloudinary(file.buffer);
@@ -215,11 +199,9 @@ export const createComplaint = asyncHandler(async (req, res) => {
         );
     }
 
-    // 6. Translation handling (Auto-Translation if not English)
     let finalDescription = description;
     let originalDescriptionText = description;
     
-    // Let's use Gemini to quickly check and translate if needed
     try {
         const geminiKey = apiKeyManager.getGeminiKey();
         if (!geminiKey) throw new Error("No Gemini API Key available.");
@@ -237,7 +219,6 @@ export const createComplaint = asyncHandler(async (req, res) => {
         console.error("Auto-translation failed, falling back to original text:", e);
     }
 
-    // 7. Create complaint
     const complaint = await Complaint.create({
         reportedBy: req.user.anonymousId,
         category,
@@ -249,12 +230,10 @@ export const createComplaint = asyncHandler(async (req, res) => {
         originalDescription: originalDescriptionText,
         originalLanguage: language,
         imageUrls: uploadedImages,
-        // For backwards compatibility, set the first image as imageUrl as well
         imageUrl: uploadedImages[0],
         ...(parsedAddress && { address: parsedAddress }),
     });
 
-    // Fetch complaint with populated data if necessary, or just emit it
     try {
         const { getIo } = await import('../../config/socket.js');
         getIo().emit('new_complaint', complaint);
@@ -270,7 +249,6 @@ export const createComplaint = asyncHandler(async (req, res) => {
             actionUrl: `/complaints/${complaint._id}`
         });
 
-        // Notify Admins and Authorities
         const authorities = await User.find({ role: { $in: ['Admin', 'Authority'] } });
         for (const auth of authorities) {
             await notificationService.createNotification({
@@ -287,14 +265,12 @@ export const createComplaint = asyncHandler(async (req, res) => {
         console.error("Socket error on create complaint", e);
     }
 
-    // Gamification for creating a complaint
     let newlyEarnedBadges = [];
     try {
         const user = await User.findById(req.user._id);
         if (user) {
-            user.points = (user.points || 0) + 10; // 10 points for a new complaint
+            user.points = (user.points || 0) + 10; 
             
-            // Check for first complaint badge
             if (!user.badges.includes("First Step")) {
                 user.badges.push("First Step");
                 newlyEarnedBadges.push("First Step");
@@ -329,7 +305,6 @@ export const createComplaint = asyncHandler(async (req, res) => {
         console.error("Failed to award gamification points for complaint creation", e);
     }
 
-    // 7. Send response
     return res.status(201).json(
         new ApiResponse(
             201,
@@ -342,13 +317,12 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
 export const getMyComplaints = asyncHandler(async (req, res) => {
 
-    // Fetch all complaints created by the logged-in user (including past rotated identities)
     const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
 
     const complaints = await Complaint.find({
         reportedBy: { $in: allUserIdentities },
     }).sort({
-        createdAt: -1,                  //sort them in newset to oldest
+        createdAt: -1,                  
     }).populate('assignedTo', 'name authorityLevel department');
 
     return res.status(200).json(
@@ -364,17 +338,14 @@ export const getMyComplaints = asyncHandler(async (req, res) => {
 
 export const deleteComplaint = asyncHandler(async (req, res) => {
 
-    // 1. Get complaint id
     const { complaintId } = req.params;
 
-    // 2. Find complaint
     const complaint = await Complaint.findById(complaintId);
 
     if (!complaint) {
         throw new ApiError(404, "Complaint not found");
     }
 
-    // 3. Check ownership
     const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
     if (!allUserIdentities.includes(complaint.reportedBy)) {
         throw new ApiError(
@@ -383,7 +354,6 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
         );
     }
 
-    // 4. Allow deletion only before resolution
     if (complaint.status === "Resolved" || complaint.status === "Closed") {
         throw new ApiError(
             400,
@@ -391,13 +361,9 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
         );
     }
 
-    // 5. Delete complaint
     await Complaint.findByIdAndDelete(complaintId);
 
-    // Later:
-    // Delete image from Cloudinary using publicId
 
-    // 6. Response
     return res.status(200).json(
         new ApiResponse(
             200,
@@ -413,15 +379,12 @@ export const getAllComplaints = asyncHandler(async (req, res) => {
     
     let query = {};
     
-    // If no location is provided, restrict to ONLY the user's own complaints
     if (!lat || !lng) {
         const allUserIdentities = [req.user.anonymousId, ...(req.user.pastAnonymousIds || [])];
         query = { reportedBy: { $in: allUserIdentities } };
     } 
-    // If location is provided and a specific radius (not 'All') is selected
     else if (radius && radius !== 'All') {
         const radiusInMeters = parseInt(radius) * 1000;
-        // Earth radius in radians: distance in meters / 6378100
         const radiusInRadians = radiusInMeters / 6378100;
         
         query = {
@@ -433,11 +396,8 @@ export const getAllComplaints = asyncHandler(async (req, res) => {
         };
     }
 
-    // Role-based feed filtering
     if (req.user && req.user.role === 'Authority') {
         const allowedCategories = getCategoriesForDepartment(req.user.department);
-        // If there's an existing category query, merge it with $and, otherwise just set it.
-        // But currently there isn't, so we just set or overwrite.
         if (Object.keys(query).length === 0) {
             query.category = { $in: allowedCategories };
         } else {
@@ -467,7 +427,6 @@ export const upvoteComplaint = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Complaint not found");
     }
 
-    // Increment support count
     complaint.supportCount = (complaint.supportCount || 0) + 1;
     await complaint.save();
 
@@ -532,13 +491,12 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
             comment,
             updatedAt: Date.now()
         };
-        complaint.status = 'Closed'; // Permanently closed
+        complaint.status = 'Closed'; 
         complaint.officialReplies.push({
             authorityName: req.user.name || 'Citizen',
             content: 'Resolution Accepted by Citizen.' + (comment ? ' Comment: ' + comment : '')
         });
         
-        // Gamification: Award points and badges
         try {
             const user = await User.findById(req.user._id);
             if (user) {
@@ -560,13 +518,12 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
             comment,
             updatedAt: Date.now()
         };
-        complaint.status = 'In Progress'; // Reopen
+        complaint.status = 'In Progress'; 
 
-        // Escalate
         const currentLevel = complaint.escalationLevel;
-        let nextLevel = 'Senior'; // Default to Senior if Junior
+        let nextLevel = 'Senior'; 
         if (currentLevel === 'Senior') nextLevel = 'HOD';
-        else if (currentLevel === 'HOD') nextLevel = 'HOD'; // Max level
+        else if (currentLevel === 'HOD') nextLevel = 'HOD'; 
 
         complaint.escalationLevel = nextLevel;
 
@@ -581,7 +538,6 @@ export const submitResolutionFeedback = asyncHandler(async (req, res) => {
     complaint.lastActivityAt = Date.now();
     await complaint.save();
 
-    // Notify assigned authority if exists
     if (complaint.assignedTo) {
         try {
             await notificationService.createNotification({

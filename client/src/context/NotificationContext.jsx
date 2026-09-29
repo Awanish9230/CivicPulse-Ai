@@ -35,7 +35,6 @@ export const NotificationProvider = ({ children }) => {
         }
     }, [isAuthenticated]);
 
-    // Request browser notification permissions
     const requestBrowserPermission = async () => {
         if ('Notification' in window) {
             const permission = await Notification.requestPermission();
@@ -68,7 +67,6 @@ export const NotificationProvider = ({ children }) => {
                             });
                         }
                         
-                        // Send subscription to server
                         await api.post('/notification/subscribe', { subscription });
                         console.log('Subscribed to web push!');
                     } catch (err) {
@@ -87,7 +85,6 @@ export const NotificationProvider = ({ children }) => {
             fetchInitialNotifications();
             requestBrowserPermission();
             
-            // Connect socket
             newSocket = io(SOCKET_URL);
             setSocket(newSocket);
 

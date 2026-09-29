@@ -5,7 +5,6 @@ import asyncHandler from "../utils/asynchandler.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
 
-    // Get token from cookie or Authorization header
     const token =
         req.cookies?.accessToken ||
         req.header("Authorization")?.replace("Bearer ", "");
@@ -14,7 +13,6 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         throw new ApiError(401, "Unauthorized request");
     }
 
-    // Verify JWT
     let decodedToken;
     try {
         decodedToken = jwt.verify(
@@ -25,14 +23,12 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         throw new ApiError(401, error?.message || "Invalid access token");
     }
 
-    // Find user
     const user = await User.findById(decodedToken._id).select("-password -refreshToken");
 
     if (!user) {
         throw new ApiError(401, "Invalid access token");
     }
 
-    // Attach user and plain anonymousId to request
     req.user = user;
     req.user.anonymousId = decodedToken.anonymousId;
     req.user.pastAnonymousIds = decodedToken.pastAnonymousIds || [];
@@ -58,7 +54,6 @@ export const checkRestrictedFeature = (feature) => {
         const isTemporarilyBanned = req.user.banUntil && new Date(req.user.banUntil) > Date.now();
         
         if (isPermanentlyBanned || isTemporarilyBanned) {
-            // Check if this specific feature is restricted for them
             if (req.user.restrictedFeatures && req.user.restrictedFeatures.includes(feature)) {
                 return next(new ApiError(403, `You are currently banned from accessing the ${feature} feature. Please submit an appeal.`));
             }

@@ -25,13 +25,11 @@ const ManageUsers = () => {
         { value: 'banned', label: 'Banned' },
     ];
 
-    // Modal State
     const [selectedMember, setSelectedMember] = useState(null);
     const [memberDetails, setMemberDetails] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [expandedMapId, setExpandedMapId] = useState(null);
 
-    // Edit State
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({ role: '', isBanned: false });
     const [saving, setSaving] = useState(false);
@@ -377,7 +375,7 @@ const ManageUsers = () => {
                                                             </button>
                                                         </div>
 
-                                                        {/* Map Expansion */}
+                                                        {}
                                                         <AnimatePresence>
                                                             {expandedMapId === task._id && task.location?.coordinates && (
                                                                 <motion.div 

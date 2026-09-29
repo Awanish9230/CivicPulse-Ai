@@ -13,13 +13,11 @@ const ManageAuthorities = () => {
     const [authorities, setAuthorities] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Modal State
     const [selectedMember, setSelectedMember] = useState(null);
     const [memberDetails, setMemberDetails] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [expandedMapId, setExpandedMapId] = useState(null);
 
-    // Edit State
     const [isEditing, setIsEditing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -249,7 +247,7 @@ const ManageAuthorities = () => {
                 </div>
             </div>
 
-            {/* Deep Dive Modal */}
+            {}
             <AnimatePresence>
                 {selectedMember && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -305,7 +303,7 @@ const ManageAuthorities = () => {
 
                                     <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
 
-                                        {/* Edit Mode Panel */}
+                                        {}
                                         <AnimatePresence>
                                             {isEditing && (
                                                 <motion.div 
@@ -417,7 +415,7 @@ const ManageAuthorities = () => {
                                                             </button>
                                                         </div>
 
-                                                        {/* Map Expansion */}
+                                                        {}
                                                         <AnimatePresence>
                                                             {expandedMapId === task._id && task.location?.coordinates && (
                                                                 <motion.div 

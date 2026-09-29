@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const ImageCarousel = ({ images, alt = "Image", className = "" }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    // Normalize images array (handle cases where it might be a single string or undefined)
     const normalizedImages = Array.isArray(images) ? images.filter(Boolean) : (images ? [images] : []);
 
     if (normalizedImages.length === 0) return null;
@@ -32,7 +31,7 @@ const ImageCarousel = ({ images, alt = "Image", className = "" }) => {
             
             {normalizedImages.length > 1 && (
                 <>
-                    {/* Navigation Arrows */}
+                    {}
                     <div className="absolute inset-0 flex items-center justify-between p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
                             onClick={prevImage}
@@ -48,7 +47,7 @@ const ImageCarousel = ({ images, alt = "Image", className = "" }) => {
                         </button>
                     </div>
 
-                    {/* Pagination Dots */}
+                    {}
                     <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
                         {normalizedImages.map((_, idx) => (
                             <div 
@@ -60,7 +59,7 @@ const ImageCarousel = ({ images, alt = "Image", className = "" }) => {
                         ))}
                     </div>
 
-                    {/* Image Counter Badge */}
+                    {}
                     <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded-md backdrop-blur-md">
                         {currentIndex + 1} / {normalizedImages.length}
                     </div>

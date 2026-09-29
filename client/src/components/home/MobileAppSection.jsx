@@ -43,7 +43,7 @@ const MobileAppSection = () => {
 
                     <div className="hidden md:flex w-full md:w-1/2 justify-center relative">
                         <div className="relative">
-                            {/* Phone Mockup */}
+                            {}
                             <div className="w-[280px] h-[560px] bg-white rounded-[48px] border-[8px] border-slate-100 p-2 shadow-xl">
                                 <div className="w-full h-full bg-slate-50/50 rounded-[36px] border border-slate-100 overflow-hidden flex flex-col items-center justify-center">
                                     <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6">
@@ -57,7 +57,7 @@ const MobileAppSection = () => {
                                 </div>
                             </div>
 
-                            {/* QR Code */}
+                            {}
                             <div className="absolute -bottom-6 -right-6 bg-white p-5 rounded-2xl shadow-lg border border-slate-100 flex flex-col items-center">
                                 <QrCode size={72} className="text-slate-800" strokeWidth={1.5} />
                                 <p className="text-[10px] text-slate-500 mt-2 font-bold tracking-wide uppercase">Scan to Open</p>

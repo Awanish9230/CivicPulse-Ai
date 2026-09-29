@@ -11,7 +11,6 @@ const InstallPromptBanner = () => {
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isMobile = /android|iphone|ipad|ipod/.test(userAgent);
         
-        // Show banner if they are on a mobile device (or emulator) and not already installed
         if (isMobile && !isStandalone) {
             const timer = setTimeout(() => setIsVisible(true), 2000);
             return () => clearTimeout(timer);

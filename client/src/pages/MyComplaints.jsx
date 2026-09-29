@@ -58,7 +58,7 @@ const MyComplaints = () => {
             return;
         }
 
-        if (comment === null) return; // User cancelled prompt
+        if (comment === null) return; 
 
         try {
             await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/complaint/${id}/feedback`, {
@@ -166,7 +166,7 @@ const MyComplaints = () => {
 
     return (
         <div className="max-w-[1600px] mx-auto pb-20 px-4 md:px-6">
-            {/* Header */}
+            {}
             <div className="sticky top-0 z-30 bg-[#F8FAFC]/90 backdrop-blur-xl pt-6 pb-4 border-b border-border/50 mb-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
@@ -195,7 +195,7 @@ const MyComplaints = () => {
                     </div>
                 </div>
 
-                {/* Filters */}
+                {}
                 <div className="flex items-center gap-1 mt-5 overflow-x-auto no-scrollbar bg-slate-100/50 p-1 rounded-xl w-full md:w-max border border-border/50">
                     {['All', 'Active', 'Verified', 'In Progress', 'Resolved'].map(f => (
                         <button 
@@ -213,7 +213,7 @@ const MyComplaints = () => {
                 </div>
             </div>
 
-            {/* Content */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
                 {loading ? (
                     Array.from({ length: 6 }).map((_, i) => (
@@ -253,7 +253,7 @@ const MyComplaints = () => {
                                 >
                                     {slaRisk && <div className="absolute top-0 left-0 w-full h-1 bg-red-500 rounded-t-[1rem]"></div>}
                                     
-                                    {/* Header Inline */}
+                                    {}
                                     <div className="flex items-center gap-2 mb-3">
                                         <span className="text-[10px] font-bold text-text/40 font-mono tracking-wider">#{c._id.slice(-6).toUpperCase()}</span>
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ml-auto ${
@@ -264,7 +264,7 @@ const MyComplaints = () => {
                                         {slaRisk && <AlertTriangle size={14} className="text-red-500 animate-pulse" />}
                                     </div>
                                     
-                                    {/* Image */}
+                                    {}
                                     {(c.imageUrls?.length > 0 || c.imageUrl) && (
                                         <div className="mb-3 rounded-xl overflow-hidden border border-border/50 bg-slate-50 shrink-0 h-36 relative">
                                             <ImageCarousel images={c.imageUrls?.length > 0 ? c.imageUrls : [c.imageUrl]} />
@@ -274,21 +274,21 @@ const MyComplaints = () => {
                                         </div>
                                     )}
 
-                                    {/* Description */}
+                                    {}
                                     <div className="mb-3 flex-1 min-h-[40px]">
                                         <p className="text-text/80 text-sm leading-relaxed line-clamp-2" title={c.description}>
                                             {c.description}
                                         </p>
                                     </div>
                                     
-                                    {/* Metadata */}
+                                    {}
                                     <div className="flex items-center gap-4 mb-4 text-[11px] font-bold text-text/50">
                                         <span className="flex items-center gap-1"><Clock size={12} /> {new Date(c.createdAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})}</span>
                                         <span className="flex items-center gap-1"><ThumbsUp size={12} /> {c.supportCount || c.upvotes || 0}</span>
                                         {c.expectedCompletionDate && <span className="flex items-center gap-1 text-blue-600"><CheckCircle size={12} /> ETA: {new Date(c.expectedCompletionDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>}
                                     </div>
 
-                                    {/* Assigned Official */}
+                                    {}
                                     {c.assignedTo && (
                                         <div className="mb-4 bg-indigo-50 rounded-xl p-3 border border-indigo-100 flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-indigo-200 text-indigo-700 flex items-center justify-center text-xs font-black border border-indigo-300 shrink-0">
@@ -306,12 +306,12 @@ const MyComplaints = () => {
                                         </div>
                                     )}
 
-                                    {/* Status Progress */}
+                                    {}
                                     <div className="mb-4 bg-slate-50 rounded-xl p-3 border border-border/50">
                                         {renderStatusDots(c.status, isRejected, slaRisk)}
                                     </div>
 
-                                    {/* Resolution Verification Block */}
+                                    {}
                                     {c.status === 'Resolved' && c.resolutionFeedback && c.resolutionFeedback.status === 'Pending' && (
                                         <div className="mb-4 bg-emerald-50 rounded-xl p-4 border border-emerald-100">
                                             <h4 className="font-bold text-emerald-800 text-sm mb-2 flex items-center gap-2">
@@ -351,7 +351,7 @@ const MyComplaints = () => {
                                         </div>
                                     )}
 
-                                    {/* Official Responses Accordion */}
+                                    {}
                                     {c.officialReplies && c.officialReplies.length > 0 && (
                                         <div className="mb-4">
                                             <button 
@@ -377,7 +377,7 @@ const MyComplaints = () => {
                                         </div>
                                     )}
                                     
-                                    {/* Footer Actions */}
+                                    {}
                                     <div className="mt-auto flex items-center gap-2 pt-3 border-t border-border/50">
                                         {(c.status !== 'Resolved' && c.status !== 'Closed') && (
                                             <>
@@ -400,7 +400,7 @@ const MyComplaints = () => {
                 )}
             </div>
 
-            {/* Map Modal */}
+            {}
             <AnimatePresence>
                 {expandedMapComplaint && (
                     <motion.div 
@@ -447,7 +447,7 @@ const MyComplaints = () => {
                 )}
             </AnimatePresence>
 
-            {/* Edit Modal (Preserved but styled to match) */}
+            {}
             <AnimatePresence>
                 {editingComplaint && (
                     <motion.div 
@@ -519,7 +519,7 @@ const MyComplaints = () => {
                 )}
             </AnimatePresence>
 
-            {/* Camera Overlay Modal */}
+            {}
             <AnimatePresence>
                 {isCameraOpen && (
                     <motion.div
@@ -536,7 +536,7 @@ const MyComplaints = () => {
                 )}
             </AnimatePresence>
 
-            {/* Report Submission Modal */}
+            {}
             <AnimatePresence>
                 {captureData && (
                     <ReportModal 

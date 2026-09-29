@@ -9,7 +9,6 @@ import CustomSelect from '../common/CustomSelect';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Fix for default Leaflet marker icons in React
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -19,7 +18,6 @@ L.Icon.Default.mergeOptions({
 
 const CATEGORIES = ['Road', 'Electricity', 'Garbage', 'Water', 'Drainage', 'Traffic', 'Illegal Dumping', 'Street Light', 'Construction', 'Animal', 'Others'];
 
-// Component to handle map clicks and marker dragging
 const LocationMarker = ({ position, setPosition, fetchAddress }) => {
     const markerRef = useRef(null);
 
@@ -56,7 +54,7 @@ const LocationMarker = ({ position, setPosition, fetchAddress }) => {
 const ReportModal = ({ captureData, onClose, onSuccess }) => {
     const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
-    const [position, setPosition] = useState(captureData?.gps || { lat: 28.6139, lng: 77.2090 }); // Default to New Delhi if no GPS
+    const [position, setPosition] = useState(captureData?.gps || { lat: 28.6139, lng: 77.2090 }); 
     const [address, setAddress] = useState({
         line1: '',
         line2: '',
@@ -81,7 +79,6 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
         };
     }, []);
 
-    // AI Analysis
     const handleAutoFill = async () => {
         if (!captureData?.photos?.[0]) {
             toast.error("No photo found to analyze");
@@ -111,7 +108,6 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
         }
     };
 
-    // Reverse Geocode
     const fetchAddress = async (lat, lng) => {
         if (!isOnline) return;
         setIsFetchingAddress(true);
@@ -137,7 +133,6 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
     };
 
     useEffect(() => {
-        // Reverse Geocode
         const fetchInitialAddress = async () => {
             try {
                 if (!isOnline) {
@@ -151,7 +146,6 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                     return;
                 }
                 const { lat, lng } = captureData.gps;
-                // Using OpenStreetMap Nominatim for free reverse geocoding
                 const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
                 
                 if (res.data && res.data.address) {
@@ -207,7 +201,6 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
 
             const formData = new FormData();
             
-            // Convert multiple Base64 photos to Blobs
             for (let i = 0; i < captureData.photos.length; i++) {
                 const response = await fetch(captureData.photos[i]);
                 const blob = await response.blob();
@@ -219,7 +212,6 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
             formData.append('description', description);
             formData.append('language', language);
             
-            // Format coordinates as [longitude, latitude] for GeoJSON
             const coords = [position.lng, position.lat];
             formData.append('coordinates', JSON.stringify(coords));
             
@@ -282,7 +274,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
 
                     <form id="report-form" onSubmit={handleSubmit} className="space-y-5">
                         
-                        {/* Interactive Map */}
+                        {}
                         <div className="bg-slate-50/80 border border-slate-200/60 rounded-2xl overflow-hidden relative shadow-sm">
                             <div className="bg-white/80 backdrop-blur-md p-3 flex items-center gap-2 border-b border-slate-200/60">
                                 <Navigation size={16} className="text-primary" />
@@ -299,7 +291,7 @@ const ReportModal = ({ captureData, onClose, onSuccess }) => {
                             </div>
                         </div>
 
-                        {/* Editable Address Fields */}
+                        {}
                         <div className="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-5 shadow-sm">
                             <label className="block text-sm font-black text-slate-700 mb-4 flex items-center justify-between">
                                 <span className="flex items-center gap-2">

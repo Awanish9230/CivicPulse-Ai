@@ -22,7 +22,6 @@ router.patch('/:id/read', markAsRead);
 router.delete('/', deleteAllNotifications);
 router.delete('/:id', deleteNotification);
 
-// Push Notification Routes
 router.post('/subscribe', subscribeToPush);
 router.post('/unsubscribe', unsubscribeFromPush);
 

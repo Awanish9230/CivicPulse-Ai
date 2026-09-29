@@ -59,19 +59,16 @@ const Dashboard = () => {
         resolved: 0
     });
     
-    // Geospatial State
     const [radius, setRadius] = useState('10');
     const [location, setLocation] = useState(null);
     const [locationDenied, setLocationDenied] = useState(false);
     const [showRadiusMap, setShowRadiusMap] = useState(true);
 
-    // Reply State
     const [activeReplyId, setActiveReplyId] = useState(null);
     const [replyContent, setReplyContent] = useState('');
     const [replying, setReplying] = useState(false);
 
     const handleUpvote = async (complaintId) => {
-        // Optimistic local update using LocalFirst setter
         setComplaints(prev => prev.map(c => 
             c._id === complaintId 
                 ? { ...c, supportCount: (c.supportCount || 0) + 1, isSupported: true } 
@@ -84,7 +81,6 @@ const Dashboard = () => {
             });
             toast.success("Impact footprint recorded!");
         } catch (error) {
-            // Revert on failure
             setComplaints(prev => prev.map(c => 
                 c._id === complaintId 
                     ? { ...c, supportCount: Math.max(0, (c.supportCount || 1) - 1), isSupported: false } 
@@ -105,7 +101,7 @@ const Dashboard = () => {
             toast.success("Reply posted successfully");
             setReplyContent('');
             setActiveReplyId(null);
-            fetchComplaints(); // Refresh to see updates
+            fetchComplaints(); 
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to post reply");
         } finally {
@@ -139,7 +135,6 @@ const Dashboard = () => {
     };
 
     useEffect(() => {
-        // Socket listeners
         if (socket) {
             const handleNewComplaint = (complaint) => {
                 setComplaints(prev => [complaint, ...prev]);
@@ -152,7 +147,7 @@ const Dashboard = () => {
             };
 
             const handleComplaintResolved = () => {
-                fetchComplaints(); // Refresh to see updates
+                fetchComplaints(); 
             };
 
             socket.on('newComplaint', handleNewComplaint);
@@ -192,11 +187,9 @@ const Dashboard = () => {
             fetchComplaints(null, null, null);
         }
 
-        // Socket.io connection for real-time updates
         const socket = io(`${import.meta.env.VITE_API_URL}`);
         
         socket.on('new_complaint', (newComplaint) => {
-            // Only add if it's within radius or if we don't have location (so it's just ours)
             setComplaints(prev => {
                 const updated = [newComplaint, ...prev];
                 calculateStats(updated);
@@ -242,7 +235,7 @@ const Dashboard = () => {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
             className="flex flex-col h-full max-w-7xl mx-auto space-y-8 pb-12 w-full overflow-x-hidden"
         >
-            {/* Header */}
+            {}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border/50 pb-6">
                 <div>
                     <h1 className="text-3xl font-black text-text tracking-tight mb-1">Civic Dashboard</h1>
@@ -265,7 +258,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Quick Stats - Bento Box */}
+            {}
             <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {complaintsLoading ? (
                     <>
@@ -321,10 +314,10 @@ const Dashboard = () => {
                         </motion.div>
                     </>
                 )}
-            </motion.div>            {/* Main Content Area */}
+            </motion.div>            {}
             <div className="flex flex-col gap-8 flex-1">
                 
-                {/* Map Area Placeholder */}
+                {}
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -369,7 +362,7 @@ const Dashboard = () => {
                     </div>
                     <div className="flex-1 bg-surface relative overflow-hidden group">
                         <MapContainer 
-                            center={location ? [location.lat, location.lng] : [28.6139, 77.2090]} // default center (New Delhi)
+                            center={location ? [location.lat, location.lng] : [28.6139, 77.2090]} 
                             zoom={location ? (radius === 'All' ? 5 : (radius > 50 ? 7 : 11)) : 12} 
                             scrollWheelZoom={true} 
                             className="h-full w-full z-0"
@@ -383,7 +376,7 @@ const Dashboard = () => {
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                             />
                             
-                            {/* Render Circle for Radius if location exists and radius is not 'All' */}
+                            {}
                             {location && !locationDenied && showRadiusMap && radius !== 'All' && (
                                 <Circle 
                                     center={[location.lat, location.lng]} 
@@ -409,13 +402,13 @@ const Dashboard = () => {
                                 
                                 return (
                                     <React.Fragment key={coordKey}>
-                                        {/* Heatmap Glow (large, transparent) */}
+                                        {}
                                         <CircleMarker 
                                             center={[lat, lng]}
                                             pathOptions={{ color: 'transparent', fillColor: color, fillOpacity: glowOpacity }}
                                             radius={25 + Math.min(groupComplaints.length * 2, 10)}
                                         />
-                                        {/* Core Point (small, solid) */}
+                                        {}
                                         <CircleMarker 
                                             center={[lat, lng]}
                                             pathOptions={{ color: 'white', weight: 1, fillColor: color, fillOpacity: 0.8 }}
@@ -443,7 +436,7 @@ const Dashboard = () => {
                     </div>
                 </motion.div>
 
-                {/* Complaint Feed (Cards) */}
+                {}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -486,7 +479,7 @@ const Dashboard = () => {
                                 key={c._id} 
                                 className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-5 shadow-sm border border-slate-200/60 group hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300 w-full flex flex-col"
                             >
-                                {/* Image */}
+                                {}
                                 <div className="w-full h-52 rounded-[2rem] overflow-hidden relative bg-slate-50 mb-5 shrink-0 border border-slate-100">
                                     {(c.imageUrls?.length > 0 || c.imageUrl) ? (
                                         <ImageCarousel images={c.imageUrls?.length > 0 ? c.imageUrls : [c.imageUrl]} />
@@ -509,7 +502,7 @@ const Dashboard = () => {
                                     </div>
                                 </div>
 
-                                {/* Content */}
+                                {}
                                 <div className="flex-1 flex flex-col justify-between px-1">
                                     <div>
                                         <div className="flex justify-between items-start mb-3">

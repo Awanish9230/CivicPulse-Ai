@@ -32,32 +32,27 @@ const AuthorityAnalytics = () => {
         }
     };
 
-    // Analytics Calculations
     const totalComplaints = complaints.length;
     const resolvedCount = complaints.filter(c => c.status === 'Resolved' || c.status === 'Closed').length;
     const criticalCount = complaints.filter(c => c.priority === 'Critical').length;
     const pendingCount = complaints.filter(c => c.status === 'Submitted' || c.status === 'Verified').length;
     const resolutionRate = totalComplaints ? Math.round((resolvedCount / totalComplaints) * 100) : 0;
 
-    // Category Breakdown
     const categoryCounts = complaints.reduce((acc, c) => {
         acc[c.category] = (acc[c.category] || 0) + 1;
         return acc;
     }, {});
     
-    // Sort categories by highest count
     const topCategories = Object.entries(categoryCounts)
         .map(([name, count]) => ({ name, count, percentage: totalComplaints ? (count / totalComplaints) * 100 : 0 }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
 
-    // Status Pipeline
     const statusCounts = complaints.reduce((acc, c) => {
         acc[c.status] = (acc[c.status] || 0) + 1;
         return acc;
     }, {});
 
-    // Chart 1: Time-Series Trend Data
     const processTrendData = () => {
         const trend = {};
         const sorted = [...complaints].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
@@ -77,7 +72,6 @@ const AuthorityAnalytics = () => {
     };
     const trendData = processTrendData();
 
-    // Chart 2: Donut Data for Categories
     const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#64748b'];
     const pieData = Object.entries(categoryCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
 
@@ -149,7 +143,7 @@ const AuthorityAnalytics = () => {
                 </div>
             </div>
 
-            {/* KPI Overview Cards */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <motion.div 
                     initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
@@ -213,7 +207,7 @@ const AuthorityAnalytics = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-                {/* Category Breakdown (Donut Chart) */}
+                {}
                 <motion.div 
                     initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
                     className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col h-[400px]"
@@ -251,7 +245,7 @@ const AuthorityAnalytics = () => {
                     )}
                 </motion.div>
 
-                {/* Status Pipeline */}
+                {}
                 <motion.div 
                     initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }}
                     className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-xl flex flex-col relative overflow-hidden"
@@ -299,7 +293,7 @@ const AuthorityAnalytics = () => {
                 </motion.div>
             </div>
 
-            {/* Time-Series Trend Chart */}
+            {}
             <motion.div 
                 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.7 }}
                 className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col h-[400px]"
