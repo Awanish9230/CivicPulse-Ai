@@ -15,15 +15,12 @@ import {
 
 const router = Router();
 
-// Only officer@city.gov can access these (checked in controller/middleware)
 router.post("/create", verifyJWT, createAuthorityMember);
 router.get("/members", verifyJWT, getAuthorityMembers);
 
-// Department specific
 router.get("/department-members", verifyJWT, getDepartmentMembers);
 router.get("/employee-report/:employeeId", verifyJWT, getEmployeeReport);
 
-// Authority tasks
 router.get("/tasks", verifyJWT, getTasks);
 router.get("/analytics", verifyJWT, getAnalytics);
 router.post("/tasks/:complaintId/escalate", verifyJWT, escalateTask);

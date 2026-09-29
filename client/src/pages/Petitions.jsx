@@ -11,7 +11,6 @@ const Petitions = () => {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     
-    // Form State
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('Infrastructure');
@@ -46,7 +45,6 @@ const Petitions = () => {
         try {
             const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/petition/${id}/upvote`, {}, { withCredentials: true });
             toast.success(data.message);
-            // Update local state without full refetch
             setPetitions(prev => prev.map(p => {
                 if (p._id === id) {
                     return { 
@@ -57,7 +55,7 @@ const Petitions = () => {
                     };
                 }
                 return p;
-            }).sort((a, b) => b.upvoteCount - a.upvoteCount)); // Re-sort by top upvotes
+            }).sort((a, b) => b.upvoteCount - a.upvoteCount)); 
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to upvote");
         }
@@ -94,7 +92,6 @@ const Petitions = () => {
             toast.success("Petition launched successfully!");
             setShowForm(false);
             
-            // Reset form
             setTitle('');
             setDescription('');
             setImage(null);
@@ -138,7 +135,7 @@ const Petitions = () => {
                 </button>
             </div>
 
-            {/* Create Form */}
+            {}
             {showForm && (
                 <motion.form 
                     initial={{ opacity: 0, y: -20 }}
@@ -211,7 +208,7 @@ const Petitions = () => {
                 </motion.form>
             )}
 
-            {/* List Petitions */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {petitions.length === 0 && !loading && (
                     <div className="col-span-full py-16 text-center text-slate-500 bg-white rounded-3xl border border-slate-200 border-dashed">
@@ -223,7 +220,6 @@ const Petitions = () => {
                 
                 {petitions.map((petition, idx) => {
                     const progress = Math.min(100, (petition.upvoteCount / petition.targetSignatures) * 100);
-                    // Determine survival status
                     let warningText = "";
                     let isWarning = false;
                     

@@ -36,7 +36,6 @@ export const usePWAInstall = () => {
         setIsInstallable(false);
     };
 
-    // iOS Detection
     const [isIOS, setIsIOS] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
 

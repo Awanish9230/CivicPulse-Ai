@@ -82,7 +82,7 @@ const IssueCard = memo(({ item, index, user, expandedUpdates, setExpandedUpdates
                         )}
                     </div>
 
-                    {/* Render Official Replies */}
+                    {}
                     {item.officialReplies && item.officialReplies.length > 0 && (
                         <div className="mt-3 space-y-2 border-t border-border/50 pt-3">
                             <div className="flex items-center justify-between mb-1">
@@ -115,14 +115,14 @@ const IssueCard = memo(({ item, index, user, expandedUpdates, setExpandedUpdates
                     </div>
                 )}
             </div>
-            {/* Heatmap background effect (Optimized) */}
+            {}
             <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 to-transparent pointer-events-none -z-10" />
         </motion.div>
     );
 });
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-    var R = 6371; // Radius of the earth in km
+    var R = 6371; 
     var dLat = deg2rad(lat2-lat1);
     var dLon = deg2rad(lon2-lon1); 
     var a = 
@@ -130,7 +130,7 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
       Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
       Math.sin(dLon/2) * Math.sin(dLon/2); 
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-    var d = R * c; // Distance in km
+    var d = R * c; 
     return d;
 }
 
@@ -142,18 +142,15 @@ const Community = () => {
     const { user } = useContext(AuthContext);
     const [activeChannel, setActiveChannel] = useState('issue');
     
-    // Geospatial State
     const [radius, setRadius] = useState('10');
     const [isRadiusOpen, setIsRadiusOpen] = useState(false);
     const [location, setLocation] = useState(null);
     const [locationDenied, setLocationDenied] = useState(false);
 
-    // Issue Feed State
     const [feed, setFeed] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedUpdates, setExpandedUpdates] = useState({});
 
-    // Chat State
     const [socket, setSocket] = useState(null);
     const [messages, setMessages] = useState({});
     const [newMessage, setNewMessage] = useState('');
@@ -233,7 +230,6 @@ const Community = () => {
         }
     };
 
-    // Socket Initialization for Chat
     useEffect(() => {
         if (activeChannel === 'issue') {
             setSocket(null);
@@ -251,19 +247,16 @@ const Community = () => {
         });
 
         newSocket.on('receiveMessage', (message) => {
-            // Client-side filtering of incoming socket messages based on distance
             if (radius !== 'All' && location && message.location?.coordinates) {
                 const [msgLng, msgLat] = message.location.coordinates;
                 const distance = getDistanceFromLatLonInKm(location.lat, location.lng, msgLat, msgLng);
                 if (distance > parseInt(radius)) {
-                    // Ignore message, too far away
                     return;
                 }
             }
 
             setMessages(prev => {
                 const channelMsgs = prev[message.channel] || [];
-                // Deduplicate: skip if this message ID already exists
                 if (channelMsgs.find(m => m._id === message._id || m.id === message.id)) return prev;
                 return {
                     ...prev,
@@ -274,7 +267,6 @@ const Community = () => {
             setTimeout(() => {
                 if (chatContainerRef.current) {
                     const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-                    // Auto-scroll if user is near bottom
                     if (scrollHeight - scrollTop - clientHeight < 200) {
                         chatContainerRef.current.scrollTop = scrollHeight;
                     }
@@ -311,7 +303,6 @@ const Community = () => {
         };
     }, [radius, location, activeChannel]);
 
-    // Standalone function to fetch chat history
     const loadHistory = async (channel) => {
         const ch = channel || activeChannel;
         if ((ch === 'general' || ch === 'ask-authority' || ch === 'announcements') && location && !locationDenied) {
@@ -342,7 +333,6 @@ const Community = () => {
         }
     };
 
-    // Fetch chat history when channel changes
     useEffect(() => {
         loadHistory(activeChannel);
     }, [activeChannel, location, radius, locationDenied]);
@@ -356,7 +346,6 @@ const Community = () => {
             
             if (payload.message && payload.message.type === 'Image_Offline') {
                 try {
-                    // Convert base64 back to file
                     const res = await fetch(payload.message.text);
                     const blob = await res.blob();
                     const file = new File([blob], 'offline_image.jpg', { type: 'image/jpeg' });
@@ -373,7 +362,7 @@ const Community = () => {
                     payload.message.type = 'Image';
                 } catch (err) {
                     console.error('Failed to upload offline image during sync', err);
-                    return; // Skip emitting if upload fails
+                    return; 
                 }
             }
             
@@ -402,7 +391,6 @@ const Community = () => {
         }
     };
 
-    // Auto-scroll chat
     useEffect(() => {
         if (!showScrollButton) {
             scrollToBottom();
@@ -415,7 +403,6 @@ const Community = () => {
             return;
         }
 
-        // Optimistic update
         setFeed(currentFeed => 
             currentFeed.map(item => 
                 item._id === complaintId 
@@ -455,14 +442,13 @@ const Community = () => {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if ((!newMessage.trim() && !chatImage) || !user) return; // Removed socket check so offline works
+        if ((!newMessage.trim() && !chatImage) || !user) return; 
 
         let finalType = 'Text';
         let finalText = newMessage.trim();
 
         if (chatImage) {
             if (!navigator.onLine) {
-                // Offline: Convert image to base64 and queue
                 const getBase64 = (file) => new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.readAsDataURL(file);
@@ -479,7 +465,6 @@ const Community = () => {
                     return;
                 }
             } else {
-                // Online: Upload immediately
                 setIsUploadingImage(true);
                 try {
                     const formData = new FormData();
@@ -633,7 +618,7 @@ const Community = () => {
     return (
         <div className="flex h-[calc(100dvh-10rem)] md:h-[calc(100vh-7rem)] max-w-6xl mx-auto bg-white/70 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden relative z-10">
             
-            {/* Location Denied Overlay */}
+            {}
             {locationDenied && (
                 <div className="absolute inset-0 bg-white/80 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center">
                     <MapPin size={48} className="text-red-500 mb-4" />
@@ -673,7 +658,7 @@ const Community = () => {
                 </div>
             )}
 
-            {/* Left Sidebar - Channels */}
+            {}
             <div className="w-72 bg-white/40 border-r border-white/50 flex flex-col hidden md:flex shrink-0 backdrop-blur-xl">
                 <div className="p-6 border-b border-white/50">
                     <h2 className="text-xl font-black text-slate-800 tracking-tight">Community Hub</h2>
@@ -707,7 +692,7 @@ const Community = () => {
 
 
 
-                    {/* Trending Widget */}
+                    {}
                     <div className="mt-4 bg-white/60 border border-white/80 rounded-3xl p-5 shadow-sm backdrop-blur-md shrink-0">
                         <div className="flex items-center gap-2 text-primary font-black mb-4">
                             <TrendingUp size={16} />
@@ -728,10 +713,10 @@ const Community = () => {
                 </div>
             </div>
 
-            {/* Right Main Area */}
+            {}
             <div className="flex-1 flex flex-col min-w-0 bg-slate-50/30 relative">
                 
-                {/* Header */}
+                {}
                 <div className="h-[72px] border-b border-white bg-white/40 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 shrink-0 shadow-[0_2px_10px_rgb(0,0,0,0.02)] gap-2">
                     <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
                         <div className="p-1.5 md:p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-primary shrink-0">
@@ -747,7 +732,7 @@ const Community = () => {
                     </div>
                     
                     <div className="flex items-center gap-2 md:gap-4 shrink-0">
-                        {/* Custom Select Dropdown */}
+                        {}
                         <div className="relative">
                             <button 
                                 onClick={() => !locationDenied && setIsRadiusOpen(!isRadiusOpen)}
@@ -804,7 +789,7 @@ const Community = () => {
                             </AnimatePresence>
                         </div>
 
-                        {/* Live Online Count for Chat Channels */}
+                        {}
                         {(activeChannel === 'general' || activeChannel === 'ask-authority' || activeChannel === 'announcements') && (
                             <div className="flex items-center gap-2">
 
@@ -821,7 +806,7 @@ const Community = () => {
                     </div>
                 </div>
 
-                {/* Mobile Channel Selector */}
+                {}
                 <div className="md:hidden flex justify-between gap-1 p-1.5 bg-white/60 backdrop-blur-md border-b border-white shadow-sm w-full relative">
                     {channels.map(channel => {
                         const Icon = channel.icon;
@@ -847,14 +832,14 @@ const Community = () => {
                     })}
                 </div>
 
-                {/* Content Area */}
+                {}
                 <div 
                     className="flex-1 overflow-y-scroll bg-[#F8FAFC]/50 relative" 
                     ref={chatContainerRef}
                     onScroll={handleScroll}
                 >
                     <AnimatePresence mode="wait">
-                    {/* Channel: #issue */}
+                    {}
                     {activeChannel === 'issue' ? (
                             <motion.div 
                                 key="issue"
@@ -909,7 +894,7 @@ const Community = () => {
                             className="flex flex-col min-h-full justify-end p-6"
                         >
                             <div className="space-y-6">
-                                {/* Welcome Message */}
+                                {}
                                 <div className="text-center py-8">
                                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                                         <Hash size={32} className="text-primary" />
@@ -924,7 +909,7 @@ const Community = () => {
                                     </p>
                                 </div>
 
-                                {/* Chat Messages */}
+                                {}
                                 {(messages[activeChannel] || []).map((msg) => {
                                     const isMe = msg.senderId === user?._id || msg.sender === (user?.anonymousId || 'Anonymous Citizen');
                                     const isAuthority = msg.role === 'Authority';
@@ -958,7 +943,7 @@ const Community = () => {
                                                 </div>
 
                                                 <div className="flex flex-col gap-1 w-full">
-                                                    {/* Threaded Reply Block */}
+                                                    {}
                                                     {msg.replyTo && (
                                                         <div className={`text-xs p-2 rounded-lg opacity-70 border-l-2 ${isMe ? 'bg-black/10 border-white text-white/80 text-right' : 'bg-surface border-primary text-text/60 text-left'}`}>
                                                             <div className="font-bold mb-0.5">{msg.replyTo.sender}</div>
@@ -993,7 +978,7 @@ const Community = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Action buttons under message */}
+                                                {}
                                                 <div className="flex items-center gap-1 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     {!isMe && (
                                                         <button 
@@ -1031,7 +1016,7 @@ const Community = () => {
 
                 </div>
 
-                {/* Scroll to bottom FAB */}
+                {}
                 <AnimatePresence>
                     {showScrollButton && (
                         <motion.button
@@ -1046,7 +1031,7 @@ const Community = () => {
                     )}
                 </AnimatePresence>
 
-                {/* Chat Input */}
+                {}
                 {['general', 'ask-authority', 'announcements'].includes(activeChannel) && (
                     <div className="p-4 bg-white border-t border-border/50 shrink-0">
                         {user ? (
@@ -1057,7 +1042,7 @@ const Community = () => {
                                 </div>
                             ) : (
                                 <form onSubmit={handleSendMessage} className="relative flex flex-col">
-                                {/* Replying To Indicator */}
+                                {}
                                 <AnimatePresence>
                                     {replyingTo && (
                                         <motion.div 
@@ -1077,7 +1062,7 @@ const Community = () => {
                                     )}
                                 </AnimatePresence>
 
-                                {/* Image Preview Indicator */}
+                                {}
                                 <AnimatePresence>
                                     {chatImagePreview && (
                                         <motion.div 

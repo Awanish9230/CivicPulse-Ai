@@ -16,22 +16,19 @@ const AuthorityTasks = () => {
     const [loading, setLoading] = useState(true);
     const [expandedMapId, setExpandedMapId] = useState(null);
 
-    // Advanced Filtering & View State
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [filterPriority, setFilterPriority] = useState('All');
     const [filterCategory, setFilterCategory] = useState('All');
     const [sortBy, setSortBy] = useState('Newest');
-    const [viewMode, setViewMode] = useState('List'); // 'List' or 'Map'
+    const [viewMode, setViewMode] = useState('List'); 
     const [replyMessages, setReplyMessages] = useState({});
 
-    // Assignment Modal State
     const [assignModalOpen, setAssignModalOpen] = useState(false);
     const [selectedTaskId, setSelectedTaskId] = useState(null);
     const [departmentMembers, setDepartmentMembers] = useState([]);
     const [loadingMembers, setLoadingMembers] = useState(false);
 
-    // Resolution Modal State
     const [resolveModalOpen, setResolveModalOpen] = useState(false);
     const [resolutionImages, setResolutionImages] = useState([]);
     const [resolutionGps, setResolutionGps] = useState(null);
@@ -64,7 +61,7 @@ const AuthorityTasks = () => {
                 withCredentials: true
             });
             toast.success(data.message);
-            fetchTasks(); // refresh board
+            fetchTasks(); 
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to escalate task');
         }
@@ -76,7 +73,7 @@ const AuthorityTasks = () => {
                 withCredentials: true
             });
             toast.success(data.message);
-            fetchTasks(); // refresh board
+            fetchTasks(); 
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to update task');
         }
@@ -97,7 +94,6 @@ const AuthorityTasks = () => {
         const formData = new FormData();
         formData.append('status', 'Resolved');
         
-        // Convert data URLs to blobs if they are from CameraCapture
         for (let i = 0; i < resolutionImages.length; i++) {
             const img = resolutionImages[i];
             if (typeof img === 'string' && img.startsWith('data:image')) {
@@ -129,7 +125,7 @@ const AuthorityTasks = () => {
             setResolutionImages([]);
             setResolutionGps(null);
             setTestModeBypass(false);
-            fetchTasks(); // refresh board
+            fetchTasks(); 
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to resolve task');
         } finally {
@@ -216,17 +212,10 @@ const AuthorityTasks = () => {
                 withCredentials: true
             });
             
-            // Filter members based on department and rank
             const filteredMembers = data.data.filter(member => {
-                // If the user is Admin, they can assign anyone in the target department
-                // If the user is Authority, they only got their own department members anyway, but we still ensure rank rules
                 
                 const isCorrectDepartment = user?.role === 'Admin' ? member.department === targetDepartment : true;
                 
-                // Rank rules: 
-                // Admin can assign to anyone
-                // HOD can assign to Senior, Junior
-                // Senior can assign to Junior
                 let isCorrectRank = false;
                 if (user?.role === 'Admin') isCorrectRank = true;
                 else if (user?.authorityLevel === 'HOD') isCorrectRank = ['Senior', 'Junior'].includes(member.authorityLevel);
@@ -294,7 +283,7 @@ const AuthorityTasks = () => {
                 </div>
             </div>
 
-            {/* Control Bar */}
+            {}
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-col lg:flex-row gap-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -383,7 +372,7 @@ const AuthorityTasks = () => {
             ) : viewMode === 'Map' ? (
                 <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm h-[600px] relative">
                     <MapContainer 
-                        center={[20.5937, 78.9629]} // Default to India center, you could calculate bounds here
+                        center={[20.5937, 78.9629]} 
                         zoom={5} 
                         style={{ height: '100%', width: '100%', zIndex: 0 }}
                     >
@@ -598,7 +587,7 @@ const AuthorityTasks = () => {
                 </div>
             )}
 
-            {/* Assignment Modal */}
+            {}
             <AnimatePresence>
                 {assignModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -663,7 +652,7 @@ const AuthorityTasks = () => {
                 )}
             </AnimatePresence>
 
-            {/* Resolve Modal */}
+            {}
             <AnimatePresence>
                 {resolveModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -784,7 +773,7 @@ const AuthorityTasks = () => {
                 )}
             </AnimatePresence>
 
-            {/* Camera Overlay */}
+            {}
             <AnimatePresence>
                 {isCameraOpen && (
                     <motion.div

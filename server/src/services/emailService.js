@@ -1,18 +1,10 @@
 
 import { welcomeEmailTemplate, passwordResetTemplate } from '../utils/emailTemplates.js';
 
-/**
- * Send a generic email
- * @param {Object} options - Email options
- * @param {string} options.email - Recipient email
- * @param {string} options.subject - Email subject
- * @param {string} options.html - HTML content
- */
 export const sendEmail = async (options) => {
     try {
         const apiKey = process.env.BREVO_API_KEY;
         
-        // If no API key is provided, log a warning and return (useful for local dev without key)
         if (!apiKey) {
             console.warn('BREVO_API_KEY is not set. Email was not sent.');
             return;
@@ -49,16 +41,9 @@ export const sendEmail = async (options) => {
         }
     } catch (error) {
         console.error('Error sending email via Brevo HTTP API:', error);
-        // Do not throw to prevent blocking the main thread (e.g. registration success)
     }
 };
 
-/**
- * Send welcome email to new users
- * @param {string} email - Recipient email
- * @param {string} name - User's name (optional)
- * @param {string} role - User's role
- */
 export const sendWelcomeEmail = async (email, name, role) => {
     const html = welcomeEmailTemplate(name, role);
     await sendEmail({
@@ -68,11 +53,6 @@ export const sendWelcomeEmail = async (email, name, role) => {
     });
 };
 
-/**
- * Send password reset email
- * @param {string} email - Recipient email
- * @param {string} resetToken - The raw reset token
- */
 export const sendPasswordResetEmail = async (email, resetToken, role = 'Citizen') => {
     const roleParam = role.toLowerCase();
     const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetToken}?role=${roleParam}`;

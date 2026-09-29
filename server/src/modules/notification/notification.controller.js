@@ -21,7 +21,6 @@ export const getMyNotifications = asynchandler(async (req, res) => {
     if (req.query.type) filter.type = req.query.type;
     if (req.query.unread === 'true') filter.isRead = false;
     
-    // Date grouping filters (Today, This Week, etc.)
     if (req.query.timeframe) {
         const now = new Date();
         if (req.query.timeframe === 'today') {
@@ -94,7 +93,6 @@ export const subscribeToPush = asynchandler(async (req, res) => {
 
     const user = req.user;
     
-    // Check if subscription already exists
     const exists = user.pushSubscriptions.some(sub => sub.endpoint === subscription.endpoint);
     if (!exists) {
         user.pushSubscriptions.push(subscription);

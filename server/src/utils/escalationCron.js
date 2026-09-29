@@ -2,14 +2,12 @@ import cron from 'node-cron';
 import Complaint from '../modules/complaint/complaint.model.js';
 import logger from './logger.js';
 
-// Run every hour to check for complaints that need escalation
 const startEscalationCron = () => {
     cron.schedule('0 * * * *', async () => {
         logger.info("Running scheduled escalation checks...");
         try {
             const now = new Date();
 
-            // 1. Escalate Junior to Senior if no activity for 48 hours
             const fortyEightHoursAgo = new Date(now.getTime() - (48 * 60 * 60 * 1000));
             const juniorComplaints = await Complaint.find({
                 escalationLevel: 'Junior',
@@ -28,7 +26,6 @@ const startEscalationCron = () => {
                 logger.info(`Escalated complaint ${complaint._id} to Senior`);
             }
 
-            // 2. Escalate to HOD if not resolved in 7 days (from creation)
             const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
             const unresolvedOldComplaints = await Complaint.find({
                 escalationLevel: { $ne: 'HOD' },

@@ -55,7 +55,6 @@ const CustomSelect = ({
                                 key={opt.value}
                                 type="button"
                                 onClick={() => {
-                                    // Mock the event object for drop-in compatibility with native <select> onChange handlers
                                     onChange({ target: { value: opt.value } });
                                     setIsOpen(false);
                                 }}

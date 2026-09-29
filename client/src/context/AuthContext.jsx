@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 export const AuthContext = createContext();
 
-const ROTATION_INTERVAL = 10 * 60 * 1000; // 10 minutes
+const ROTATION_INTERVAL = 10 * 60 * 1000; 
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -25,12 +25,10 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         fetchUser();
 
-        // Global Axios Interceptor to catch 401 errors globally
         const interceptor = axios.interceptors.response.use(
             (response) => response,
             (error) => {
                 if (error.response?.status === 401) {
-                    // Do not intercept if it's a login attempt failure
                     const requestUrl = error.config?.url || '';
                     if (requestUrl.includes('/login')) {
                         return Promise.reject(error);
@@ -39,7 +37,6 @@ export const AuthProvider = ({ children }) => {
                     setUser(null);
                     toast.error("Session expired. Please log in again.");
                     
-                    // Route user depending on where they are
                     if (window.location.pathname.startsWith('/authority')) {
                         if (window.location.pathname !== '/authority') {
                             window.location.href = '/authority';
@@ -55,17 +52,15 @@ export const AuthProvider = ({ children }) => {
         return () => axios.interceptors.response.eject(interceptor);
     }, []);
 
-    // Global Identity Rotation Logic
     useEffect(() => {
-        if (!user || user.role === 'Authority') return; // Don't rotate for authorities or logged out users
+        if (!user || user.role === 'Authority') return; 
 
         const rotateIdentity = async () => {
             try {
                 await api.post('/user/rotate-anonymous-id');
-                await fetchUser(); // Refresh user info to get new ID
+                await fetchUser(); 
                 toast.success("Identity auto-rotated successfully for security.", { icon: '🔄', id: 'rotation-toast' });
                 
-                // Reset timer
                 localStorage.setItem('nextRotationTime', (Date.now() + ROTATION_INTERVAL).toString());
             } catch (error) {
                 console.error("Failed to auto-rotate identity", error);
@@ -84,11 +79,11 @@ export const AuthProvider = ({ children }) => {
             }
         };
 
-        checkRotation(); // Check immediately on mount/user change
-        const interval = setInterval(checkRotation, 10000); // Check every 10 seconds to ensure it triggers near the exact time
+        checkRotation(); 
+        const interval = setInterval(checkRotation, 10000); 
 
         return () => clearInterval(interval);
-    }, [user?._id, user?.role]); // Re-run when user changes
+    }, [user?._id, user?.role]); 
 
     const login = (userData) => {
         setUser(userData);

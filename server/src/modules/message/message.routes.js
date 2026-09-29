@@ -5,7 +5,6 @@ import { upload } from "../../middlewares/uploadmiddleware.js";
 
 const router = Router();
 
-// Apply community restriction to all message routes
 router.use(verifyJWT, checkRestrictedFeature('community'));
 
 router.get("/:channel", getChannelMessages);

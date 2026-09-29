@@ -1,10 +1,6 @@
 import React, { Suspense } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-/**
- * LazyLoad wrapper defers rendering of its children until they scroll into view.
- * This drastically reduces initial load time and Total Blocking Time (TBT).
- */
 const LazyLoad = ({ children, height = '400px', rootMargin = '200px 0px' }) => {
     const { ref, inView } = useInView({
         triggerOnce: true,

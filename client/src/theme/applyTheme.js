@@ -10,7 +10,6 @@ export const getStoredTheme = () => {
       return stored;
     }
   } catch {
-    // Ignore localStorage errors.
   }
 
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches
@@ -33,7 +32,6 @@ export const applyTheme = (theme = getStoredTheme()) => {
   try {
     localStorage.setItem(STORAGE_KEY, theme);
   } catch {
-    // Ignore localStorage errors.
   }
 
   return theme;

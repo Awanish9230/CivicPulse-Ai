@@ -18,14 +18,13 @@ import {
 const router = Router();
 
 const uploadLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // limit each IP to 5 complaints per 15 minutes
+    windowMs: 15 * 60 * 1000, 
+    max: 5, 
     message: { success: false, message: 'Upload limit reached. Please try again after 15 minutes to prevent spam.' },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-// Citizen Routes
 router.post("/:complaintId/upvote", verifyJWT, upvoteComplaint);
 router.post("/:complaintId/resolve", verifyJWT, resolveComplaint);
 router.post("/:complaintId/reply", verifyJWT, addOfficialReply);
@@ -48,7 +47,6 @@ router.get(
 router.patch("/:complaintId", verifyJWT, editComplaint);
 router.delete("/:complaintId", verifyJWT, deleteComplaint);
 
-// Authority Routes (can add role middleware later)
 router.get(
     "/all",
     verifyJWT,

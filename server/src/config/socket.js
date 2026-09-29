@@ -24,18 +24,15 @@ export const initSocket = (server) => {
     io.on('connection', (socket) => {
         logger.info(`New client connected via Socket.io: ${socket.id}`);
 
-        // Join a location-based room or complaint-specific room
         socket.on('joinRoom', (room) => {
             socket.join(room);
             logger.info(`Socket ${socket.id} joined room ${room}`);
             
-            // Broadcast updated user count for this room
             const clients = io.sockets.adapter.rooms.get(room);
             const numClients = clients ? clients.size : 0;
             io.to(room).emit('roomData', { room, onlineCount: numClients });
         });
 
-        // Join personal user room for real-time notifications
         socket.on('join', (userId) => {
             if (userId) {
                 socket.join(userId);
@@ -43,13 +40,11 @@ export const initSocket = (server) => {
             }
         });
 
-        // Join Admin Room for real-time dashboard updates
         socket.on('joinAdminRoom', () => {
             socket.join('admin_room');
             logger.info(`Socket ${socket.id} joined admin_room`);
         });
 
-        // Handle incoming messages
         socket.on('sendMessage', async (messageData) => {
             try {
                 const { room, message } = messageData;
@@ -57,7 +52,6 @@ export const initSocket = (server) => {
                 if (room === 'local-community-authority') channelName = 'ask-authority';
                 if (room === 'local-community-announcements') channelName = 'announcements';
                 
-                // --- AI TOXICITY FILTER & BAN SYSTEM ---
                 const toxicityCheck = await checkToxicity(message.text);
                 if (toxicityCheck.isToxic) {
                     const User = (await import('../modules/user/user.model.js')).default;
@@ -66,20 +60,18 @@ export const initSocket = (server) => {
                     if (user) {
                         user.strikes = (user.strikes || 0) + 1;
                         if (user.strikes === 1) {
-                            user.banUntil = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+                            user.banUntil = new Date(Date.now() + 24 * 60 * 60 * 1000); 
                         } else if (user.strikes === 2) {
-                            user.banUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7d
+                            user.banUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); 
                         } else if (user.strikes >= 3) {
-                            user.isBanned = true; // Permanent
+                            user.isBanned = true; 
                         }
                         
-                        // Dynamic banning: default to blocking community page when banned
                         user.restrictedFeatures = ['community']; 
                         
                         await user.save({ validateBeforeSave: false });
                     }
                     
-                    // Notify sender privately
                     socket.emit('bannedNotification', {
                         message: "Your message was flagged as highly toxic or abusive. A strike has been added to your account.",
                         reason: toxicityCheck.reason,
@@ -87,11 +79,9 @@ export const initSocket = (server) => {
                     });
                     
                     logger.warn(`User ${message.senderId} message blocked for toxicity. Strikes: ${user?.strikes}`);
-                    return; // Stop processing, do not broadcast
+                    return; 
                 }
-                // --- END FILTER ---
                 
-                // Save to database
                 let locationObj = undefined;
                 if (message.lat && message.lng) {
                     locationObj = {
@@ -110,7 +100,6 @@ export const initSocket = (server) => {
                     ...(locationObj && { location: locationObj })
                 });
 
-                // Attach ID and timestamps to the emitted message
                 const emittedMessage = {
                     ...message,
                     _id: newMessage._id,
@@ -125,7 +114,6 @@ export const initSocket = (server) => {
                 const Notification = (await import('../modules/notification/notification.model.js')).default;
                 const mongoose = (await import('mongoose')).default;
                 
-                // Save to database for all users (except sender) so it persists in /notifications
                 const senderObjectId = new mongoose.Types.ObjectId(message.senderId);
                 const users = await User.find({ _id: { $ne: senderObjectId } }).select('_id');
                 const dbNotifications = users.map(u => ({
@@ -144,8 +132,6 @@ export const initSocket = (server) => {
 
                 logger.info(`Saved ${savedNotifications.length} chat notifications to DB and broadcasting...`);
                 
-                // Emitting using socket.to(room) sends to EVERYONE in the room EXCEPT the sender.
-                // This ensures the sender does not receive a push notification for their own chat message.
                 socket.to(room).emit('notification', {
                     _id: 'chat_' + Date.now(),
                     title: `New message in ${channelName}`,
@@ -164,20 +150,17 @@ export const initSocket = (server) => {
             socket.to(data.room).emit('userTyping', data.user);
         });
 
-        // Real-time message edit
         socket.on('editMessage', (data) => {
             const { room, messageId, newText, channel } = data;
             io.to(room).emit('messageEdited', { _id: messageId, text: newText, channel, isEdited: true });
         });
 
-        // Real-time message delete
         socket.on('deleteMessage', (data) => {
             const { room, messageId, channel } = data;
             io.to(room).emit('messageDeleted', { _id: messageId, channel });
         });
 
         socket.on('disconnecting', () => {
-            // Broadcast count updates for rooms the user is leaving
             for (const room of socket.rooms) {
                 if (room !== socket.id) {
                     const clients = io.sockets.adapter.rooms.get(room);

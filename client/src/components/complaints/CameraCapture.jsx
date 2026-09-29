@@ -9,12 +9,10 @@ const CameraCapture = ({ onClose, onCapture }) => {
     const [photos, setPhotos] = useState([]);
     const [gps, setGps] = useState(null);
     
-    // Camera state
     const [facingMode, setFacingMode] = useState('environment');
     const [zoomParams, setZoomParams] = useState(null);
     const [zoomValue, setZoomValue] = useState(1);
 
-    // Eager GPS fetch
     useEffect(() => {
         let isMounted = true;
         const fallbackGps = () => {
@@ -24,7 +22,6 @@ const CameraCapture = ({ onClose, onCapture }) => {
                 },
                 (err) => {
                     if (isMounted) console.warn('GPS fallback failed:', err);
-                    // Do not block UI, allow submission without GPS or handle in parent
                 },
                 { enableHighAccuracy: false, maximumAge: Infinity, timeout: 10000 }
             );
@@ -53,7 +50,6 @@ const CameraCapture = ({ onClose, onCapture }) => {
                 videoRef.current.srcObject = mediaStream;
             }
             
-            // Check for zoom capabilities
             const track = mediaStream.getVideoTracks()[0];
             trackRef.current = track;
             
@@ -116,7 +112,6 @@ const CameraCapture = ({ onClose, onCapture }) => {
         canvas.height = videoRef.current.videoHeight;
         const ctx = canvas.getContext('2d');
         
-        // Mirror if user facing
         if (facingMode === 'user') {
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
@@ -131,19 +126,19 @@ const CameraCapture = ({ onClose, onCapture }) => {
     const handleDone = () => {
         if (photos.length > 0) {
             stopCamera();
-            onCapture({ photos, gps }); // parent can decide if it errors if gps is null
+            onCapture({ photos, gps }); 
         }
     };
 
     return (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
-            {/* Header */}
+            {}
             <div className="flex justify-between items-center p-6 bg-gradient-to-b from-black/80 to-transparent absolute top-0 w-full z-10 pointer-events-none">
                 <button aria-label="Close" onClick={() => { stopCamera(); onClose(); }} className="text-white p-2 rounded-full bg-white/10 backdrop-blur-md pointer-events-auto">
                     <X size={24} />
                 </button>
                 <div className="flex gap-3 items-center pointer-events-auto">
-                    {/* GPS Indicator */}
+                    {}
                     {gps ? (
                         <div className="bg-green-500/80 text-white px-2 py-1 rounded-full text-[10px] font-bold backdrop-blur-md">GPS Lock</div>
                     ) : (
@@ -157,7 +152,7 @@ const CameraCapture = ({ onClose, onCapture }) => {
                 </div>
             </div>
 
-            {/* Viewfinder */}
+            {}
             <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
                 {error ? (
                     <div className="text-white text-center p-8 max-w-sm">
@@ -173,14 +168,14 @@ const CameraCapture = ({ onClose, onCapture }) => {
                     />
                 )}
                 
-                {/* Crosshairs Overlay */}
+                {}
                 {!error && (
                     <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
                         <div className="w-64 h-64 border-2 border-dashed border-white rounded-[3rem]"></div>
                     </div>
                 )}
                 
-                {/* Zoom Slider */}
+                {}
                 {!error && zoomParams && (
                     <div className="absolute right-6 top-1/2 -translate-y-1/2 h-48 flex flex-col items-center gap-2">
                         <ZoomIn size={16} className="text-white drop-shadow-md" />
@@ -199,7 +194,7 @@ const CameraCapture = ({ onClose, onCapture }) => {
                     </div>
                 )}
                 
-                {/* Thumbnails */}
+                {}
                 {photos.length > 0 && (
                     <div className="absolute bottom-4 left-0 w-full px-4 flex gap-2 overflow-x-auto">
                         {photos.map((p, i) => (
@@ -217,7 +212,7 @@ const CameraCapture = ({ onClose, onCapture }) => {
                 )}
             </div>
 
-            {/* Controls */}
+            {}
             <div className="h-32 bg-black pb-safe flex items-center justify-between px-8 pb-8 pt-4">
                 <div className="w-16 flex justify-start">
                     <button 

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import api from '../../config/api';
 import { useInView } from 'react-intersection-observer';
 
-// Default labels mapping
 const statLabels = {
     totalComplaints: { label: 'Complaints Reported', suffix: '', color: 'text-indigo-600' },
     resolvedIssues: { label: 'Resolved Issues', suffix: '', color: 'text-emerald-500' },
@@ -18,7 +17,7 @@ const AnimatedCounter = ({ end, duration, inView }) => {
         if (!inView) return;
         
         let start = 0;
-        const totalFrames = Math.round((duration * 1000) / 16); // 60fps
+        const totalFrames = Math.round((duration * 1000) / 16); 
         const increment = end / totalFrames;
         
         const timer = setInterval(() => {
@@ -81,7 +80,7 @@ const TrustedStats = () => {
                     </div>
                 ))}
                 
-                {/* Static Monitoring Block */}
+                {}
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-center transform transition-transform hover:-translate-y-1">
                     <div className="text-4xl font-black mb-2 text-rose-500">
                         <AnimatedCounter end={24} duration={2} inView={inView} />/7

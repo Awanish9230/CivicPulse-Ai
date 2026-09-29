@@ -4,7 +4,6 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix for default marker icon in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -28,7 +27,7 @@ const HeatmapLayer = ({ points }) => {
         if (!points || points.length === 0) return;
         
         let heatLayer = null;
-        window.L = L; // Important for leaflet.heat in production builds
+        window.L = L; 
         
         import('leaflet.heat').then(() => {
             heatLayer = L.heatLayer(points, {
@@ -43,7 +42,6 @@ const HeatmapLayer = ({ points }) => {
             if (heatLayer) {
                 map.removeLayer(heatLayer);
             } else {
-                // Handle unmount before import resolves
                 setTimeout(() => {
                     if (heatLayer) map.removeLayer(heatLayer);
                 }, 500);
@@ -55,7 +53,7 @@ const HeatmapLayer = ({ points }) => {
 
 const LiveComplaintMap = () => {
     const [reports, setReports] = useState([]);
-    const [center, setCenter] = useState([28.6139, 77.2090]); // Default to New Delhi
+    const [center, setCenter] = useState([28.6139, 77.2090]); 
     const [heatPoints, setHeatPoints] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -69,12 +67,11 @@ const LiveComplaintMap = () => {
                     const points = [];
                     data.data.forEach(r => {
                         if (r.location?.coordinates?.length === 2) {
-                            points.push([r.location.coordinates[1], r.location.coordinates[0], 1]); // [lat, lng, intensity]
+                            points.push([r.location.coordinates[1], r.location.coordinates[0], 1]); 
                         }
                     });
                     setHeatPoints(points);
 
-                    // Center on the first valid location found
                     if (points.length > 0) {
                         setCenter([points[0][0], points[0][1]]);
                     }
