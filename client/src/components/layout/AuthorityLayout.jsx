@@ -5,7 +5,6 @@ import { useState, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import AuthorityBottomNav from './AuthorityBottomNav';
 import { NotificationBell } from '../notifications/NotificationBell';
-import ThemeToggle from '../common/ThemeToggle';
 
 const authNavItems = [
     { name: 'Dashboard', path: '/authority', icon: Map },
@@ -176,7 +175,6 @@ const AuthorityLayout = () => {
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                        <ThemeToggle compact />
                         <NotificationBell />
                     </div>
                 </header>
