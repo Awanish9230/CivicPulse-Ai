@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
 
-// Configuration
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -17,7 +16,7 @@ const uploadOnCloudinary = async (fileBuffer) => {
                     resource_type: "auto",
                     quality: "auto:eco",
                     fetch_format: "auto",
-                    effect: "blur_faces:1000" // Privacy feature: blurs faces and license plates automatically
+                    effect: "blur_faces:1000" 
                 },
                 (error, result) => {
                     if (error) {
@@ -38,12 +37,10 @@ const deleteFromCloudinary = async (secureUrl) => {
     try {
         if (!secureUrl) return;
 
-        // Extract public_id from secure URL
         const splitUrl = secureUrl.split('/');
         const filename = splitUrl[splitUrl.length - 1];
         const publicId = filename.split('.')[0];
         
-        // Use cloudinary API to destroy the asset
         await cloudinary.uploader.destroy(publicId);
     } catch (error) {
         console.error("Error deleting from Cloudinary:", error);

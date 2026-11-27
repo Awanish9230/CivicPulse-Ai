@@ -11,7 +11,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Middleware-like check, can be extracted to auth.middleware.js if needed
 const checkSuperOfficer = (req) => {
     if (req.user.email !== 'officer@city.gov') {
         throw new ApiError(403, "Access denied. Only the chief officer can perform this action.");
@@ -32,7 +31,6 @@ export const createAuthorityMember = asyncHandler(async (req, res) => {
         throw new ApiError(409, "Authority member with this email already exists");
     }
 
-    // Generate an anonymous ID even for authorities just to satisfy the schema required constraint
     const anonymousId = User.generateAnonymousId();
 
     const user = await User.create({
@@ -53,7 +51,6 @@ export const createAuthorityMember = asyncHandler(async (req, res) => {
 });
 
 export const getAuthorityMembers = asyncHandler(async (req, res) => {
-    // Only authorities can view members
     if (req.user.role !== 'Authority' && req.user.role !== 'Admin') {
         throw new ApiError(403, "Access denied");
     }
@@ -72,24 +69,17 @@ export const getTasks = asyncHandler(async (req, res) => {
 
     let filter = { status: { $nin: ['Resolved', 'Closed', 'Rejected'] } };
 
-    // Admin sees all active tasks. Authorities see restricted views.
     if (req.user.role !== 'Admin') {
-        // 1. Department Filtering
         const allowedCategories = getCategoriesForDepartment(req.user.department);
         filter.category = { $in: allowedCategories };
 
-        // 2. Hierarchy Filtering
         const level = req.user.authorityLevel || 'Junior';
         
         if (level === 'Junior') {
-            // Juniors can see all Junior level tasks in their department
             filter.escalationLevel = 'Junior';
         } else if (level === 'Senior') {
-            // Seniors can see Junior and Senior level tasks in their department
             filter.escalationLevel = { $in: ['Junior', 'Senior'] };
         } else if (level === 'HOD') {
-            // HODs can see ALL tasks in their department regardless of escalationLevel
-            // No additional escalationLevel filter needed
         }
     }
 
@@ -132,7 +122,6 @@ export const escalateTask = asyncHandler(async (req, res) => {
     complaint.escalationLevel = nextLevel;
     complaint.lastActivityAt = Date.now();
     
-    // Add an official reply logging the manual escalation
     complaint.officialReplies.push({
         authorityName: req.user.name || "System",
         content: `Complaint manually escalated to ${nextLevel} level.`
@@ -176,16 +165,13 @@ export const updateTask = asyncHandler(async (req, res) => {
 
     let updates = [];
 
-    // Resolution enforcement
     if (status === 'Resolved' && complaint.status !== 'Resolved') {
         if (!testModeBypass) {
-            // 1. Enforce GPS location
             if (!gps || !gps.lat || !gps.lng) {
                 throw new ApiError(400, "Live GPS coordinates are required for task resolution.");
             }
             
             if (complaint.location && complaint.location.coordinates.length === 2) {
-                // coordinates are [longitude, latitude]
                 const issueLon = complaint.location.coordinates[0];
                 const issueLat = complaint.location.coordinates[1];
                 
@@ -214,13 +200,10 @@ export const updateTask = asyncHandler(async (req, res) => {
         }
         
         if (!testModeBypass) {
-            // 2. Gemini AI Validation
             try {
-                // Get the original issue image if available
                 const originalImageUrl = complaint.imageUrls?.[0] || complaint.imageUrl;
                 
                 if (originalImageUrl) {
-                    // Helper to fetch image and convert to base64 for Gemini
                     const fetchImageAsBase64 = async (url) => {
                         const response = await fetch(url);
                         const arrayBuffer = await response.arrayBuffer();
@@ -259,9 +242,8 @@ Do not use markdown blocks, just return the raw JSON text.`;
                             throw new ApiError(400, `AI Verification Failed: ${aiDecision.reason}`);
                         }
                     } catch (parseError) {
-                        if (parseError instanceof ApiError) throw parseError; // Rethrow AI rejection
+                        if (parseError instanceof ApiError) throw parseError; 
                         console.error("Failed to parse Gemini response:", responseText);
-                        // If it fails to parse, we can either block or let it pass. Let's block if strict.
                         throw new ApiError(500, "Failed to automatically verify resolution images. Please try again.");
                     }
                 }
@@ -336,7 +318,6 @@ export const assignTask = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Access denied");
     }
 
-    // Must be Senior or HOD
     if (req.user.role === 'Authority' && req.user.authorityLevel === 'Junior') {
         throw new ApiError(403, "Juniors cannot assign tasks");
     }
@@ -352,12 +333,10 @@ export const assignTask = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Assignee not found or is not an authority member");
     }
 
-    // Must be in the same department (unless Admin)
     if (req.user.role !== 'Admin' && req.user.department !== assignee.department) {
         throw new ApiError(403, "Cannot assign tasks outside your department");
     }
 
-    // HOD can assign to Senior/Junior. Senior can assign to Junior (or another Senior maybe?).
     if (req.user.role !== 'Admin') {
         const levelMap = { 'Junior': 1, 'Senior': 2, 'HOD': 3 };
         if (levelMap[assignee.authorityLevel] > levelMap[req.user.authorityLevel]) {
@@ -409,7 +388,6 @@ export const getDepartmentMembers = asyncHandler(async (req, res) => {
 
     const members = await User.find(filter).select("-password -refreshToken");
 
-    // Get stats for each
     const memberStats = await Promise.all(members.map(async (m) => {
         const activeCount = await Complaint.countDocuments({ 
             assignedTo: m._id, 
@@ -456,7 +434,7 @@ export const getEmployeeReport = asyncHandler(async (req, res) => {
     const completedTasks = await Complaint.find({ 
         assignedTo: employeeId, 
         status: { $in: ['Resolved', 'Closed'] } 
-    }).sort({ updatedAt: -1 }).limit(50); // Get last 50 completed tasks
+    }).sort({ updatedAt: -1 }).limit(50); 
 
     return res.status(200).json(
         new ApiResponse(200, {
@@ -479,11 +457,9 @@ export const getAnalytics = asyncHandler(async (req, res) => {
     let filter = {};
 
     if (req.user.role !== 'Admin') {
-        // 1. Department Filtering
         const allowedCategories = getCategoriesForDepartment(req.user.department);
         filter.category = { $in: allowedCategories };
 
-        // 2. Hierarchy Filtering
         const level = req.user.authorityLevel || 'Junior';
         
         if (level === 'Junior') {
@@ -491,7 +467,6 @@ export const getAnalytics = asyncHandler(async (req, res) => {
         } else if (level === 'Senior') {
             filter.escalationLevel = { $in: ['Junior', 'Senior'] };
         } else if (level === 'HOD') {
-            // HODs see all
         }
     }
 

@@ -40,7 +40,6 @@ const petitionSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// Indexing for faster queries on status and upvote count
 petitionSchema.index({ status: 1 });
 petitionSchema.index({ createdAt: -1 });
 

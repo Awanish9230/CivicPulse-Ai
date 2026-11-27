@@ -4,13 +4,11 @@ import asynchandler from '../../utils/asynchandler.js';
 import ApiResponse from '../../utils/ApiResponse.js';
 import ApiError from '../../utils/ApiError.js';
 
-// Get Dashboard Statistics
 export const getDashboardStats = asynchandler(async (req, res) => {
     const totalComplaints = await Complaint.countDocuments();
     const activeAuthorities = await User.countDocuments({ role: 'Authority' });
     const registeredCitizens = await User.countDocuments({ role: 'Citizen' });
     
-    // Aggregate for trend (mock trend calculation for now)
     const stats = {
         totalComplaints,
         activeAuthorities,
@@ -21,7 +19,6 @@ export const getDashboardStats = asynchandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, stats, "Dashboard stats fetched successfully"));
 });
 
-// User Management (Citizens)
 export const getAllCitizens = asynchandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -35,7 +32,6 @@ export const getAllCitizens = asynchandler(async (req, res) => {
     const citizens = await User.find(query).skip(skip).limit(limit).select('-password');
     const total = await User.countDocuments(query);
 
-    // Get complaint counts for each citizen (Aggregation can be optimized later)
     const citizensWithStats = await Promise.all(citizens.map(async (citizen) => {
         const complaintsCount = await Complaint.countDocuments({ reportedBy: citizen._id });
         return {
@@ -53,7 +49,6 @@ export const getAllCitizens = asynchandler(async (req, res) => {
     );
 });
 
-// Authority Management
 export const getAllAuthorities = asynchandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -84,7 +79,6 @@ export const getAllAuthorities = asynchandler(async (req, res) => {
     );
 });
 
-// Complaint Management
 export const getAllComplaints = asynchandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -112,7 +106,6 @@ export const getAllComplaints = asynchandler(async (req, res) => {
     );
 });
 
-// AI Dashboard Insights (Gemini)
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const getAiInsights = asynchandler(async (req, res) => {
@@ -125,7 +118,6 @@ export const getAiInsights = asynchandler(async (req, res) => {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        // Aggregate some platform data to feed to Gemini
         const recentComplaints = await Complaint.find().sort({ createdAt: -1 }).limit(10).select('title category status location');
         const totalPending = await Complaint.countDocuments({ status: { $in: ['Pending', 'In Progress'] } });
         
@@ -152,7 +144,6 @@ export const getAiInsights = asynchandler(async (req, res) => {
     }
 });
 
-// Member Details (Admin)
 export const getMemberDetails = asynchandler(async (req, res) => {
     const { memberId } = req.params;
 
@@ -199,7 +190,6 @@ export const getMemberDetails = asynchandler(async (req, res) => {
     );
 });
 
-// Advanced User Customization
 export const updateUser = asynchandler(async (req, res) => {
     const { memberId } = req.params;
     const { name, email, role, department, authorityLevel, isBanned } = req.body;
@@ -224,7 +214,6 @@ export const updateUser = asynchandler(async (req, res) => {
 
     await user.save();
 
-    // Broadcast update
     try {
         const { getIo } = await import('../../config/socket.js');
         getIo().to('admin_room').emit('user_updated', user);
@@ -237,7 +226,6 @@ export const updateUser = asynchandler(async (req, res) => {
     );
 });
 
-// Admin Complaint Delete Override
 export const deleteComplaintAdmin = asynchandler(async (req, res) => {
     const { complaintId } = req.params;
 
@@ -246,10 +234,8 @@ export const deleteComplaintAdmin = asynchandler(async (req, res) => {
         throw new ApiError(404, "Complaint not found");
     }
 
-    // Admins can delete ANY complaint instantly
     await Complaint.findByIdAndDelete(complaintId);
 
-    // Broadcast deletion so admin dashboards update
     try {
         const { getIo } = await import('../../config/socket.js');
         getIo().emit('complaint_deleted', { _id: complaintId });

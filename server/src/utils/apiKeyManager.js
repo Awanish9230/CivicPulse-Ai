@@ -21,7 +21,7 @@ class APIKeyManager {
             return null;
         }
         const key = this.geminiKeys[this.geminiIndex];
-        this.geminiIndex = (this.geminiIndex + 1) % this.geminiKeys.length; // Round robin
+        this.geminiIndex = (this.geminiIndex + 1) % this.geminiKeys.length; 
         return key;
     }
 
@@ -31,7 +31,7 @@ class APIKeyManager {
             return null;
         }
         const key = this.groqKeys[this.groqIndex];
-        this.groqIndex = (this.groqIndex + 1) % this.groqKeys.length; // Round robin
+        this.groqIndex = (this.groqIndex + 1) % this.groqKeys.length; 
         return key;
     }
 }

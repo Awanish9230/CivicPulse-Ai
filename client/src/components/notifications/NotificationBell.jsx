@@ -9,7 +9,6 @@ export const NotificationBell = () => {
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation();
 
-    // Close dropdown on route change
     useEffect(() => {
         setIsOpen(false);
     }, [location.pathname]);

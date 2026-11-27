@@ -5,7 +5,7 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const ROTATION_INTERVAL = 10 * 60 * 1000; // 10 minutes
+const ROTATION_INTERVAL = 10 * 60 * 1000; 
 
 const Profile = () => {
     const { user, fetchUser } = useContext(AuthContext);
@@ -83,7 +83,6 @@ const Profile = () => {
 
     const isAuthority = user.role === 'Authority';
 
-    // Animation Variants
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -99,13 +98,13 @@ const Profile = () => {
 
     return (
         <div className="relative min-h-[85vh] w-full overflow-hidden pb-20">
-            {/* Dynamic Background Elements */}
+            {}
             <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
                 <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full mix-blend-multiply filter blur-[120px] opacity-30 animate-blob" 
                      style={{ background: isAuthority ? 'radial-gradient(circle, rgba(234,179,8,0.4) 0%, rgba(234,179,8,0) 70%)' : 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0) 70%)' }}></div>
                 <div className="absolute top-[20%] right-[-20%] w-[60vw] h-[60vw] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob animation-delay-2000"
                      style={{ background: isAuthority ? 'radial-gradient(circle, rgba(249,115,22,0.4) 0%, rgba(249,115,22,0) 70%)' : 'radial-gradient(circle, rgba(168,85,247,0.4) 0%, rgba(168,85,247,0) 70%)' }}></div>
-                {/* Subtle Grid overlay */}
+                {}
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
             </div>
 
@@ -115,7 +114,7 @@ const Profile = () => {
                 animate="visible"
                 className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 relative z-10 pt-4"
             >
-                {/* Header */}
+                {}
                 <div className="border-b border-border/40 pb-6">
                     <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-text to-text/60 tracking-tight mb-2">
                         {isAuthority ? 'Command Center' : 'Secure Identity'}
@@ -127,7 +126,7 @@ const Profile = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                     
-                    {/* Ultimate Holographic ID Card */}
+                    {}
                     <motion.div 
                         variants={itemVariants}
                         whileHover={{ scale: 1.01, rotateX: 2, rotateY: -2 }}
@@ -138,10 +137,10 @@ const Profile = () => {
                                 : 'bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-900 shadow-[0_20px_50px_rgba(59,130,246,0.3)] border border-blue-400/30'
                         }`}
                     >
-                        {/* Shimmer effect on hover */}
+                        {}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
                         
-                        {/* Background Icon */}
+                        {}
                         <div className="absolute -top-16 -right-16 opacity-10 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-700 ease-out z-0">
                             {isAuthority ? <ShieldAlert size={320} /> : <Fingerprint size={320} />}
                         </div>
@@ -174,7 +173,7 @@ const Profile = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-white/10">
-                                {/* Rotation Timer */}
+                                {}
                                 {!isAuthority ? (
                                     <div className="bg-black/10 rounded-2xl p-4 border border-white/5 backdrop-blur-sm relative overflow-hidden">
                                         <div className={`absolute top-0 left-0 h-1 bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-1000`} style={{ width: `${(timeLeft / ROTATION_INTERVAL) * 100}%` }}></div>
@@ -198,7 +197,7 @@ const Profile = () => {
                                     </div>
                                 )}
 
-                                {/* Network Status */}
+                                {}
                                 <div className="bg-black/10 rounded-2xl p-4 border border-white/5 backdrop-blur-sm flex flex-col justify-center">
                                     <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-3">Encryption</p>
                                     <div className="flex items-center gap-3">
@@ -212,7 +211,7 @@ const Profile = () => {
                                     </div>
                                 </div>
                                 
-                                {/* Registration Date */}
+                                {}
                                 <div className="bg-black/10 rounded-2xl p-4 border border-white/5 backdrop-blur-sm flex flex-col justify-center md:items-end">
                                     <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-3">Initialization Date</p>
                                     <p className="font-mono text-xl font-bold text-white/90">
@@ -223,7 +222,7 @@ const Profile = () => {
                         </div>
                     </motion.div>
 
-                    {/* Trust Score / Strikes */}
+                    {}
                     {!isAuthority && (
                         <motion.div 
                             variants={itemVariants}
@@ -264,7 +263,7 @@ const Profile = () => {
                                             ) : (
                                                 <span className="font-black text-3xl opacity-60">{strike}</span>
                                             )}
-                                            {/* Gloss reflection */}
+                                            {}
                                             <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none rounded-t-xl"></div>
                                         </div>
                                     )
@@ -284,7 +283,7 @@ const Profile = () => {
                         </motion.div>
                     )}
 
-                    {/* Gamification / Civic Impact */}
+                    {}
                     {!isAuthority && (
                         <motion.div 
                             variants={itemVariants}
@@ -331,7 +330,7 @@ const Profile = () => {
                                                     </div>
                                                 </div>
                                                 
-                                                {/* Tooltip hint */}
+                                                {}
                                                 <AnimatePresence>
                                                     {hoveredBadge === idx && (
                                                         <motion.div 
@@ -352,7 +351,7 @@ const Profile = () => {
                         </motion.div>
                     )}
 
-                    {/* Account Settings / Meta - Authority spans full width if they don't have the other cards */}
+                    {}
                     <motion.div 
                         variants={itemVariants}
                         whileHover={{ y: -5 }}

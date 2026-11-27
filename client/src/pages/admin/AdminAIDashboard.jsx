@@ -21,7 +21,6 @@ const AdminAIDashboard = () => {
         }
     };
 
-    // Removed auto-fetch useEffect to save Gemini API quotas
 
     return (
         <div className="space-y-6">

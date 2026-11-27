@@ -49,10 +49,6 @@ export const useNetworkSync = () => {
                             headers: { 'Content-Type': 'multipart/form-data' }
                         });
                     } else if (item.type === 'chat') {
-                        // Assuming socket handles it, or there's a REST endpoint.
-                        // Wait, for chat we usually emit via Socket, but a REST fallback is helpful.
-                        // Let's assume we dispatch a custom event and Community.jsx handles emitting it if we don't have a REST route.
-                        // Let's just dispatch an event for Chat so Community.jsx can catch it and emit via socket.
                         window.dispatchEvent(new CustomEvent('sync-chat-message', { detail: item }));
                     }
                     
@@ -94,7 +90,6 @@ export const useNetworkSync = () => {
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
 
-        // Register Periodic Sync if Supported
         const registerPeriodicSync = async () => {
             if ('serviceWorker' in navigator && 'periodicSync' in ServiceWorkerRegistration.prototype) {
                 try {
@@ -102,7 +97,7 @@ export const useNetworkSync = () => {
                     if (status.state === 'granted') {
                         const registration = await navigator.serviceWorker.ready;
                         await registration.periodicSync.register('sync-latest-complaints', {
-                            minInterval: 12 * 60 * 60 * 1000, // 12 hours
+                            minInterval: 12 * 60 * 60 * 1000, 
                         });
                         console.log('Periodic background sync registered!');
                     }

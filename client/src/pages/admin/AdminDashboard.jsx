@@ -47,7 +47,6 @@ const AdminDashboard = () => {
         };
         fetchStats();
 
-        // Socket Connection for Real-Time Stats
         const socket = io(`${import.meta.env.VITE_API_URL}`);
         
         socket.on('connect', () => {
@@ -58,7 +57,6 @@ const AdminDashboard = () => {
         socket.on('stats_update', (data) => {
             console.log('Real-time stat update:', data);
             
-            // Log activity
             let activityTitle = 'Activity';
             let activityDesc = 'Update received';
             let Icon = Activity;
@@ -93,10 +91,9 @@ const AdminDashboard = () => {
                     color = 'text-emerald-500 bg-emerald-50';
                 }
                 
-                // Add to recent activities
                 setRecentActivities(prevActivities => {
                     const newActivity = { title: activityTitle, time: 'Just now', desc: activityDesc, icon: Icon, color };
-                    return [newActivity, ...prevActivities].slice(0, 4); // Keep last 4
+                    return [newActivity, ...prevActivities].slice(0, 4); 
                 });
 
                 return newStats;
@@ -124,7 +121,7 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* Top Stats Row */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                 {statCards.map((stat, idx) => (
                     <StatCard key={idx} {...stat} />
@@ -132,7 +129,7 @@ const AdminDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-                {/* AI Insights & System Health */}
+                {}
                 <div className="space-y-6">
                     <div className="bg-slate-900 rounded-3xl p-6 shadow-lg text-white">
                         <div className="flex items-center gap-3 mb-6">
@@ -162,7 +159,7 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Recent Activities */}
+                {}
                 <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
                     <h2 className="text-xl font-bold text-slate-800 mb-6">Recent Platform Activity</h2>
                     <div className="space-y-4">

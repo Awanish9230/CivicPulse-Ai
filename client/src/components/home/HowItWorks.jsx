@@ -17,14 +17,14 @@ const HowItWorks = () => {
             </div>
 
             <div className="relative">
-                {/* Connecting Line (Hidden on mobile) */}
+                {}
                 <div className="hidden lg:block absolute top-1/2 left-0 w-full h-1 bg-slate-100 -translate-y-1/2 z-0" />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
                     {steps.map((step, idx) => (
                         <div key={idx} className="relative group">
                             <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm text-center transition-all hover:shadow-xl hover:-translate-y-2 h-full">
-                                {/* Step Number */}
+                                {}
                                 <div className="absolute -top-4 -right-4 w-10 h-10 bg-slate-800 text-white font-black rounded-full flex items-center justify-center border-4 border-white shadow-sm z-20">
                                     {idx + 1}
                                 </div>

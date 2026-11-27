@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../../config/api';
 
-// initial feed moved inside component
 
 const LiveActivityFeed = () => {
     const [feed, setFeed] = useState([
@@ -12,7 +11,6 @@ const LiveActivityFeed = () => {
     ]);
 
     useEffect(() => {
-        // Connect to public socket namespace or main depending on setup
         const socket = io(SOCKET_URL);
 
         socket.on('new_complaint', (data) => {

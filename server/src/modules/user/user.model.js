@@ -3,7 +3,6 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-// Since this is for Anonymous Citizens, we don't store email/name
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -48,19 +47,12 @@ const userSchema = new mongoose.Schema({
         trim: true,
         enum: ['Public Works', 'Water & Sanitation', 'Power', 'Traffic & Safety', 'Animal Control', 'General Administration', 'Master Admin'],
     },
-    // anonymousIdLastRotated: {
-    //     type: Date,
-    //     default: Date.now
-    // },
-    // The device token is used to maintain session persistence and push notifications
     deviceToken: {
         type: String,
     },
-    // Refresh token for JWT auth
     refreshToken: {
         type: String,
     },
-    // Strike system for toxicity/abuse in Community Portal
     strikes: {
         type: Number,
         default: 0,
@@ -91,7 +83,6 @@ const userSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// password encryption using bcryptjs
 
 userSchema.pre("save", async function () {
     if (!this.isModified("password")) return ;
@@ -104,12 +95,11 @@ userSchema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password, this.password);
 }
 
-// generating access token and refresh token
 userSchema.methods.generateAccessToken = function (plainAnonymousId, plainPastIds = []) {    
     return jwt.sign(
         {
             _id: this._id,
-            anonymousId: plainAnonymousId || this.anonymousId, // Fallback if plain isn't provided
+            anonymousId: plainAnonymousId || this.anonymousId, 
             pastAnonymousIds: plainPastIds
         },
         process.env.JWT_SECRET,
@@ -133,22 +123,18 @@ userSchema.methods.generateRefreshToken = function () {
 }
 
 userSchema.methods.generatePasswordResetToken = function() {
-    // Generate token
     const resetToken = crypto.randomBytes(20).toString('hex');
 
-    // Hash token and set to resetPasswordToken field
     this.resetPasswordToken = crypto
         .createHash('sha256')
         .update(resetToken)
         .digest('hex');
 
-    // Set expire to 15 minutes
     this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
 
-    return resetToken; // Return the unhashed token for the email
+    return resetToken; 
 };
 
-// generates random anonymous id for each user
 userSchema.statics.generateAnonymousId = function () {
     return `CP-${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
 };
@@ -162,11 +148,9 @@ function getDerivedKey(secret, isGlobalSecret = false) {
         }
         return keyCache.get(secret);
     }
-    // Do not cache user passwords to prevent memory exhaustion (DoS) attacks
     return crypto.scryptSync(secret, 'civicpulse_salt_2026', 32);
 }
 
-// Encrypt Identity using Global Secret
 userSchema.statics.encryptIdentity = function(plaintext) {
     if (!plaintext) return null;
     const globalSecret = process.env.ACCESS_TOKEN_SECRET || 'civicpulse_global_fallback_secret_2026';
@@ -179,16 +163,14 @@ userSchema.statics.encryptIdentity = function(plaintext) {
     return `${iv.toString('hex')}:${authTag}:${encrypted}`;
 };
 
-// Decrypt Identity using Global Secret (with fallback to password for legacy compatibility)
 userSchema.statics.decryptIdentity = function(ciphertext, password) {
     if (!ciphertext) return null;
-    if (!ciphertext.includes(':')) return ciphertext; // In case it's already plaintext (legacy users)
+    if (!ciphertext.includes(':')) return ciphertext; 
     
     const [ivHex, authTagHex, encryptedHex] = ciphertext.split(':');
     const iv = Buffer.from(ivHex, 'hex');
     const authTag = Buffer.from(authTagHex, 'hex');
 
-    // Attempt 1: Try decrypting with Global Secret (New Method)
     try {
         const globalSecret = process.env.ACCESS_TOKEN_SECRET || 'civicpulse_global_fallback_secret_2026';
         const key = getDerivedKey(globalSecret, true);
@@ -198,7 +180,6 @@ userSchema.statics.decryptIdentity = function(ciphertext, password) {
         decrypted += decipher.final('utf8');
         return decrypted;
     } catch (e) {
-        // Attempt 2: Try decrypting with User Password (Legacy Method)
         if (password) {
             try {
                 const key = getDerivedKey(password, false);

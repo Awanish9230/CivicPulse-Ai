@@ -6,7 +6,7 @@ function arrayLimit(val) {
 
 const complaintSchema = new mongoose.Schema({
     reportedBy: {
-        type: String, // Store anonymousId directly instead of User ref
+        type: String, 
         required: true,
     },
     category: {
@@ -21,7 +21,7 @@ const complaintSchema = new mongoose.Schema({
             default: 'Point',
         },
         coordinates: {
-            type: [Number], // [longitude, latitude]
+            type: [Number], 
             required: true,
         }
     },
@@ -33,10 +33,10 @@ const complaintSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: true, // This will store the English translated version
+        required: true, 
     },
     originalDescription: {
-        type: String, // Stores the user's native text
+        type: String, 
     },
     originalLanguage: {
         type: String,
@@ -44,10 +44,10 @@ const complaintSchema = new mongoose.Schema({
     },
     imageUrl: {
         type: String,
-        required: false, // Make optional for backward compatibility
+        required: false, 
     },
     imageUrls: {
-        type: [String], // Array of secure URLs from Cloudinary
+        type: [String], 
         default: [],
         validate: [arrayLimit, 'Exceeds the limit of 5 photos']
     },
@@ -68,12 +68,12 @@ const complaintSchema = new mongoose.Schema({
         type: Date,
     },
     upvotedBy: {
-        type: [String], // Array of anonymousIds
+        type: [String], 
         default: [],
     },
     supportCount: {
         type: Number,
-        default: 1, // Represents number of merged duplicate reports
+        default: 1, 
     },
     mergedWith: {
         type: mongoose.Schema.Types.ObjectId,
@@ -121,7 +121,6 @@ const complaintSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// Geospatial index for duplicate detection & mapping
 complaintSchema.index({ location: '2dsphere' });
 
 const Complaint = mongoose.model('Complaint', complaintSchema);

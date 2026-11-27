@@ -15,7 +15,7 @@ const Notifications = () => {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [filterType, setFilterType] = useState('All'); // All, Unread
+    const [filterType, setFilterType] = useState('All'); 
     
     const observer = useRef();
     
@@ -29,7 +29,6 @@ const Notifications = () => {
             
             if (append) {
                 setNotifications(prev => {
-                    // Prevent duplicates when appending
                     const existingIds = new Set(prev.map(n => n._id));
                     const uniqueNew = newNotifs.filter(n => !existingIds.has(n._id));
                     return [...prev, ...uniqueNew];
@@ -59,7 +58,6 @@ const Notifications = () => {
         const handleNewNotification = (notification) => {
             if (filterType === 'All' || (filterType === 'Unread' && !notification.isRead)) {
                 setNotifications(prev => {
-                    // Avoid duplicates
                     if (prev.some(n => n._id === notification._id)) return prev;
                     return [notification, ...prev];
                 });
@@ -73,7 +71,6 @@ const Notifications = () => {
         };
     }, [socket, filterType]);
 
-    // Infinite scrolling
     const lastNotificationRef = useCallback(node => {
         if (loading) return;
         if (observer.current) observer.current.disconnect();

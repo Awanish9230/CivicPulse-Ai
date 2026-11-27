@@ -7,7 +7,6 @@ import toast from 'react-hot-toast';
 const AuthoritySettings = () => {
     const { user } = useContext(AuthContext);
     
-    // Mock settings state
     const [preferences, setPreferences] = useState({
         emailAlerts: true,
         pushNotifications: true,
@@ -19,7 +18,6 @@ const AuthoritySettings = () => {
 
     const handleSave = () => {
         setSaving(true);
-        // Mock save delay
         setTimeout(() => {
             setSaving(false);
             toast.success('Settings updated successfully');
@@ -54,7 +52,7 @@ const AuthoritySettings = () => {
                 </button>
             </div>
 
-            {/* Profile Section */}
+            {}
             <motion.div 
                 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
                 className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden"
@@ -101,7 +99,7 @@ const AuthoritySettings = () => {
                 </div>
             </motion.div>
 
-            {/* Preferences Section */}
+            {}
             <motion.div 
                 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}
                 className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden"
@@ -154,7 +152,7 @@ const AuthoritySettings = () => {
                 </div>
             </motion.div>
 
-            {/* System Actions */}
+            {}
             <motion.div 
                 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
                 className="bg-red-50 rounded-[2rem] border border-red-100 shadow-sm overflow-hidden"

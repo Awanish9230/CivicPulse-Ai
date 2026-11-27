@@ -27,7 +27,7 @@ const RecentReports = () => {
         switch(status) {
             case 'Resolved': return "text-emerald-600 bg-emerald-50 border-emerald-200";
             case 'In Progress': return "text-amber-600 bg-amber-50 border-amber-200";
-            default: return "text-indigo-600 bg-indigo-50 border-indigo-200"; // Pending / Verified
+            default: return "text-indigo-600 bg-indigo-50 border-indigo-200"; 
         }
     };
     return (

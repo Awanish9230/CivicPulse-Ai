@@ -2,13 +2,11 @@ import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LazyLoad from '../components/common/LazyLoad';
 
-// Phase 1 Components (Critical for FCP - Synchronous)
 import HeroSection from '../components/home/HeroSection';
 import TrustedStats from '../components/home/TrustedStats';
 import HowItWorks from '../components/home/HowItWorks';
 import KeyFeatures from '../components/home/KeyFeatures';
 
-// Lazy Loaded Components (Deferred to avoid blocking main thread)
 const ComplaintCategories = React.lazy(() => import('../components/home/ComplaintCategories'));
 const LiveComplaintMap = React.lazy(() => import('../components/home/LiveComplaintMap'));
 const RecentReports = React.lazy(() => import('../components/home/RecentReports'));
@@ -43,13 +41,13 @@ const Home = () => {
     return (
         <div className="bg-white min-h-screen font-sans text-slate-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
-                {/* Phase 1: Core (Loaded instantly) */}
+                {}
                 <HeroSection />
                 <div className="hidden md:block"><TrustedStats /></div>
                 <HowItWorks />
                 <KeyFeatures />
                 
-                {/* Phase 2: Interactive Modules */}
+                {}
                 <LazyLoad height="300px">
                     <div className="hidden md:block"><ComplaintCategories /></div>
                 </LazyLoad>
@@ -65,7 +63,7 @@ const Home = () => {
                     <LazyLoad height="300px"><LiveActivityFeed /></LazyLoad>
                 </div>
 
-                {/* Phase 3: Social Proof & Trust */}
+                {}
                 <div className="hidden md:block">
                     <LazyLoad height="300px"><SuccessStories /></LazyLoad>
                     <LazyLoad height="400px"><Testimonials /></LazyLoad>
@@ -78,7 +76,7 @@ const Home = () => {
                     <LazyLoad height="300px"><AwardsRecognition /></LazyLoad>
                 </div>
 
-                {/* Phase 4: Engagement */}
+                {}
                 <div className="hidden md:block">
                     <LazyLoad height="500px"><FAQSection /></LazyLoad>
                 </div>
@@ -88,7 +86,7 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Floating Buttons */}
+            {}
             <LazyLoad height="0px" rootMargin="0px">
                 <FloatingButtons />
             </LazyLoad>

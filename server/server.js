@@ -22,26 +22,20 @@ import appealRoutes from './src/modules/appeal/appeal.routes.js';
 import petitionRoutes from './src/modules/petition/petition.routes.js';
 import startEscalationCron from './src/utils/escalationCron.js';
 
-// Connect to database
 connectDB();
  
 const app = express();
 
-// Trust reverse proxies (like Render) to fix express-rate-limit IP issues
 app.set('trust proxy', 1);
 
 const server = http.createServer(app);
 
-// Initialize Socket.io
 initSocket(server);
 
-// Start Cron Jobs
 startEscalationCron();
 
-// Security middleware
 app.use(helmet());
 
-// Enable CORS (MUST be before Rate Limiter so 429 errors get CORS headers)
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
@@ -50,27 +44,23 @@ app.use(cors({
     credentials: true,
 }));
 
-// Global Rate Limiting
 const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'development' ? 5000 : 500, // Increased limit for production dashboards
+    windowMs: 15 * 60 * 1000, 
+    max: process.env.NODE_ENV === 'development' ? 5000 : 500, 
     message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
 });
 app.use(globalLimiter);
 
-// Compression middleware
 app.use(compression());
 
-// Body parser
 app.use(express.json());
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 
-// Routes
 app.get('/', (req, res) => {
     res.send('CivicPulse API is running...');
 });
@@ -85,7 +75,6 @@ app.use("/api/v1/public", publicRoutes);
 app.use("/api/v1/appeal", appealRoutes);
 app.use("/api/v1/petition", petitionRoutes);
 
-// Error Handling Middlewares
 app.use(notFound);
 app.use(errorHandler);
 

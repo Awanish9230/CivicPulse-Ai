@@ -10,13 +10,12 @@ const AuthorityChat = () => {
     const { user } = useContext(AuthContext);
     const [activeChannel, setActiveChannel] = useState('ask-authority');
     
-    // Chat State
     const [socket, setSocket] = useState(null);
     const [messages, setMessages] = useState({});
     const [newMessage, setNewMessage] = useState('');
     const [onlineCounts, setOnlineCounts] = useState({});
     const [replyingTo, setReplyingTo] = useState(null);
-    const [editingMsg, setEditingMsg] = useState(null); // { _id, text }
+    const [editingMsg, setEditingMsg] = useState(null); 
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const chatContainerRef = useRef(null);
@@ -27,7 +26,6 @@ const AuthorityChat = () => {
         'announcements': 'local-community-announcements'
     };
 
-    // Socket Initialization for Chat
     useEffect(() => {
         const newSocket = io(`${import.meta.env.VITE_API_URL}`);
         setSocket(newSocket);
@@ -42,7 +40,6 @@ const AuthorityChat = () => {
         newSocket.on('receiveMessage', (msg) => {
             setMessages(prev => {
                 const channelMsgs = prev[msg.channel] || [];
-                // Check if message already exists
                 if (channelMsgs.find(m => m._id === msg._id)) return prev;
                 return {
                     ...prev,
@@ -105,7 +102,6 @@ const AuthorityChat = () => {
         }
     };
 
-    // Auto-scroll when new messages arrive (if already at bottom)
     useEffect(() => {
         if (!showScrollButton) {
             scrollToBottom();
@@ -135,7 +131,6 @@ const AuthorityChat = () => {
         }
     };
 
-    // Load message history when switching channels
     useEffect(() => {
         loadHistory(activeChannel);
     }, [activeChannel]);
@@ -174,7 +169,6 @@ const AuthorityChat = () => {
                 { text: newText },
                 { withCredentials: true }
             );
-            // Broadcast via socket
             if (socket) {
                 socket.emit('editMessage', {
                     room: roomMap[activeChannel],
@@ -195,7 +189,6 @@ const AuthorityChat = () => {
             await axios.delete(`${import.meta.env.VITE_API_URL}/api/v1/message/${msgId}`, {
                 withCredentials: true
             });
-            // Broadcast via socket
             if (socket) {
                 socket.emit('deleteMessage', {
                     room: roomMap[activeChannel],
@@ -212,7 +205,7 @@ const AuthorityChat = () => {
     return (
         <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full bg-white relative">
             
-            {/* Sidebar Channels */}
+            {}
             <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 flex flex-col shrink-0">
                 <div className="p-4 border-b border-slate-200 hidden md:block">
                     <h2 className="font-black text-slate-800 text-lg">Community Chat</h2>
@@ -270,10 +263,10 @@ const AuthorityChat = () => {
                 </div>
             </div>
 
-            {/* Chat Area */}
+            {}
             <div className="flex-1 flex flex-col min-h-0 relative bg-slate-50/50">
                 
-                {/* Chat Header */}
+                {}
                 <div className="h-16 border-b border-slate-200 bg-white flex items-center px-6 justify-between shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
@@ -291,7 +284,7 @@ const AuthorityChat = () => {
                     </div>
                 </div>
 
-                {/* Messages List */}
+                {}
                 <div 
                     className="flex-1 overflow-y-auto p-6 relative" 
                     ref={chatContainerRef}
@@ -370,7 +363,7 @@ const AuthorityChat = () => {
                                                 <p className="text-[15px] leading-relaxed">{msg.text || msg.content}</p>
                                             )}
                                             
-                                            {/* Action Buttons (Hover) */}
+                                            {}
                                             {!isCurrentlyEditing && (
                                                 <div className={`absolute ${isMe ? '-left-24' : '-right-24'} top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1`}>
                                                     {!isMe && (
@@ -411,7 +404,7 @@ const AuthorityChat = () => {
 
                 </div>
 
-                {/* Scroll to bottom FAB */}
+                {}
                 <AnimatePresence>
                     {showScrollButton && (
                         <motion.button
@@ -426,9 +419,9 @@ const AuthorityChat = () => {
                     )}
                 </AnimatePresence>
 
-                {/* Input Area */}
+                {}
                 <div className="p-4 bg-white border-t border-slate-200 shrink-0">
-                    {/* Reply Preview */}
+                    {}
                     <AnimatePresence>
                         {replyingTo && (
                             <motion.div 

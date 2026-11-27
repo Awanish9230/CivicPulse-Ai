@@ -5,7 +5,6 @@ import { upload } from '../../middlewares/uploadmiddleware.js';
 
 const router = Router();
 
-// Protect all petition routes
 router.use(verifyJWT);
 
 router.route('/')

@@ -19,11 +19,11 @@ const HeroSection = () => {
 
     return (
         <section className="relative w-full rounded-[2rem] md:rounded-[40px] bg-[#F8FAFC] border border-slate-200 overflow-hidden py-16 sm:py-20 md:py-32 px-4 md:px-6 text-center shadow-inner">
-            {/* Optimized Static Background (No animated huge blurs) */}
+            {}
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-400/20 to-transparent pointer-events-none" />
 
-            {/* Floating Cards (Moved to section root to avoid text overlap) */}
+            {}
             <div className="absolute hidden lg:block left-12 top-1/4 animate-bounce z-20 pointer-events-none" style={{ animationDuration: '4s' }}>
                 <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-[0_10px_40px_rgb(0,0,0,0.1)] border border-slate-100 flex items-center gap-3 transform -rotate-6">
                     <div className="p-3 bg-red-100 text-red-600 rounded-xl"><Activity size={24} /></div>
@@ -46,7 +46,7 @@ const HeroSection = () => {
 
             <div className="relative z-30 max-w-4xl mx-auto space-y-8 md:space-y-10">
                 
-                {/* Badge */}
+                {}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -60,7 +60,7 @@ const HeroSection = () => {
                     Join 10,000+ citizens resolving civic issues
                 </motion.div>
                 
-                {/* Headline */}
+                {}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -75,7 +75,7 @@ const HeroSection = () => {
                     </h1>
                 </motion.div>
                 
-                {/* Description */}
+                {}
                 <motion.p 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -85,7 +85,7 @@ const HeroSection = () => {
                     CivicPulse AI empowers citizens to report local issues, track resolution in real-time, and hold authorities accountable—all while ensuring 100% untraceable anonymity.
                 </motion.p>
 
-                {/* CTAs */}
+                {}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

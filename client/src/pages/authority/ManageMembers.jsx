@@ -11,13 +11,11 @@ const ManageMembers = () => {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // Add Member Modal State
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
         name: '', email: '', password: '', authorityLevel: 'Junior', department: 'General Administration'
     });
 
-    // Employee Report Modal State
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [reportData, setReportData] = useState(null);
     const [loadingReport, setLoadingReport] = useState(false);
@@ -26,7 +24,6 @@ const ManageMembers = () => {
 
     const fetchMembers = async () => {
         try {
-            // Using department-members to get active/completed task counts too!
             const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/authority/department-members`, {
                 withCredentials: true
             });
@@ -55,7 +52,7 @@ const ManageMembers = () => {
             toast.success(data.message);
             setShowModal(false);
             setFormData({ name: '', email: '', password: '', authorityLevel: 'Junior', department: 'General Administration' });
-            fetchMembers(); // Refresh the list
+            fetchMembers(); 
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to create member');
         }
@@ -182,7 +179,7 @@ const ManageMembers = () => {
                 </div>
             )}
 
-            {/* Employee Detailed Report Modal */}
+            {}
             <AnimatePresence>
                 {selectedEmployee && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -283,7 +280,7 @@ const ManageMembers = () => {
                 )}
             </AnimatePresence>
 
-            {/* Add Member Modal (Only HOD or Admin can add members) */}
+            {}
             {showModal && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <motion.div 

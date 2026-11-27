@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema({
     recipient: {
-        type: String, // Can be ObjectId (stringified) or anonymousId (CP-XYZ)
+        type: String, 
         required: true,
         index: true
     },
@@ -40,7 +40,7 @@ const notificationSchema = new mongoose.Schema({
         ref: 'Complaint'
     },
     task: {
-        type: mongoose.Schema.Types.ObjectId, // Can refer to Complaint if tasks are complaints, or specific task model
+        type: mongoose.Schema.Types.ObjectId, 
         ref: 'Complaint'
     },
     chat: {

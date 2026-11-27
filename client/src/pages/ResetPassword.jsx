@@ -11,7 +11,6 @@ const ResetPassword = () => {
     const [searchParams] = useSearchParams();
     const role = searchParams.get('role') || 'citizen';
     
-    // Determine styles and links based on role
     const isAuthority = role === 'authority';
     const isAdmin = role === 'admin';
     
@@ -30,7 +29,6 @@ const ResetPassword = () => {
     const [isSuccess, setIsSuccess] = useState(false);
     const [focusedField, setFocusedField] = useState(null);
 
-    // Password strength validation
     const validatePassword = (pass) => {
         if (pass.length < 8) return "Password must be at least 8 characters long";
         if (!/[A-Z]/.test(pass)) return "Password must contain an uppercase letter";
@@ -67,7 +65,7 @@ const ResetPassword = () => {
 
     return (
         <div className={`min-h-screen relative overflow-hidden flex items-center justify-center p-2 sm:p-4 md:p-8 ${isAdmin ? 'bg-orange-950' : isAuthority ? 'bg-emerald-950' : 'bg-[#0F172A]'}`}>
-            {/* Optimized Background without expensive blurs/mix-blend-modes */}
+            {}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <motion.div 
                     animate={{ opacity: [0.4, 0.6, 0.4] }}
@@ -129,7 +127,7 @@ const ResetPassword = () => {
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-                                {/* New Password Field */}
+                                {}
                                 <div className="relative">
                                     <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${focusedField === 'password' ? (isAdmin ? 'bg-orange-500/20 blur-md' : isAuthority ? 'bg-emerald-500/20 blur-md' : 'bg-primary/20 blur-md') : 'opacity-0'}`}></div>
                                     <div className={`relative bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-2xl transition-all duration-300 ${isAdmin ? 'focus-within:border-orange-500/50' : isAuthority ? 'focus-within:border-emerald-500/50' : 'focus-within:border-primary/50'}`}>
@@ -160,7 +158,7 @@ const ResetPassword = () => {
                                     </div>
                                 </div>
                                 
-                                {/* Confirm Password Field */}
+                                {}
                                 <div className="relative">
                                     <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${focusedField === 'confirm' ? (isAdmin ? 'bg-orange-500/20 blur-md' : isAuthority ? 'bg-emerald-500/20 blur-md' : 'bg-primary/20 blur-md') : 'opacity-0'}`}></div>
                                     <div className={`relative bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-2xl transition-all duration-300 ${isAdmin ? 'focus-within:border-orange-500/50' : isAuthority ? 'focus-within:border-emerald-500/50' : 'focus-within:border-primary/50'}`}>

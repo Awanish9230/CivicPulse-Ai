@@ -8,7 +8,6 @@ export const NotificationDropdown = ({ isOpen, onClose }) => {
     const { notifications, unreadCount, markAllAsRead, markAsRead, clearAllNotifications } = useContext(NotificationContext);
     const dropdownRef = useRef(null);
 
-    // Close when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {

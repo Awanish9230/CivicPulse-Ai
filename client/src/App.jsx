@@ -85,7 +85,6 @@ const Backups = React.lazy(() => import('./pages/admin/Backups'));
 const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
 const AdminAppeals = React.lazy(() => import('./pages/admin/AdminAppeals'));
 
-// Dynamic Title Component
 const DynamicTitle = () => {
   const location = useLocation();
 
@@ -129,7 +128,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           
-          {/* Citizen Zone */}
+          {}
           <Route path="/" element={<AppLayout />}>
             <Route index element={<Home />} />
             <Route path="complaints" element={<MyComplaints />} />
@@ -140,7 +139,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
           </Route>
 
-          {/* Authority Zone */}
+          {}
           <Route path="/authority" element={<AuthorityLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="tasks" element={<AuthorityTasks />} />
@@ -150,7 +149,7 @@ function App() {
             <Route path="settings" element={<AuthoritySettings />} />
           </Route>
 
-          {/* Admin Zone */}
+          {}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="authorities" element={<ManageAuthorities />} />
@@ -176,7 +175,7 @@ function App() {
             <Route path="backups" element={<Backups />} />
             <Route path="settings" element={<AdminSettings />} />
             <Route path="appeals" element={<AdminAppeals />} />
-            {/* The rest of the routes will be added as they are built */}
+            {}
             <Route path="*" element={<div className="p-8"><h1 className="text-2xl font-bold">Coming Soon</h1><p>This module is under development.</p></div>} />
           </Route>
 

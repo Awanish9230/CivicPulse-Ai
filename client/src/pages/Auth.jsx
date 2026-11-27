@@ -9,13 +9,11 @@ import { AuthContext } from '../context/AuthContext';
 const Auth = () => {
     const [isLogin, setIsLogin] = useState(true);
     
-    // Form state
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     
-    // Input focus states for floating labels
     const [focusedField, setFocusedField] = useState(null);
 
     const navigate = useNavigate();
@@ -44,7 +42,7 @@ const Auth = () => {
                 navigate('/');
             } else {
                 toast.success("Account created successfully! Please login to continue.");
-                setIsLogin(true); // Switch to login after signup
+                setIsLogin(true); 
                 setPassword('');
             }
         } catch (error) {
@@ -58,7 +56,7 @@ const Auth = () => {
     return (
         <div className="min-h-[100dvh] md:h-screen relative overflow-hidden bg-[#0a0f1c] flex items-center justify-center p-4 md:p-0">
             
-            {/* Abstract Background Image */}
+            {}
             <div className="absolute inset-0 pointer-events-none">
                 <div 
                     className="absolute inset-0 bg-[url('/abstract-city-bg.png')] bg-cover bg-center"
@@ -79,7 +77,7 @@ const Auth = () => {
             >
                 <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-3xl overflow-hidden p-6 md:p-8">
                     
-                    {/* Header */}
+                    {}
                     <div className="text-center mb-6 md:mb-8">
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.9 }}
@@ -119,7 +117,7 @@ const Auth = () => {
                             onSubmit={handleCitizenSubmit}
                             className="space-y-4"
                         >
-                            {/* Email Field */}
+                            {}
                             <div className="relative group">
                                 <div className={`absolute inset-0 rounded-xl transition-all duration-300 ${focusedField === 'email' ? 'bg-blue-500/10 blur-md' : 'opacity-0'}`}></div>
                                 <div className="relative bg-[#0f172a]/80 border border-slate-700/50 rounded-xl focus-within:border-blue-500/50 transition-all duration-300">
@@ -143,7 +141,7 @@ const Auth = () => {
                                 </div>
                             </div>
 
-                            {/* Password Field */}
+                            {}
                             <div className="relative group">
                                 <div className={`absolute inset-0 rounded-xl transition-all duration-300 ${focusedField === 'password' ? 'bg-blue-500/10 blur-md' : 'opacity-0'}`}></div>
                                 <div className="relative bg-[#0f172a]/80 border border-slate-700/50 rounded-xl focus-within:border-blue-500/50 transition-all duration-300">

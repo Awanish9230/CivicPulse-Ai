@@ -10,7 +10,6 @@ export const submitAppeal = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Appeal reason is required.");
     }
 
-    // Check if user already has a pending appeal
     const existingAppeal = await Appeal.findOne({ user: req.user._id, status: 'Pending' });
     if (existingAppeal) {
         throw new ApiError(400, "You already have a pending appeal.");
@@ -31,7 +30,7 @@ export const getAppeals = asyncHandler(async (req, res) => {
 
 export const resolveAppeal = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { status, note } = req.body; // status: 'Approved' or 'Rejected'
+    const { status, note } = req.body; 
 
     if (!['Approved', 'Rejected'].includes(status)) {
         throw new ApiError(400, "Invalid status.");
@@ -53,7 +52,7 @@ export const resolveAppeal = asyncHandler(async (req, res) => {
             user.isBanned = false;
             user.banUntil = null;
             user.restrictedFeatures = [];
-            user.strikes = 0; // Reset strikes on successful appeal
+            user.strikes = 0; 
             await user.save({ validateBeforeSave: false });
         }
     }

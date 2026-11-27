@@ -49,7 +49,6 @@ const ManageComplaints = () => {
         try {
             await axios.delete(`${import.meta.env.VITE_API_URL}/api/v1/admin/complaints/${complaintId}`, { withCredentials: true });
             toast.success("Complaint forcefully deleted");
-            // The socket will trigger fetchComplaints automatically
         } catch (error) {
             toast.error("Failed to delete complaint");
         }

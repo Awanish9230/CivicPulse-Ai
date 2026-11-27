@@ -1,5 +1,5 @@
 const DB_NAME = 'CivicPulseOfflineDB';
-const DB_VERSION = 2; // Bumped version for new cache stores
+const DB_VERSION = 2; 
 
 export const initDB = () => {
     return new Promise((resolve, reject) => {
@@ -21,14 +21,12 @@ export const initDB = () => {
 
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
-            // Store for pending outbox items (complaints, chat messages, etc.)
             if (!db.objectStoreNames.contains('outbox')) {
                 const store = db.createObjectStore('outbox', { keyPath: 'id', autoIncrement: true });
                 store.createIndex('type', 'type', { unique: false });
                 store.createIndex('timestamp', 'timestamp', { unique: false });
             }
             
-            // Key-value store for Local-First data caching
             if (!db.objectStoreNames.contains('local_cache')) {
                 db.createObjectStore('local_cache', { keyPath: 'key' });
             }
@@ -43,8 +41,8 @@ export const saveToOutbox = async (type, payload) => {
         const store = transaction.objectStore('outbox');
         
         const item = {
-            type,         // e.g. 'complaint', 'chat'
-            payload,      // the data to send to the server
+            type,         
+            payload,      
             timestamp: new Date().toISOString()
         };
         
@@ -82,7 +80,6 @@ export const removeFromOutbox = async (id) => {
     });
 };
 
-// Local-First Caching Helpers
 export const setCachedData = async (key, data) => {
     const db = await initDB();
     return new Promise((resolve, reject) => {
