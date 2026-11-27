@@ -57,6 +57,9 @@ export default defineConfig({
             if (id.includes('leaflet.heat')) {
               return;
             }
+            if (id.includes('maplibre-gl')) {
+              return 'vendor-maplibre';
+            }
             if (id.includes('framer-motion')) {
               return 'vendor-motion';
             }

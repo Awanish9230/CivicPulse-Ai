@@ -12,21 +12,18 @@ const FloatingButtons: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    if (!showScroll) return null;
 
     return (
-        <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col gap-3">
-            {showScroll && (
-                <button
-                    onClick={scrollToTop}
-                    className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-xl hover:bg-slate-800 transition-colors"
-                    aria-label="Scroll to top"
-                >
-                    <ArrowUp size={20} />
-                </button>
-            )}
+        <div className="fixed bottom-20 md:bottom-6 right-5 z-40">
+            <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="w-11 h-11 bg-white text-slate-700 border border-slate-200 rounded-full flex items-center justify-center shadow-md hover:bg-slate-50 hover:text-indigo-600 transition-colors cursor-pointer"
+                aria-label="Scroll to top"
+            >
+                <ArrowUp size={18} />
+            </button>
         </div>
     );
 };
