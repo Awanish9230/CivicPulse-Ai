@@ -27,3 +27,13 @@ export const getLeaderboard = asyncHandler(async (_req: Request, res: Response) 
     const leaderboard = await publicService.getLeaderboard();
     return res.status(200).json(new ApiResponse(200, leaderboard, "Leaderboard fetched successfully"));
 });
+
+export const getLiveActivity = asyncHandler(async (_req: Request, res: Response) => {
+    const activity = await publicService.getLiveActivity();
+    return res.status(200).json(new ApiResponse(200, activity, "Live activity fetched successfully"));
+});
+
+export const getPublicPetitions = asyncHandler(async (_req: Request, res: Response) => {
+    const petitions = await publicService.getPublicPetitions();
+    return res.status(200).json(new ApiResponse(200, petitions, "Public petitions fetched successfully"));
+});

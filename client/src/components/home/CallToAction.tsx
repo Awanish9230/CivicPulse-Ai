@@ -1,35 +1,54 @@
-import React from 'react';
-import { ArrowRight, Shield } from 'lucide-react';
+import React, { useContext } from 'react';
+import { ArrowRight, Download, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 const CallToAction: React.FC = () => {
+    const auth = useContext(AuthContext);
+    const user = auth?.user;
+    const { isInstallable, isStandalone, handleInstallClick } = usePWAInstall();
+
     return (
-        <section className="py-24">
-            <div className="bg-slate-900 rounded-[40px] p-8 md:p-16 text-white text-center relative overflow-hidden border border-slate-800 shadow-2xl">
-                {}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500/10 to-transparent pointer-events-none" />
-
-                <div className="relative z-10 max-w-3xl mx-auto space-y-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 font-semibold text-sm backdrop-blur-sm">
-                        <Shield size={16} /> 100% Anonymous & Free
+        <section className="rounded-3xl bg-gradient-to-br from-indigo-50/90 via-white to-sky-50/80 border border-indigo-100 hover:border-indigo-200 p-6 sm:p-10 shadow-[0_1px_3px_rgba(15,23,42,0.04)] hover:shadow-md transition-all duration-200">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-3 max-w-2xl">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-indigo-100 text-indigo-700 text-xs font-bold">
+                        <ShieldCheck size={14} /> 100% Anonymous & Free for Citizens
                     </div>
-
-                    <h2 className="text-4xl md:text-6xl font-black leading-tight tracking-tight">
-                        Ready to Make Your<br />City Better?
+                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                        Ready to report an issue or join your neighborhood?
                     </h2>
-
-                    <p className="text-lg md:text-xl text-slate-400 font-medium leading-relaxed max-w-xl mx-auto">
-                        Join thousands of citizens who are already making a difference. Report an issue today and watch your city transform.
+                    <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+                        Submit verified civic complaints in seconds, support local petitions, and follow resolution progress directly with municipal teams.
                     </p>
+                </div>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                        <Link to="/auth?mode=register" className="px-8 py-4 bg-white text-slate-900 font-bold rounded-2xl flex items-center gap-2 hover:bg-slate-100 transition-colors shadow-lg">
-                            Get Started Free <ArrowRight size={20} />
-                        </Link>
-                        <Link to="/community" className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl flex items-center gap-2 hover:bg-white/10 transition-colors backdrop-blur-sm">
-                            Explore Community
-                        </Link>
-                    </div>
+                <div className="flex flex-wrap items-center gap-3 shrink-0">
+                    <Link
+                        to={user ? '/complaints' : '/auth?mode=register'}
+                        className="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] text-white text-sm font-bold shadow-sm transition-all"
+                    >
+                        {user ? 'File a Complaint' : 'Get Started Free'}
+                        <ArrowRight size={17} className="group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+
+                    <Link
+                        to="/community"
+                        className="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-white hover:bg-slate-50 hover:border-indigo-200 hover:-translate-y-0.5 text-slate-800 border border-slate-200 text-sm font-bold transition-all"
+                    >
+                        Explore Community
+                    </Link>
+
+                    {isInstallable && !isStandalone && (
+                        <button
+                            type="button"
+                            onClick={handleInstallClick}
+                            className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-white hover:bg-slate-50 hover:border-indigo-300 hover:-translate-y-0.5 text-indigo-700 border border-indigo-200 text-sm font-bold transition-all cursor-pointer"
+                        >
+                            <Download size={16} /> Install App
+                        </button>
+                    )}
                 </div>
             </div>
         </section>

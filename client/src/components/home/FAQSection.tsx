@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, HelpCircle } from 'lucide-react';
 
 interface FAQItem {
     q: string;
@@ -7,40 +7,72 @@ interface FAQItem {
 }
 
 const faqs: FAQItem[] = [
-    { q: "Is my identity truly anonymous?", a: "Yes. CivicPulse AI uses rotating anonymous IDs. Your personal information is never attached to any complaint. Even our admins cannot trace a complaint back to you." },
-    { q: "How does the AI verify complaints?", a: "Our Gemini 2.5 Flash AI analyzes your complaint text and images to classify the category, detect spam or duplicates, and assess priority level—all within seconds." },
-    { q: "Can authorities see who filed the complaint?", a: "No. Authorities only see the complaint details, location, and images. The reporter's identity is completely hidden from all users, including Super Admins." },
-    { q: "How fast are issues typically resolved?", a: "Resolution times vary by category and severity. On average, high-priority issues are resolved within 48-72 hours. Our escalation system ensures nothing is forgotten." },
-    { q: "Is CivicPulse AI free to use?", a: "Yes, CivicPulse AI is completely free for all citizens. There are no hidden charges, premium tiers, or paywalls." },
-    { q: "Can I track my complaint?", a: "Absolutely. You receive real-time notifications via Socket.IO whenever your complaint status changes. You can also check your dashboard anytime." },
-    { q: "What happens if an authority ignores my complaint?", a: "Our automated escalation system kicks in. If a complaint remains unresolved past its SLA deadline, it's automatically escalated to a higher authority level." },
+    {
+        q: 'How is citizen anonymity protected when filing a report?',
+        a: 'Every complaint is stored under an encrypted rotating anonymous identifier (CP-*) rather than exposing your email or account details to authorities or the public.'
+    },
+    {
+        q: 'How does Gemini AI handle incoming reports and duplicates?',
+        a: 'AI analyzes uploaded descriptions and imagery to classify the civic category, flag spam, estimate urgency, and merge nearby duplicate reports onto a single active issue with amplified support.'
+    },
+    {
+        q: 'How do department routing and escalations work?',
+        a: 'Each category maps to its responsible municipal department. If an open complaint stalls beyond SLA thresholds, automated escalation moves it from Junior to Senior and HOD oversight.'
+    },
+    {
+        q: 'Is all data on the home page live?',
+        a: 'Yes. Every KPI counter, map pin, category breakdown, recent report card, petition counter, and activity stream entry comes directly from the database and real-time Socket.IO events.'
+    }
 ];
 
 const FAQSection: React.FC = () => {
-    const [open, setOpen] = useState<number | null>(null);
-    const toggle = (idx: number) => setOpen(open === idx ? null : idx);
+    const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section className="py-20">
-            <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-black text-slate-800">Frequently Asked Questions</h2>
-                <p className="text-slate-500 mt-3 text-lg">Everything you need to know about CivicPulse AI.</p>
-            </div>
-
-            <div className="max-w-3xl mx-auto space-y-4">
-                {faqs.map((faq, idx) => (
-                    <div key={idx} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                        <button onClick={() => toggle(idx)} className="w-full flex items-center justify-between p-6 text-left">
-                            <span className="font-bold text-slate-800 pr-4">{faq.q}</span>
-                            <ChevronDown size={20} className={`text-slate-400 transition-transform flex-shrink-0 ${open === idx ? 'rotate-180' : ''}`} />
-                        </button>
-                        {open === idx && (
-                            <div className="px-6 pb-6 text-slate-500 leading-relaxed border-t border-slate-100 pt-4">
-                                {faq.a}
-                            </div>
-                        )}
+        <section className="bg-white rounded-3xl border border-slate-200/90 shadow-[0_1px_3px_rgba(15,23,42,0.04)] p-6 sm:p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
+                <div className="lg:col-span-4 space-y-2">
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-600">
+                        <HelpCircle size={14} /> Common Questions
                     </div>
-                ))}
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        Frequently Asked Questions
+                    </h2>
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                        Key details on anonymity, AI triage, real-time tracking, and municipal escalations.
+                    </p>
+                </div>
+
+                <div className="lg:col-span-8 space-y-2.5">
+                    {faqs.map((faq, idx) => {
+                        const isOpen = openIndex === idx;
+                        return (
+                            <div
+                                key={faq.q}
+                                className="rounded-2xl border border-slate-200/80 hover:border-indigo-200 bg-slate-50/50 overflow-hidden transition-colors"
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => setOpenIndex(isOpen ? null : idx)}
+                                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left cursor-pointer hover:bg-white transition-colors"
+                                >
+                                    <span className="text-sm font-bold text-slate-900">{faq.q}</span>
+                                    <ChevronDown
+                                        size={18}
+                                        className={`text-slate-400 shrink-0 transition-transform duration-200 ${
+                                            isOpen ? 'rotate-180 text-indigo-600' : ''
+                                        }`}
+                                    />
+                                </button>
+                                {isOpen && (
+                                    <div className="px-5 pb-4 pt-3 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-200/60 bg-white">
+                                        {faq.a}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </section>
     );

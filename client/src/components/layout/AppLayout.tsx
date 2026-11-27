@@ -40,7 +40,7 @@ const AppLayout = () => {
                     </div>
                 </header>
 
-                <div className="p-4 md:py-6 md:px-8 max-w-6xl mx-auto min-h-[calc(100vh-5rem)]">
+                <div className={location.pathname === '/' ? 'px-4 sm:px-6 lg:px-8 py-5 sm:py-7 max-w-[1400px] mx-auto min-h-[calc(100vh-5rem)]' : 'p-4 md:py-6 md:px-8 max-w-6xl mx-auto min-h-[calc(100vh-5rem)]'}>
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
