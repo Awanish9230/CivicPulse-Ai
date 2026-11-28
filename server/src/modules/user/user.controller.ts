@@ -15,7 +15,7 @@ export const rotateAnonymousId = asyncHandler(async (req: Request, res: Response
         .status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .json(new ApiResponse(200, { anonymousId }, "Anonymous ID rotated successfully"));
+        .json(new ApiResponse(200, { anonymousId, accessToken }, "Anonymous ID rotated successfully"));
 });
 
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
@@ -36,7 +36,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
         .status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .json(new ApiResponse(200, { user }, "User logged in successfully"));
+        .json(new ApiResponse(200, { user, accessToken }, "User logged in successfully"));
 });
 
 export const logoutUser = asyncHandler(async (req: Request, res: Response) => {

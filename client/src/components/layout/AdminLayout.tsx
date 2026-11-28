@@ -1,5 +1,7 @@
 import React, { useState, useContext } from 'react';
-import { Outlet, useLocation, Link } from 'react-router-dom';
+import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import api from '../../config/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../../context/AuthContext';
 import {
@@ -139,6 +141,7 @@ const AdminSidebar = ({ onLogout }: { onLogout: () => void }) => {
 
 const AdminLayout = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -151,20 +154,20 @@ const AdminLayout = () => {
         e.preventDefault();
         setIsLoggingIn(true);
         try {
-            const axios = (await import('axios')).default;
-            const { data } = await axios.post<{ data: { user: User } }>(
-                `${import.meta.env.VITE_API_URL}/api/v1/user/login`,
-                { email, password, role: 'Admin' },
-                { withCredentials: true }
+            const { data } = await api.post<{ data: { user: User; accessToken?: string } }>(
+                '/user/login',
+                { email: email.trim(), password, role: 'Admin' }
             );
             if (data.data.user.role === 'Admin') {
-                login(data.data.user);
+                login(data.data.user, data.data.accessToken);
+                toast.success(`Welcome, ${data.data.user.name || 'Super Admin'}`);
+                navigate('/admin', { replace: true });
             } else {
-                alert("Unauthorized: Not a Super Admin account");
+                toast.error("Unauthorized: Not a Super Admin account");
             }
         } catch (error) {
             const err = error as { response?: { data?: { message?: string } } };
-            alert(err.response?.data?.message || "Login failed");
+            toast.error(err.response?.data?.message || "Login failed");
         } finally {
             setIsLoggingIn(false);
         }

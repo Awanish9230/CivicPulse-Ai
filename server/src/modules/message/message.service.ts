@@ -8,7 +8,7 @@ const VALID_CHANNELS: MessageChannel[] = ['general', 'ask-authority', 'announcem
 export const getChannelMessages = async (
     channel: string,
     queryParams: { lat?: string; lng?: string; radius?: string },
-    actor: AuthenticatedUser
+    actor?: AuthenticatedUser
 ) => {
     const { lat, lng, radius } = queryParams;
 
@@ -16,7 +16,7 @@ export const getChannelMessages = async (
         throw new ApiError(400, "Invalid channel");
     }
 
-    if ((!lat || !lng) && actor.role !== 'Authority' && actor.role !== 'Admin') {
+    if ((!lat || !lng) && radius !== 'All' && actor?.role !== 'Authority' && actor?.role !== 'Admin') {
         throw new ApiError(403, "Location permission is required to access the community chat.");
     }
 

@@ -13,7 +13,6 @@ import IssueCard, { IssueCardSkeleton } from './components/IssueCard';
 import ChannelSidebar from './components/ChannelSidebar';
 import ChatMessageList from './components/ChatMessageList';
 import ChatComposer from './components/ChatComposer';
-import LocationPermissionOverlay from './components/LocationPermissionOverlay';
 import type { Complaint } from '../../types';
 import type { ChannelConfig, ChatMessage, EditingMessageState, GeoLocation } from './types';
 
@@ -82,6 +81,13 @@ const Community: React.FC = () => {
     };
 
     useEffect(() => {
+        const useFallbackArea = () => {
+            const fallbackLoc: GeoLocation = { lat: 28.6139, lng: 77.2090 };
+            setLocation(fallbackLoc);
+            setLocationDenied(false);
+            fetchComplaints(fallbackLoc.lat, fallbackLoc.lng, radius);
+        };
+
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -92,16 +98,13 @@ const Community: React.FC = () => {
                     fetchComplaints(lat, lng, radius);
                 },
                 (error) => {
-                    console.warn("Location permission denied", error);
-                    setLocationDenied(true);
-                    setLoading(false);
+                    console.warn("Location permission unavailable, loading Community automatically:", error);
+                    useFallbackArea();
                 },
-                { timeout: 10000 }
+                { timeout: 6000 }
             );
         } else {
-            toast.error("Geolocation not supported.");
-            setLocationDenied(true);
-            setLoading(false);
+            useFallbackArea();
         }
     }, [radius]);
 
@@ -463,15 +466,6 @@ const Community: React.FC = () => {
 
     return (
         <div className="flex h-[calc(100dvh-10rem)] md:h-[calc(100vh-7rem)] max-w-6xl mx-auto bg-white/70 backdrop-blur-2xl rounded-2xl md:rounded-3xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden relative z-10">
-            {locationDenied && (
-                <LocationPermissionOverlay
-                    onLocationGranted={(loc) => {
-                        setLocation(loc);
-                        setLocationDenied(false);
-                    }}
-                />
-            )}
-
             <ChannelSidebar
                 channels={CHANNELS}
                 activeChannel={activeChannel}

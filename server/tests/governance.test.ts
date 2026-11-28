@@ -26,6 +26,8 @@ import {
     upsertEnvVariable
 } from '../src/modules/admin/envManager.service.js';
 import { changeOwnPassword, rotateAnonymousId, updateOwnProfile } from '../src/modules/user/user.service.js';
+import { optionalVerifyJWT } from '../src/middlewares/auth.middleware.js';
+import type { Request, Response } from 'express';
 import type { AuthenticatedUser } from '../src/types/express.js';
 
 const oid = (hex: string) => new mongoose.Types.ObjectId(hex);
@@ -464,6 +466,28 @@ describe('Self-Service Profile Update & Password Change', () => {
         );
     });
 });
+
+describe('Public Community Automatic Access (optionalVerifyJWT)', () => {
+    it('continues without throwing 401 when no auth cookie or bearer header is present', async () => {
+        const req = { cookies: {}, header: () => undefined } as unknown as Request;
+        const res = {} as Response;
+        let nextCalled = false;
+        let nextError: unknown = null;
+
+        await new Promise<void>((resolve) => {
+            optionalVerifyJWT(req, res, (err?: unknown) => {
+                nextCalled = true;
+                nextError = err ?? null;
+                resolve();
+            });
+        });
+
+        assert.equal(nextCalled, true);
+        assert.equal(nextError, null);
+        assert.equal(req.user, undefined);
+    });
+});
+
 
 
 

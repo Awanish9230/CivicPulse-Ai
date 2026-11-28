@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Outlet, useLocation, Link } from 'react-router-dom';
+import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users, MessageSquare, Eye, EyeOff, UserCircle, LucideIcon } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
@@ -80,7 +80,8 @@ const AuthoritySidebar = ({ onLogout }: { onLogout: () => void }) => {
 
 const AuthorityLayout = () => {
     const location = useLocation();
-    const { user, login, logout, fetchUser } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const { user, loading: authLoading, login, logout, fetchUser } = useContext(AuthContext);
     const [updatingDuty, setUpdatingDuty] = useState(false);
 
     const handleDutyChange = async (nextDutyStatus: DutyStatus) => {
@@ -108,24 +109,34 @@ const AuthorityLayout = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const axios = (await import('axios')).default;
-            const { data } = await axios.post<{ data: { user: User } }>(
-                `${import.meta.env.VITE_API_URL}/api/v1/user/login`,
-                { email, password, role: 'Authority' },
-                { withCredentials: true }
+            const { data } = await api.post<{ data: { user: User; accessToken?: string } }>(
+                '/user/login',
+                { email: email.trim(), password, role: 'Authority' }
             );
-            if (data.data.user.role === 'Authority' || data.data.user.role === 'Admin') {
-                login(data.data.user);
+            const loggedUser = data.data.user;
+            if (loggedUser.role === 'Authority' || loggedUser.role === 'Admin') {
+                login(loggedUser, data.data.accessToken);
+                toast.success(`Welcome, ${loggedUser.name || 'Official'}`);
+                navigate('/authority', { replace: true });
             } else {
-                alert("Unauthorized: Not an authority account");
+                toast.error("Unauthorized: Not an authority account");
             }
         } catch (error) {
             const err = error as { response?: { data?: { message?: string } } };
-            alert(err.response?.data?.message || "Login failed");
+            toast.error(err.response?.data?.message || "Login failed");
         } finally {
             setLoading(false);
         }
     };
+
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+                <div className="w-16 h-16 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mb-4"></div>
+                <p className="text-slate-500 font-medium">Verifying Official Credentials...</p>
+            </div>
+        );
+    }
 
     if (!isAuthority) {
         return (

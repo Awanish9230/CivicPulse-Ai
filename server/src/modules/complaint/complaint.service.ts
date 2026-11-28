@@ -610,14 +610,18 @@ export const deleteComplaint = async (complaintId: string, actor: AuthenticatedU
 
 export const getAllComplaints = async (
     queryParams: { lat?: string; lng?: string; radius?: string },
-    actor: AuthenticatedUser
+    actor?: AuthenticatedUser
 ) => {
     const { lat, lng, radius } = queryParams;
     let query: Record<string, unknown> = {};
 
     if (!lat || !lng) {
-        const allUserIdentities = getUserIdentities(actor);
-        query = { reportedBy: { $in: allUserIdentities } };
+        if (actor) {
+            const allUserIdentities = getUserIdentities(actor);
+            query = { reportedBy: { $in: allUserIdentities } };
+        } else {
+            query = {};
+        }
     } else if (radius && radius !== 'All') {
         const radiusInMeters = parseInt(radius, 10) * 1000;
         const radiusInRadians = radiusInMeters / 6378100;

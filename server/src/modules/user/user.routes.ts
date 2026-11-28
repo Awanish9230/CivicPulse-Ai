@@ -12,7 +12,7 @@ import {
     resetPassword,
     getLeaderboard
 } from "./user.controller.js";
-import { verifyJWT } from "../../middlewares/auth.middleware.js";
+import { verifyJWT, optionalVerifyJWT } from "../../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -42,6 +42,6 @@ router.post("/rotate-anonymous-id", verifyJWT, authLimiter, rotateAnonymousId);
 router.get("/me", verifyJWT, getMe);
 router.patch("/me", verifyJWT, updateMe);
 router.post("/change-password", verifyJWT, changePassword);
-router.get("/leaderboard", verifyJWT, getLeaderboard);
+router.get("/leaderboard", optionalVerifyJWT, getLeaderboard);
 
 export default router;

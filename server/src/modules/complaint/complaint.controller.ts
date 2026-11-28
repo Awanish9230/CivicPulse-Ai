@@ -95,7 +95,7 @@ export const deleteComplaint = asyncHandler(async (req: Request, res: Response) 
 
 export const getAllComplaints = asyncHandler(async (req: Request, res: Response) => {
     const { lat, lng, radius } = req.query as { lat?: string; lng?: string; radius?: string };
-    const complaints = await complaintService.getAllComplaints({ lat, lng, radius }, req.user!);
+    const complaints = await complaintService.getAllComplaints({ lat, lng, radius }, req.user);
 
     return res.status(200).json(
         new ApiResponse(200, complaints, "Complaints fetched successfully")
