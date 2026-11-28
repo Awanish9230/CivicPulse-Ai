@@ -11,6 +11,7 @@ import {
     CheckCircle2
 } from 'lucide-react';
 import ImageCarousel from '../common/ImageCarousel';
+import MergedReportBadge from '../common/MergedReportBadge';
 import InlineLocationMap from '../common/InlineLocationMap';
 import { getDepartmentForCategory, getPriorityColor } from '../../utils/complaintUtils';
 import { getTimeAgo } from '../../utils/dateUtils';
@@ -79,6 +80,7 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({ report, onClose }
                                         {report.priority}
                                     </span>
                                 )}
+                                <MergedReportBadge reportCount={report.reportCount} />
                             </div>
                             <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
                                 <Building2 size={12} /> {dept}
@@ -150,6 +152,27 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({ report, onClose }
                                 heightClass="h-44"
                                 wrapperClassName="rounded-2xl overflow-hidden border border-slate-200"
                             />
+                        </div>
+                    )}
+
+                    {report.mergedReports && report.mergedReports.length > 0 && (
+                        <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">
+                                Auto-Merged Citizen Reports ({report.reportCount || report.mergedReports.length + 1} people total)
+                            </p>
+                            <div className="space-y-2">
+                                {report.mergedReports.map((merged, idx) => (
+                                    <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                                        <div className="flex items-center justify-between gap-2 text-[11px] font-bold text-slate-600">
+                                            <span>Co-Reporter #{idx + 2}{typeof merged.distanceMeters === 'number' ? ` · ${merged.distanceMeters}m away` : ''}</span>
+                                            {merged.mergedAt && (
+                                                <span className="text-slate-400">{getTimeAgo(merged.mergedAt)}</span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-slate-700 leading-relaxed">{merged.description}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, MapPin, MessageSquare, Send, ThumbsUp } from 'lucide-react';
 import ImageCarousel from '../../../components/common/ImageCarousel';
+import MergedReportBadge from '../../../components/common/MergedReportBadge';
 import { getTimeAgo } from '../../../utils/dateUtils';
 import type { Complaint } from '../../../types';
 
@@ -76,10 +77,13 @@ const LiveIssueCard: React.FC<LiveIssueCardProps> = ({
 
             <div className="flex-1 flex flex-col justify-between px-1">
                 <div>
-                    <div className="flex justify-between items-start mb-3">
-                        <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg uppercase tracking-wider">
-                            {c.category}
-                        </span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg uppercase tracking-wider">
+                                {c.category}
+                            </span>
+                            <MergedReportBadge reportCount={c.reportCount} compact />
+                        </div>
                         <div className="flex items-center text-slate-400 text-xs font-bold">
                             <Clock size={12} className="mr-1.5" />
                             {getTimeAgo(c.createdAt)}

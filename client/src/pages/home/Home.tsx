@@ -48,6 +48,7 @@ interface SocketComplaintPayload {
     imageUrl?: string;
     imageUrls?: string[];
     supportCount?: number;
+    reportCount?: number;
     officialReplies?: PublicOfficialReply[];
     createdAt?: string;
     updatedAt?: string;
@@ -285,12 +286,76 @@ const Home: React.FC = () => {
 
             setMapReports((prev) =>
                 prev.map((item) =>
-                    item._id === updated._id ? { ...item, status: updated.status } : item
+                    item._id === updated._id
+                        ? {
+                            ...item,
+                            status: updated.status,
+                            priority: updated.priority ?? item.priority,
+                            supportCount: updated.supportCount ?? item.supportCount,
+                            reportCount: updated.reportCount ?? item.reportCount
+                        }
+                        : item
                 )
             );
             setRecentReports((prev) =>
                 prev.map((item) =>
-                    item._id === updated._id ? { ...item, status: updated.status } : item
+                    item._id === updated._id
+                        ? {
+                            ...item,
+                            status: updated.status,
+                            priority: updated.priority ?? item.priority,
+                            supportCount: updated.supportCount ?? item.supportCount,
+                            reportCount: updated.reportCount ?? item.reportCount,
+                            imageUrls: updated.imageUrls ?? item.imageUrls
+                        }
+                        : item
+                )
+            );
+
+            fetchPublicOverview(false);
+        });
+
+        socket.on('complaint_merged', (merged: SocketComplaintPayload) => {
+            const nowIso = merged.updatedAt || new Date().toISOString();
+            const count = merged.reportCount ?? 2;
+
+            setActivities((prev) => [
+                {
+                    _id: merged._id,
+                    category: merged.category,
+                    description: `${count} people reported: ${merged.description}`,
+                    status: merged.status,
+                    priority: merged.priority,
+                    area: formatAddressShort(merged.address),
+                    timestamp: nowIso,
+                    eventType: 'status'
+                },
+                ...prev.slice(0, 7)
+            ]);
+
+            setMapReports((prev) =>
+                prev.map((item) =>
+                    item._id === merged._id
+                        ? {
+                            ...item,
+                            priority: merged.priority ?? item.priority,
+                            supportCount: merged.supportCount ?? item.supportCount,
+                            reportCount: count
+                        }
+                        : item
+                )
+            );
+            setRecentReports((prev) =>
+                prev.map((item) =>
+                    item._id === merged._id
+                        ? {
+                            ...item,
+                            priority: merged.priority ?? item.priority,
+                            supportCount: merged.supportCount ?? item.supportCount,
+                            reportCount: count,
+                            imageUrls: merged.imageUrls ?? item.imageUrls
+                        }
+                        : item
                 )
             );
 

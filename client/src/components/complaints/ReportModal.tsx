@@ -88,6 +88,52 @@ const ReportModal = ({ captureData, onClose, onSuccess }: ReportModalProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [duplicatePreview, setDuplicatePreview] = useState<{
+        category: string;
+        description: string;
+        distanceMeters: number;
+        headline: string;
+    } | null>(null);
+
+    useEffect(() => {
+        if (!isOnline || !category || description.trim().length < 8) {
+            setDuplicatePreview(null);
+            return;
+        }
+
+        const timer = window.setTimeout(async () => {
+            try {
+                const { data } = await axios.post<{
+                    data?: {
+                        hasMatch: boolean;
+                        match?: {
+                            category: string;
+                            description: string;
+                            distanceMeters: number;
+                            headline: string;
+                        };
+                    };
+                }>(
+                    `${import.meta.env.VITE_API_URL}/api/v1/complaint/check-duplicate`,
+                    {
+                        category,
+                        description,
+                        coordinates: [position.lng, position.lat]
+                    },
+                    { withCredentials: true }
+                );
+                if (data?.data?.hasMatch && data.data.match) {
+                    setDuplicatePreview(data.data.match);
+                } else {
+                    setDuplicatePreview(null);
+                }
+            } catch {
+                setDuplicatePreview(null);
+            }
+        }, 450);
+
+        return () => window.clearTimeout(timer);
+    }, [category, description, position.lat, position.lng, isOnline]);
 
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
@@ -247,7 +293,15 @@ const ReportModal = ({ captureData, onClose, onSuccess }: ReportModalProps) => {
                 formData.append('address', JSON.stringify(address));
             }
 
-            const response = await axios.post<{ data?: { newlyEarnedBadges?: string[] } }>(
+            const response = await axios.post<{
+                data?: {
+                    isDuplicate?: boolean;
+                    headline?: string;
+                    pointsAwarded?: number;
+                    newlyEarnedBadges?: string[];
+                };
+                message?: string;
+            }>(
                 `${import.meta.env.VITE_API_URL}/api/v1/complaint/create`,
                 formData,
                 {
@@ -256,9 +310,15 @@ const ReportModal = ({ captureData, onClose, onSuccess }: ReportModalProps) => {
                 }
             );
 
-            const newlyEarnedBadges = response.data?.data?.newlyEarnedBadges || [];
+            const payload = response.data?.data;
+            const newlyEarnedBadges = payload?.newlyEarnedBadges || [];
 
-            if (newlyEarnedBadges.length > 0) {
+            if (payload?.isDuplicate) {
+                toast.success(
+                    `Duplicate detected nearby & auto-merged! ${payload.headline || '2 people have reported this issue'} (+${payload.pointsAwarded ?? 5} pts)`,
+                    { duration: 5500 }
+                );
+            } else if (newlyEarnedBadges.length > 0) {
                 toast.success(`🎉 Issue reported! You earned: ${newlyEarnedBadges.join(', ')} badge(s)!`, {
                     duration: 5000,
                     icon: '🏆',
@@ -432,6 +492,19 @@ const ReportModal = ({ captureData, onClose, onSuccess }: ReportModalProps) => {
                                 required
                             ></textarea>
                         </div>
+                        {duplicatePreview && (
+                            <div className="p-4 rounded-2xl bg-indigo-50/90 border border-indigo-200 text-xs space-y-1">
+                                <div className="font-black text-indigo-800">
+                                    Similar {duplicatePreview.category} report detected {duplicatePreview.distanceMeters}m away
+                                </div>
+                                <p className="text-indigo-700/90 line-clamp-2">
+                                    "{duplicatePreview.description}"
+                                </p>
+                                <div className="font-bold text-indigo-700 pt-0.5">
+                                    Submitting will automatically merge your report so {duplicatePreview.headline}.
+                                </div>
+                            </div>
+                        )}
                     </form>
                 </div>
 

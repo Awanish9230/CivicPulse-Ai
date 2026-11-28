@@ -42,6 +42,7 @@ export interface VectorMapPoint {
     priority?: string;
     area?: string;
     supportCount?: number;
+    reportCount?: number;
     timeAgo?: string;
     weight?: number;
 }
@@ -135,6 +136,7 @@ const toPointsGeoJson = (
             priority: pt.priority || 'Medium',
             area: pt.area || 'Verified Location',
             supportCount: pt.supportCount ?? 1,
+            reportCount: pt.reportCount ?? 1,
             timeAgo: pt.timeAgo || 'Recent',
             weight: pt.weight ?? 1,
             color: getStatusHex(pt.status)
@@ -509,7 +511,11 @@ const CivicVectorMap: React.FC<CivicVectorMapProps> = ({
             const description = escapeHtml(String(props.description || ''));
             const area = escapeHtml(String(props.area || 'Verified Location'));
             const supportCount = Number(props.supportCount ?? 1);
+            const reportCount = Number(props.reportCount ?? 1);
             const timeAgo = escapeHtml(String(props.timeAgo || 'Recent'));
+            const reportersLine = reportCount >= 2
+                ? `<div style="margin-bottom:6px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#4338ca;font-size:10px;font-weight:700;display:inline-block;">${reportCount} people reported this issue</div>`
+                : '';
 
             popupRef.current?.remove();
             popupRef.current = new Popup({ offset: 12, maxWidth: '270px' })
@@ -520,6 +526,7 @@ const CivicVectorMap: React.FC<CivicVectorMapProps> = ({
                             <span style="padding:2px 8px;border-radius:6px;background:#f8fafc;border:1px solid #e2e8f0;font-size:11px;font-weight:700;color:#0f172a;">${category}</span>
                             <span style="padding:2px 8px;border-radius:999px;background:#f8fafc;border:1px solid #e2e8f0;font-size:10px;font-weight:700;color:${color};">${status}</span>
                         </div>
+                        ${reportersLine}
                         <p style="font-size:12px;color:#334155;line-height:1.4;margin:0 0 8px 0;">${description.slice(0, 120)}${description.length > 120 ? '...' : ''}</p>
                         <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#64748b;padding-top:6px;border-top:1px solid #f1f5f9;">
                             <span style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${area}</span>

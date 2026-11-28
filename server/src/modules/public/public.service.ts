@@ -99,7 +99,7 @@ export const getPublicMapData = async () => {
         'location.coordinates.0': { $exists: true },
         'location.coordinates.1': { $exists: true }
     })
-        .select('category description status priority location address supportCount createdAt')
+        .select('category description status priority location address supportCount reportCount createdAt')
         .sort({ createdAt: -1 })
         .limit(150)
         .lean();
@@ -109,10 +109,10 @@ export const getRecentReports = async () => {
     const reports = await Complaint.find()
         .sort({ createdAt: -1 })
         .limit(6)
-        .select('category description location address status priority createdAt imageUrl imageUrls supportCount officialReplies')
+        .select('category description location address status priority createdAt imageUrl imageUrls supportCount reportCount mergedReports officialReplies')
         .lean();
 
-    return reports.map(({ officialReplies, ...rest }) => {
+    return reports.map(({ officialReplies, mergedReports, ...rest }) => {
         const sanitizedReplies = Array.isArray(officialReplies)
             ? officialReplies.map((r) => ({
                 authorityName: r.authorityName,
@@ -120,9 +120,19 @@ export const getRecentReports = async () => {
                 createdAt: r.createdAt
             }))
             : [];
+        const sanitizedMerged = Array.isArray(mergedReports)
+            ? mergedReports.map((m) => ({
+                description: m.description,
+                imageUrls: m.imageUrls || [],
+                distanceMeters: m.distanceMeters,
+                mergedAt: m.mergedAt
+            }))
+            : [];
         return {
             ...rest,
+            reportCount: rest.reportCount || 1,
             officialReplies: sanitizedReplies,
+            mergedReports: sanitizedMerged,
             replyCount: sanitizedReplies.length
         };
     });

@@ -26,6 +26,15 @@ export interface ComplaintReply {
   createdAt?: string;
 }
 
+export interface MergedReportEntry {
+  reportedBy?: string;
+  description: string;
+  imageUrls?: string[];
+  distanceMeters?: number;
+  similarityScore?: number;
+  mergedAt?: string;
+}
+
 export interface Complaint {
   _id: string;
   reportedBy?: string;
@@ -37,6 +46,9 @@ export interface Complaint {
   priority?: string;
   escalationLevel?: AuthorityLevel;
   supportCount?: number;
+  reportCount?: number;
+  coReporters?: string[];
+  mergedReports?: MergedReportEntry[];
   upvotes?: number;
   isSupported?: boolean;
   upvotedBy?: string[];
