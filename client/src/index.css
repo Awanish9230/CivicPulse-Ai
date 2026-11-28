@@ -103,3 +103,26 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@keyframes civic-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-civic-marquee {
+  display: flex;
+  width: max-content;
+  animation: civic-marquee 42s linear infinite;
+}
+
+.animate-civic-marquee:hover {
+  animation-play-state: paused;
+}
+
+.osm-soft-light .leaflet-tile-pane {
+  filter: saturate(0.68) contrast(0.95) brightness(1.03);
+}
