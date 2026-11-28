@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Map, CheckSquare, MessageSquare, Users, BarChart, Settings, LucideIcon } from 'lucide-react';
+import { Map, CheckSquare, MessageSquare, Users, BarChart, Settings, UserCircle, LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface AuthNavItem {
@@ -14,6 +14,7 @@ const authNavItems: AuthNavItem[] = [
     { name: 'Chat', path: '/authority/chat', icon: MessageSquare },
     { name: 'Members', path: '/authority/members', icon: Users },
     { name: 'Analytics', path: '/authority/analytics', icon: BarChart },
+    { name: 'Profile', path: '/authority/profile', icon: UserCircle },
     { name: 'Settings', path: '/authority/settings', icon: Settings },
 ];
 

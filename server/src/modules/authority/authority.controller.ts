@@ -91,3 +91,11 @@ export const getAnalytics = asyncHandler(async (req: Request, res: Response) => 
         new ApiResponse(200, complaints, 'Analytics data fetched successfully')
     );
 });
+
+export const updateDutyStatus = asyncHandler(async (req: Request, res: Response) => {
+    const updated = await authorityService.updateDutyStatus(req.body.dutyStatus, req.user!);
+
+    return res.status(200).json(
+        new ApiResponse(200, updated, 'Duty status updated successfully')
+    );
+});

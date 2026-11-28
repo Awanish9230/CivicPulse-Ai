@@ -30,6 +30,15 @@ export interface IOfficialReply {
     createdAt?: Date;
 }
 
+export interface IMergedReportEntry {
+    reportedBy: string;
+    description: string;
+    imageUrls: string[];
+    distanceMeters: number;
+    similarityScore: number;
+    mergedAt: Date;
+}
+
 export interface IComplaint {
     reportedBy: string;
     category: ComplaintCategory;
@@ -54,6 +63,9 @@ export interface IComplaint {
     expectedCompletionDate?: Date;
     upvotedBy: string[];
     supportCount: number;
+    reportCount: number;
+    coReporters: string[];
+    mergedReports: IMergedReportEntry[];
     mergedWith: mongoose.Types.ObjectId | null;
     assignedTo: mongoose.Types.ObjectId | null;
     escalationLevel: AuthorityLevel;
@@ -146,6 +158,22 @@ const complaintSchema = new mongoose.Schema<IComplaint>({
         type: Number,
         default: 1,
     },
+    reportCount: {
+        type: Number,
+        default: 1,
+    },
+    coReporters: {
+        type: [String],
+        default: [],
+    },
+    mergedReports: [{
+        reportedBy: { type: String, required: true },
+        description: { type: String, required: true },
+        imageUrls: { type: [String], default: [] },
+        distanceMeters: { type: Number, default: 0 },
+        similarityScore: { type: Number, default: 0 },
+        mergedAt: { type: Date, default: Date.now }
+    }],
     mergedWith: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Complaint',

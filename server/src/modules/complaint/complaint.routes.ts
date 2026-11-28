@@ -1,9 +1,10 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import { verifyJWT } from "../../middlewares/auth.middleware.js";
+import { verifyJWT, optionalVerifyJWT } from "../../middlewares/auth.middleware.js";
 import { upload } from "../../middlewares/uploadmiddleware.js";
 import {
     createComplaint,
+    checkDuplicatePreview,
     getMyComplaints,
     getAllComplaints,
     upvoteComplaint,
@@ -30,6 +31,7 @@ router.post("/:complaintId/resolve", verifyJWT, resolveComplaint);
 router.post("/:complaintId/reply", verifyJWT, addOfficialReply);
 router.post("/:complaintId/feedback", verifyJWT, submitResolutionFeedback);
 router.post("/analyze-image", verifyJWT, analyzeImage);
+router.post("/check-duplicate", verifyJWT, checkDuplicatePreview);
 router.post(
     "/create",
     verifyJWT,
@@ -41,6 +43,6 @@ router.post(
 router.get("/my-complaints", verifyJWT, getMyComplaints);
 router.patch("/:complaintId", verifyJWT, editComplaint);
 router.delete("/:complaintId", verifyJWT, deleteComplaint);
-router.get("/all", verifyJWT, getAllComplaints);
+router.get("/all", optionalVerifyJWT, getAllComplaints);
 
 export default router;

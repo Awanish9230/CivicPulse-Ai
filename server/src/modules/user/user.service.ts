@@ -55,6 +55,13 @@ export const rotateAnonymousId = async (
         throw new ApiError(401, "Unauthorized request");
     }
 
+    if (authUser.role !== 'Citizen') {
+        throw new ApiError(
+            403,
+            "Identity rotation is strictly restricted to Citizen accounts; Authority and Admin accounts are non-anonymous."
+        );
+    }
+
     const user = authUser as unknown as UserDocument;
     const plainAnonymousId = User.generateAnonymousId();
     user.pastAnonymousIds.push(user.anonymousId);
@@ -128,6 +135,14 @@ export const loginUser = async (
         throw new ApiError(401, "Invalid email or password");
     }
 
+    if (user.isActive === false) {
+        throw new ApiError(403, "Your account is currently disabled. Please contact an administrator.");
+    }
+
+    if (user.isBanned && (user.role === 'Authority' || user.role === 'Admin')) {
+        throw new ApiError(403, "Your official account has been blocked. Please contact an administrator.");
+    }
+
     const isPasswordValid = await user.isPasswordCorrect(password);
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid email or password");
@@ -140,6 +155,7 @@ export const loginUser = async (
 
     user.anonymousId = User.encryptIdentity(plainAnonymousId);
     user.pastAnonymousIds = plainPastIds.map((id) => User.encryptIdentity(id));
+    user.lastSeenAt = new Date();
     await user.save({ validateBeforeSave: false });
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
@@ -178,7 +194,10 @@ export const logoutUser = async (userId: mongoose.Types.ObjectId | string): Prom
 };
 
 export const getUserProfile = async (authUser: AuthenticatedUser) => {
-    const user = await User.findById(authUser._id).select('-password -refreshToken').lean();
+    const user = await User.findById(authUser._id)
+        .populate('customRole', 'name slug scope permissions')
+        .select('-password -refreshToken')
+        .lean();
 
     if (!user) {
         throw new ApiError(404, "User not found");
@@ -186,6 +205,112 @@ export const getUserProfile = async (authUser: AuthenticatedUser) => {
 
     user.anonymousId = authUser.anonymousId;
     return user;
+};
+
+export interface UpdateOwnProfileInput {
+    name?: string;
+    email?: string;
+    phone?: string;
+    bio?: string;
+    dutyStatus?: 'On Duty' | 'Off Duty' | 'On Leave' | 'Busy';
+}
+
+export const updateOwnProfile = async (
+    authUser: AuthenticatedUser,
+    updates: UpdateOwnProfileInput
+) => {
+    const user = await User.findById(authUser._id);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (typeof updates.name === 'string' && user.role !== 'Citizen') {
+        const trimmedName = updates.name.trim();
+        if (!trimmedName) {
+            throw new ApiError(400, "Name cannot be empty");
+        }
+        user.name = trimmedName;
+    }
+
+    if (typeof updates.email === 'string') {
+        const normalizedEmail = updates.email.toLowerCase().trim();
+        if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+            throw new ApiError(400, "Please provide a valid email address");
+        }
+        if (normalizedEmail !== user.email) {
+            const existing = await User.findOne({
+                email: normalizedEmail,
+                _id: { $ne: user._id }
+            });
+            if (existing) {
+                throw new ApiError(409, "Another account is already using this email address");
+            }
+            user.email = normalizedEmail;
+        }
+    }
+
+    if (typeof updates.phone === 'string') {
+        user.phone = updates.phone.trim();
+    }
+
+    if (typeof updates.bio === 'string') {
+        user.bio = updates.bio.trim().slice(0, 300);
+    }
+
+    if (typeof updates.dutyStatus === 'string' && (user.role === 'Authority' || user.role === 'Admin')) {
+        const validStatuses = ['On Duty', 'Off Duty', 'On Leave', 'Busy'] as const;
+        if (!validStatuses.includes(updates.dutyStatus)) {
+            throw new ApiError(400, "Invalid duty status");
+        }
+        user.dutyStatus = updates.dutyStatus;
+    }
+
+    user.lastSeenAt = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    const updated = await User.findById(user._id)
+        .populate('customRole', 'name slug scope permissions')
+        .select('-password -refreshToken')
+        .lean();
+
+    if (updated) {
+        updated.anonymousId = authUser.anonymousId;
+    }
+
+    return updated;
+};
+
+export const changeOwnPassword = async (
+    authUser: AuthenticatedUser,
+    currentPassword?: string,
+    newPassword?: string
+) => {
+    if (!currentPassword || !newPassword) {
+        throw new ApiError(400, "Current password and new password are required");
+    }
+    if (newPassword.length < 6) {
+        throw new ApiError(400, "New password must be at least 6 characters long");
+    }
+
+    const user = await User.findById(authUser._id);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const isMatch = await user.isPasswordCorrect(currentPassword);
+    if (!isMatch) {
+        throw new ApiError(401, "Current password is incorrect");
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    const plainAnonymousId = User.decryptIdentity(user.anonymousId) || authUser.anonymousId;
+    const plainPastIds = (user.pastAnonymousIds || [])
+        .map((enc) => User.decryptIdentity(enc))
+        .filter((id): id is string => Boolean(id));
+
+    return generateAccessAndRefreshTokens(user._id, plainAnonymousId, plainPastIds);
 };
 
 export const forgotPassword = async (email?: string): Promise<void> => {

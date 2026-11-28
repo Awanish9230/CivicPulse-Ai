@@ -34,8 +34,16 @@ export const createComplaint = asyncHandler(async (req: Request, res: Response) 
         return res.status(200).json(
             new ApiResponse(
                 200,
-                result.complaint,
-                "Similar issue already reported in this exact location. We've added your report to boost its priority!"
+                {
+                    complaint: result.complaint,
+                    isDuplicate: true,
+                    reportCount: result.reportCount,
+                    headline: result.headline,
+                    pointsAwarded: result.pointsAwarded,
+                    distanceMeters: result.distanceMeters,
+                    newlyEarnedBadges: result.newlyEarnedBadges
+                },
+                `Duplicate issue detected nearby and automatically merged. ${result.headline}!`
             )
         );
     }
@@ -43,9 +51,29 @@ export const createComplaint = asyncHandler(async (req: Request, res: Response) 
     return res.status(201).json(
         new ApiResponse(
             201,
-            { complaint: result.complaint, newlyEarnedBadges: result.newlyEarnedBadges },
+            {
+                complaint: result.complaint,
+                isDuplicate: false,
+                reportCount: result.reportCount,
+                headline: result.headline,
+                pointsAwarded: result.pointsAwarded,
+                newlyEarnedBadges: result.newlyEarnedBadges
+            },
             "Complaint submitted successfully"
         )
+    );
+});
+
+export const checkDuplicatePreview = asyncHandler(async (req: Request, res: Response) => {
+    const { category, description, coordinates } = req.body;
+    const preview = await complaintService.checkDuplicatePreview({
+        category,
+        description,
+        coordinates
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, preview, "Duplicate preview evaluated")
     );
 });
 
@@ -67,7 +95,7 @@ export const deleteComplaint = asyncHandler(async (req: Request, res: Response) 
 
 export const getAllComplaints = asyncHandler(async (req: Request, res: Response) => {
     const { lat, lng, radius } = req.query as { lat?: string; lng?: string; radius?: string };
-    const complaints = await complaintService.getAllComplaints({ lat, lng, radius }, req.user!);
+    const complaints = await complaintService.getAllComplaints({ lat, lng, radius }, req.user);
 
     return res.status(200).json(
         new ApiResponse(200, complaints, "Complaints fetched successfully")

@@ -170,14 +170,22 @@ const Dashboard: React.FC = () => {
             fetchComplaints();
         };
 
+        const handleComplaintMerged = (merged: Complaint) => {
+            setComplaints((prev) =>
+                prev.map((c) => (c._id === merged._id ? { ...c, ...merged } : c))
+            );
+        };
+
         socket.on('newComplaint', handleNewComplaint);
         socket.on('complaintUpdated', handleComplaintUpdate);
         socket.on('complaintResolved', handleComplaintResolved);
+        socket.on('complaint_merged', handleComplaintMerged);
 
         return () => {
             socket.off('newComplaint', handleNewComplaint);
             socket.off('complaintUpdated', handleComplaintUpdate);
             socket.off('complaintResolved', handleComplaintResolved);
+            socket.off('complaint_merged', handleComplaintMerged);
         };
     }, [socket, setComplaints, fetchComplaints]);
 

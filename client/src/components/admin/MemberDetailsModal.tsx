@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, CheckCircle, MapPin, ShieldAlert, X } from 'lucide-react';
+import { Activity, CheckCircle, KeyRound, MapPin, ShieldAlert, X } from 'lucide-react';
 import CustomSelect from '../common/CustomSelect';
 import InlineLocationMap from '../common/InlineLocationMap';
 import { getPriorityColor } from '../../utils/complaintUtils';
@@ -32,6 +32,7 @@ interface MemberDetailsModalProps {
     saving: boolean;
     onSave: () => void;
     editFormContent: React.ReactNode;
+    onQuickResetPassword?: () => void;
 }
 
 export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
@@ -44,7 +45,8 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
     setIsEditing,
     saving,
     onSave,
-    editFormContent
+    editFormContent,
+    onQuickResetPassword
 }) => {
     const [expandedMapId, setExpandedMapId] = useState<string | null>(null);
 
@@ -90,18 +92,24 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                                                     className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                                                         memberDetails.member.isBanned
                                                             ? 'bg-rose-100 text-rose-700'
-                                                            : 'bg-emerald-100 text-emerald-700'
+                                                            : memberDetails.member.isActive === false
+                                                                ? 'bg-amber-100 text-amber-800'
+                                                                : 'bg-emerald-100 text-emerald-700'
                                                     }`}
                                                 >
                                                     {memberDetails.member.isBanned
                                                         ? (isAuthority ? 'BLOCKED' : 'BANNED')
-                                                        : 'ACTIVE'}
+                                                        : memberDetails.member.isActive === false
+                                                            ? 'DISABLED'
+                                                            : 'ACTIVE'}
                                                 </span>
                                             </div>
                                             {isAuthority ? (
-                                                <p className="text-slate-500 text-sm font-medium mt-1 flex items-center gap-2">
-                                                    <span className="font-bold text-slate-700">{memberDetails.member.authorityLevel}</span> •
-                                                    <span>{memberDetails.member.department}</span> •
+                                                <p className="text-slate-500 text-sm font-medium mt-1 flex items-center gap-2 flex-wrap">
+                                                    <span className="font-bold text-slate-700">
+                                                        {memberDetails.member.isAuthorityAdmin ? 'Authority Admin' : memberDetails.member.authorityLevel}
+                                                    </span> •
+                                                    <span>{memberDetails.member.isAuthorityAdmin ? 'All Departments' : memberDetails.member.department}</span> •
                                                     <span>{memberDetails.member.email}</span>
                                                 </p>
                                             ) : (
@@ -112,6 +120,16 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
+                                        {onQuickResetPassword && (
+                                            <button
+                                                type="button"
+                                                onClick={onQuickResetPassword}
+                                                className="px-3.5 py-2 bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 rounded-xl transition-colors text-sm font-bold shadow-sm inline-flex items-center gap-1.5"
+                                            >
+                                                <KeyRound size={15} />
+                                                1-Click Reset
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => setIsEditing(!isEditing)}
                                             className="px-4 py-2 bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-xl transition-colors text-sm font-bold shadow-sm"

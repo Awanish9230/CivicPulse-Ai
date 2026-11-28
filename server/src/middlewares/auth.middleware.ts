@@ -37,10 +37,53 @@ export const verifyJWT = asyncHandler(async (req: Request, _res: Response, next:
         throw new ApiError(401, "Invalid access token");
     }
 
+    if (user.isActive === false) {
+        throw new ApiError(403, "Your account has been disabled by an administrator.");
+    }
+
+    if (user.isBanned && (user.role === 'Authority' || user.role === 'Admin')) {
+        throw new ApiError(403, "Your official account has been blocked by an administrator.");
+    }
+
     const authUser = user as unknown as AuthenticatedUser;
     authUser.anonymousId = decodedToken.anonymousId;
     authUser.pastAnonymousIds = decodedToken.pastAnonymousIds || [];
     req.user = authUser;
+    next();
+});
+
+export const optionalVerifyJWT = asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {
+    const token =
+        req.cookies?.accessToken ||
+        req.header("Authorization")?.replace("Bearer ", "");
+
+    if (!token) {
+        return next();
+    }
+
+    try {
+        const decodedToken = jwt.verify(
+            token,
+            process.env.JWT_SECRET as string
+        ) as AccessTokenPayload;
+
+        const user = await User.findById(decodedToken._id).select("-password -refreshToken");
+        if (
+            !user ||
+            user.isActive === false ||
+            (user.isBanned && (user.role === 'Authority' || user.role === 'Admin'))
+        ) {
+            return next();
+        }
+
+        const authUser = user as unknown as AuthenticatedUser;
+        authUser.anonymousId = decodedToken.anonymousId;
+        authUser.pastAnonymousIds = decodedToken.pastAnonymousIds || [];
+        req.user = authUser;
+    } catch {
+        // Proceed anonymously when token is missing, invalid, or expired
+    }
+
     next();
 });
 
@@ -57,7 +100,7 @@ export const verifyAdmin = authorizeRoles("Admin");
 
 export const checkRestrictedFeature = (feature: string) => {
     return (req: Request, _res: Response, next: NextFunction) => {
-        if (!req.user) return next(new ApiError(401, "Unauthorized"));
+        if (!req.user) return next();
 
         const isPermanentlyBanned = req.user.isBanned;
         const isTemporarilyBanned = req.user.banUntil && new Date(req.user.banUntil).getTime() > Date.now();

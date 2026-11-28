@@ -37,7 +37,7 @@ const Auth = () => {
             });
 
             if (isLogin) {
-                login(response.data.data.user);
+                login(response.data.data.user, response.data.data.accessToken);
                 toast.success("Welcome back! Login successful.");
                 navigate('/');
             } else {
@@ -225,6 +225,16 @@ const Auth = () => {
                         <p className={`mt-4 text-[11px] text-slate-500 leading-relaxed max-w-xs mx-auto ${isLogin ? 'invisible' : ''}`}>
                             By joining, you agree to our Community Guidelines. Spam or toxicity will result in an automated ban.
                         </p>
+
+                        <div className="mt-3 flex items-center justify-center gap-4 text-xs text-slate-400">
+                            <Link to="/authority" className="hover:text-emerald-400 transition-colors">
+                                Authority Portal
+                            </Link>
+                            <span>•</span>
+                            <Link to="/admin" className="hover:text-orange-400 transition-colors">
+                                Admin Portal
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </motion.div>

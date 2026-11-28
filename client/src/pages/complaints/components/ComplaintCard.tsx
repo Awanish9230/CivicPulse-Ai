@@ -5,6 +5,7 @@ import {
     ChevronDown, ChevronUp, MapPin, ThumbsUp, CheckCircle
 } from 'lucide-react';
 import ImageCarousel from '../../../components/common/ImageCarousel';
+import MergedReportBadge from '../../../components/common/MergedReportBadge';
 import StatusProgressDots from './StatusProgressDots';
 import type { Complaint } from '../../../types';
 
@@ -81,13 +82,14 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
                 </p>
             </div>
 
-            <div className="flex items-center gap-4 mb-4 text-[11px] font-bold text-text/50">
+            <div className="flex flex-wrap items-center gap-3 mb-4 text-[11px] font-bold text-text/50">
                 <span className="flex items-center gap-1">
                     <Clock size={12} /> {new Date(c.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
                 <span className="flex items-center gap-1">
                     <ThumbsUp size={12} /> {c.supportCount || c.upvotes || 0}
                 </span>
+                <MergedReportBadge reportCount={c.reportCount} />
                 {c.expectedCompletionDate && (
                     <span className="flex items-center gap-1 text-blue-600">
                         <CheckCircle size={12} /> ETA: {new Date(c.expectedCompletionDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}

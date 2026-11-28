@@ -7,7 +7,7 @@ export const getChannelMessages = asyncHandler(async (req: Request, res: Respons
     const formattedMessages = await messageService.getChannelMessages(
         req.params.channel as string,
         { lat, lng, radius },
-        req.user!
+        req.user
     );
 
     res.status(200).json({

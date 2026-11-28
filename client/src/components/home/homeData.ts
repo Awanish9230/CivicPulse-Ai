@@ -42,6 +42,7 @@ export interface PublicMapReport {
         fullAddress?: string;
     };
     supportCount?: number;
+    reportCount?: number;
     createdAt: string;
 }
 
@@ -49,6 +50,13 @@ export interface PublicOfficialReply {
     authorityName: string;
     content: string;
     createdAt?: string;
+}
+
+export interface PublicMergedEvidence {
+    description: string;
+    imageUrls: string[];
+    distanceMeters?: number;
+    mergedAt?: string;
 }
 
 export interface PublicRecentReport {
@@ -70,8 +78,10 @@ export interface PublicRecentReport {
     imageUrl?: string;
     imageUrls?: string[];
     supportCount?: number;
+    reportCount?: number;
     replyCount?: number;
     officialReplies?: PublicOfficialReply[];
+    mergedReports?: PublicMergedEvidence[];
     createdAt: string;
 }
 

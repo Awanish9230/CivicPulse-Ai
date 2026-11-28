@@ -30,6 +30,8 @@ export const getDepartmentForCategory = (category: string): string | undefined =
             return 'Traffic & Safety';
         case 'Animal':
             return 'Animal Control';
+        case 'Others':
+            return 'General Administration';
         default:
             return undefined;
     }

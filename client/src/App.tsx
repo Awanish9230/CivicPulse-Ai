@@ -3,9 +3,9 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { LazyMotion, domAnimation } from 'framer-motion';
 import {
-  AlertCircle, Building2, Map, Tag, CheckSquare, MessageSquare,
+  AlertCircle, Map, Tag, MessageSquare,
   MessageCircle, Bell, FileText, ShieldAlert, Database, Webhook,
-  Link2, History, Settings
+  Link2, History
 } from 'lucide-react';
 import AppLayout from './components/layout/AppLayout';
 import AuthorityLayout from './components/layout/AuthorityLayout';
@@ -82,14 +82,16 @@ const AdminAIDashboard = React.lazy(() => import('./pages/admin/ai/AdminAIDashbo
 const AdminAnalytics = React.lazy(() => import('./pages/admin/analytics/AdminAnalytics'));
 const AdminBroadcasts = React.lazy(() => import('./pages/admin/broadcasts/AdminBroadcasts'));
 const AdminMonitor = React.lazy(() => import('./pages/admin/monitor/AdminMonitor'));
-const AuditLogs = React.lazy(() => import('./pages/admin/audit/AuditLogs'));
+const AdminAuditLogs = React.lazy(() => import('./pages/admin/audit/AuditLogs'));
 const AdminAppeals = React.lazy(() => import('./pages/admin/appeals/AdminAppeals'));
+const ManageDepartments = React.lazy(() => import('./pages/admin/departments/ManageDepartments'));
+const AdminTasks = React.lazy(() => import('./pages/admin/tasks/AdminTasks'));
+const AdminSettings = React.lazy(() => import('./pages/admin/settings/AdminSettings'));
+const StaffProfilePage = React.lazy(() => import('./components/profile/StaffProfilePage'));
 
 const ADMIN_PLACEHOLDER_ROUTES = [
-  { path: 'departments', title: 'Departments Management', description: 'Configure city departments and jurisdictions.', icon: Building2 },
   { path: 'locations', title: 'Locations & Wards', description: 'Manage city wards, zones, and geographic boundaries.', icon: Map },
   { path: 'categories', title: 'Complaint Categories', description: 'Manage complaint types and SLA resolution targets.', icon: Tag },
-  { path: 'tasks', title: 'Task Management', description: 'Monitor and reassign department tasks.', icon: CheckSquare },
   { path: 'community', title: 'Community Moderation', description: 'Moderate community chat channels and user reports.', icon: MessageSquare },
   { path: 'feedback', title: 'Feedback & Reviews', description: 'Review citizen feedback on resolved complaints.', icon: MessageCircle },
   { path: 'notifications', title: 'System Notifications', description: 'Manage notification templates and delivery logs.', icon: Bell },
@@ -99,7 +101,6 @@ const ADMIN_PLACEHOLDER_ROUTES = [
   { path: 'api', title: 'API & Webhooks', description: 'Manage API keys and webhook integrations.', icon: Webhook },
   { path: 'integrations', title: 'Third-Party Integrations', description: 'Connect external municipal systems and services.', icon: Link2 },
   { path: 'backups', title: 'Database Backups', description: 'Schedule and restore system backups.', icon: History },
-  { path: 'settings', title: 'Global Settings', description: 'Configure system-wide parameters.', icon: Settings },
 ];
 
 const DynamicTitle = () => {
@@ -163,6 +164,7 @@ function App() {
                 <Route path="chat" element={<AuthorityChat />} />
                 <Route path="members" element={<ManageMembers />} />
                 <Route path="analytics" element={<AuthorityAnalytics />} />
+                <Route path="profile" element={<StaffProfilePage variant="authority" />} />
                 <Route path="settings" element={<AuthoritySettings />} />
               </Route>
 
@@ -170,12 +172,17 @@ function App() {
                 <Route index element={<AdminDashboard />} />
                 <Route path="authorities" element={<ManageAuthorities />} />
                 <Route path="citizens" element={<ManageUsers />} />
+                <Route path="departments" element={<ManageDepartments />} />
+                <Route path="tasks" element={<AdminTasks />} />
+                <Route path="env" element={<AdminSettings initialTab="env" />} />
+                <Route path="profile" element={<StaffProfilePage variant="admin" />} />
+                <Route path="settings" element={<AdminSettings />} />
                 <Route path="complaints" element={<ManageComplaints />} />
                 <Route path="ai" element={<AdminAIDashboard />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="broadcasts" element={<AdminBroadcasts />} />
                 <Route path="monitor" element={<AdminMonitor />} />
-                <Route path="audit" element={<AuditLogs />} />
+                <Route path="audit" element={<AdminAuditLogs />} />
                 <Route path="appeals" element={<AdminAppeals />} />
                 {ADMIN_PLACEHOLDER_ROUTES.map((route) => (
                   <Route
