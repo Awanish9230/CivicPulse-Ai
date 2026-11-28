@@ -4,6 +4,7 @@ import { verifyJWT } from "../../middlewares/auth.middleware.js";
 import { upload } from "../../middlewares/uploadmiddleware.js";
 import {
     createComplaint,
+    checkDuplicatePreview,
     getMyComplaints,
     getAllComplaints,
     upvoteComplaint,
@@ -30,6 +31,7 @@ router.post("/:complaintId/resolve", verifyJWT, resolveComplaint);
 router.post("/:complaintId/reply", verifyJWT, addOfficialReply);
 router.post("/:complaintId/feedback", verifyJWT, submitResolutionFeedback);
 router.post("/analyze-image", verifyJWT, analyzeImage);
+router.post("/check-duplicate", verifyJWT, checkDuplicatePreview);
 router.post(
     "/create",
     verifyJWT,

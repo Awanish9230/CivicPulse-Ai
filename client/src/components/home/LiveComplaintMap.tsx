@@ -154,6 +154,7 @@ const LiveComplaintMap: React.FC<LiveComplaintMapProps> = ({
                 priority: r.priority,
                 area: formatAddressShort(r.address),
                 supportCount: r.supportCount ?? 1,
+                reportCount: r.reportCount ?? 1,
                 timeAgo: getTimeAgo(r.createdAt) || 'Recent',
                 weight: getReportHeatWeight(r)
             })),

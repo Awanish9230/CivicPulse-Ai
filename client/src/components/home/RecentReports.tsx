@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUp, ArrowUpRight, Clock, MapPin, MessageSquare, FileText, Eye } from 'lucide-react';
 import ImageCarousel from '../common/ImageCarousel';
+import MergedReportBadge from '../common/MergedReportBadge';
 import EmptyState from '../common/EmptyState';
 import { getPriorityColor, getDepartmentForCategory } from '../../utils/complaintUtils';
 import { getTimeAgo } from '../../utils/dateUtils';
@@ -149,10 +150,13 @@ const RecentReports: React.FC<RecentReportsProps> = ({
 
                                 <div className="p-4 flex flex-col flex-1 gap-2">
                                     <div className="flex items-center justify-between gap-2">
-                                        <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border ${meta.badgeClass}`}>
-                                            {report.category}
-                                        </span>
-                                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border ${meta.badgeClass}`}>
+                                                {report.category}
+                                            </span>
+                                            <MergedReportBadge reportCount={report.reportCount} compact />
+                                        </div>
+                                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 shrink-0">
                                             <Clock size={12} /> {getTimeAgo(report.createdAt) || 'Just now'}
                                         </span>
                                     </div>

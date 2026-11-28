@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { ThumbsUp, ShieldAlert } from 'lucide-react';
 import ImageCarousel from '../../../components/common/ImageCarousel';
+import MergedReportBadge from '../../../components/common/MergedReportBadge';
 import { getTimeAgo } from '../../../utils/dateUtils';
 import type { Complaint, User } from '../../../types';
 
@@ -93,6 +94,7 @@ const IssueCard = memo<IssueCardProps>(({
                             <ThumbsUp size={12} />
                             {item.supportCount || item.upvotes || 0}
                         </button>
+                        <MergedReportBadge reportCount={item.reportCount} compact />
 
                         {user?.role === 'Authority' && item.status !== 'Resolved' && (
                             <button

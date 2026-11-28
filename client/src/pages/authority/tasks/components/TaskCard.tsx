@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Clock, MapPin, AlertCircle, Map as MapIcon, UserPlus, Send } from 'lucide-react';
 import ImageCarousel from '../../../../components/common/ImageCarousel';
+import MergedReportBadge from '../../../../components/common/MergedReportBadge';
 import CustomSelect from '../../../../components/common/CustomSelect';
 import InlineLocationMap from '../../../../components/common/InlineLocationMap';
 import { getPriorityColor } from '../../../../utils/complaintUtils';
@@ -57,9 +58,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-2 line-clamp-1">
-                    {task.category} Issue
-                </h3>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <h3 className="text-xl font-bold text-slate-900 line-clamp-1">
+                        {task.category} Issue
+                    </h3>
+                    <MergedReportBadge reportCount={task.reportCount} />
+                </div>
 
                 {taskImages.length > 0 && (
                     <div className="mb-4 rounded-xl overflow-hidden border border-slate-200 h-48 bg-slate-100 flex-shrink-0 relative group">
@@ -92,6 +96,16 @@ const TaskCard: React.FC<TaskCardProps> = ({
                                 {(task.assignedTo.name || '').substring(0, 2).toUpperCase()}
                             </div>
                             <span>Handling: {task.assignedTo.name} ({task.assignedTo.authorityLevel})</span>
+                        </div>
+                    )}
+                    {task.mergedReports && task.mergedReports.length > 0 && (
+                        <div className="bg-indigo-50/70 rounded-xl p-2.5 border border-indigo-100 text-xs text-indigo-800 space-y-1">
+                            <div className="font-bold">Merged Co-Reporter Evidence ({task.mergedReports.length})</div>
+                            {task.mergedReports.slice(0, 2).map((m, idx) => (
+                                <div key={idx} className="text-[11px] text-indigo-700/90 line-clamp-1">
+                                    • {m.description}
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
