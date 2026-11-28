@@ -37,6 +37,14 @@ export const verifyJWT = asyncHandler(async (req: Request, _res: Response, next:
         throw new ApiError(401, "Invalid access token");
     }
 
+    if (user.isActive === false) {
+        throw new ApiError(403, "Your account has been disabled by an administrator.");
+    }
+
+    if (user.isBanned && (user.role === 'Authority' || user.role === 'Admin')) {
+        throw new ApiError(403, "Your official account has been blocked by an administrator.");
+    }
+
     const authUser = user as unknown as AuthenticatedUser;
     authUser.anonymousId = decodedToken.anonymousId;
     authUser.pastAnonymousIds = decodedToken.pastAnonymousIds || [];

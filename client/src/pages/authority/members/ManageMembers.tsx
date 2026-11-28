@@ -28,7 +28,7 @@ const ManageMembers: React.FC = () => {
     const [reportData, setReportData] = useState<EmployeeReportData | null>(null);
     const [loadingReport, setLoadingReport] = useState<boolean>(false);
 
-    const isHODorAdmin = user?.role === 'Admin' || user?.authorityLevel === 'HOD';
+    const isHODorAdmin = user?.role === 'Admin' || user?.isAuthorityAdmin || user?.authorityLevel === 'HOD';
 
     const fetchMembers = async (): Promise<void> => {
         try {

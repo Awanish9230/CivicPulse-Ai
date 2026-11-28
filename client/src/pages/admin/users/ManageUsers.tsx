@@ -1,33 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Search, Filter, Eye, Ban, ShieldAlert } from 'lucide-react';
+import { Search, Eye, Ban, ShieldAlert, KeyRound } from 'lucide-react';
 import toast from 'react-hot-toast';
 import io from 'socket.io-client';
 import CustomSelect from '../../../components/common/CustomSelect';
-import MemberDetailsModal, { type MemberDetailsData, type SelectOption } from '../../../components/admin/MemberDetailsModal';
+import MemberDetailsModal, {
+    type MemberDetailsData,
+    type SelectOption
+} from '../../../components/admin/MemberDetailsModal';
+import TempPasswordModal, {
+    type ResetPasswordResult
+} from '../../../components/admin/TempPasswordModal';
 
 interface ApiUser {
     _id: string;
     anonymousId?: string;
+    email?: string;
     role: string;
     createdAt?: string;
+    isActive?: boolean;
     isBanned?: boolean;
     complaintsCount?: number;
     strikes?: number;
 }
 
-interface UserListItem {
-    id: string;
-    anonymousId: string;
-    role: string;
-    joined: string;
-    status: 'Active' | 'Suspended';
-    complaints: number;
-    strikes: number;
-}
-
 interface EditUserForm {
     role: string;
+    isActive: boolean;
     isBanned: boolean;
 }
 
@@ -37,48 +36,38 @@ const ROLE_OPTIONS: SelectOption[] = [
     { value: 'Admin', label: 'Admin' },
 ];
 
-const STATUS_OPTIONS: SelectOption[] = [
-    { value: 'active', label: 'Active' },
-    { value: 'banned', label: 'Banned' },
-];
-
 const ManageUsers: React.FC = () => {
-    const [users, setUsers] = useState<UserListItem[]>([]);
+    const [users, setUsers] = useState<ApiUser[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [statusFilter, setStatusFilter] = useState<string>('All');
 
     const [selectedMember, setSelectedMember] = useState<string | null>(null);
     const [memberDetails, setMemberDetails] = useState<MemberDetailsData | null>(null);
     const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
 
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [editForm, setEditForm] = useState<EditUserForm>({ role: '', isBanned: false });
+    const [editForm, setEditForm] = useState<EditUserForm>({ role: '', isActive: true, isBanned: false });
     const [saving, setSaving] = useState<boolean>(false);
+    const [resetModalData, setResetModalData] = useState<ResetPasswordResult | null>(null);
 
-    const fetchUsers = async (): Promise<void> => {
+    const fetchUsers = useCallback(async () => {
         try {
+            const params = new URLSearchParams();
+            if (searchTerm.trim()) params.set('search', searchTerm.trim());
+            if (statusFilter !== 'All') params.set('status', statusFilter);
+
             const { data } = await axios.get<{ data: { users: ApiUser[] } }>(
-                `${import.meta.env.VITE_API_URL}/api/v1/admin/citizens`,
+                `${import.meta.env.VITE_API_URL}/api/v1/admin/citizens?${params.toString()}`,
                 { withCredentials: true }
             );
-
-            const formattedUsers: UserListItem[] = data.data.users.map((user) => ({
-                id: user._id,
-                anonymousId: user.anonymousId || '',
-                role: user.role,
-                joined: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
-                status: user.isBanned ? 'Suspended' : 'Active',
-                complaints: user.complaintsCount || 0,
-                strikes: user.strikes || 0
-            }));
-
-            setUsers(formattedUsers);
+            setUsers(data.data.users || []);
         } catch {
-            toast.error("Failed to load users");
+            toast.error('Failed to load users');
         } finally {
             setLoading(false);
         }
-    };
+    }, [searchTerm, statusFilter]);
 
     useEffect(() => {
         fetchUsers();
@@ -95,9 +84,43 @@ const ManageUsers: React.FC = () => {
         return () => {
             socket.disconnect();
         };
-    }, []);
+    }, [fetchUsers]);
 
-    const openMemberDetails = async (memberId: string): Promise<void> => {
+    const handleToggleStatus = async (
+        id: string,
+        payload: { isActive?: boolean; isBanned?: boolean }
+    ) => {
+        try {
+            await axios.patch(
+                `${import.meta.env.VITE_API_URL}/api/v1/admin/members/${id}/status`,
+                payload,
+                { withCredentials: true }
+            );
+            toast.success('Citizen account status updated');
+            fetchUsers();
+        } catch (err: unknown) {
+            const msg = axios.isAxiosError<{ message?: string }>(err)
+                ? err.response?.data?.message || 'Status update failed'
+                : 'Status update failed';
+            toast.error(msg);
+        }
+    };
+
+    const handleResetPassword = async (id: string) => {
+        try {
+            const { data } = await axios.post<{ data: ResetPasswordResult }>(
+                `${import.meta.env.VITE_API_URL}/api/v1/admin/members/${id}/reset-password`,
+                {},
+                { withCredentials: true }
+            );
+            setResetModalData(data.data);
+            toast.success('Temporary password generated');
+        } catch {
+            toast.error('Failed to reset password');
+        }
+    };
+
+    const openMemberDetails = async (memberId: string) => {
         setSelectedMember(memberId);
         setLoadingDetails(true);
         setIsEditing(false);
@@ -107,7 +130,11 @@ const ManageUsers: React.FC = () => {
                 { withCredentials: true }
             );
             setMemberDetails(data.data);
-            setEditForm({ role: data.data.member.role, isBanned: Boolean(data.data.member.isBanned) });
+            setEditForm({
+                role: data.data.member.role,
+                isActive: data.data.member.isActive !== false,
+                isBanned: Boolean(data.data.member.isBanned)
+            });
         } catch {
             toast.error('Failed to fetch user details');
             setSelectedMember(null);
@@ -116,7 +143,7 @@ const ManageUsers: React.FC = () => {
         }
     };
 
-    const handleSaveEdit = async (): Promise<void> => {
+    const handleSaveEdit = async () => {
         if (!selectedMember) return;
         setSaving(true);
         try {
@@ -125,11 +152,12 @@ const ManageUsers: React.FC = () => {
                 editForm,
                 { withCredentials: true }
             );
-            toast.success("User updated successfully");
+            toast.success('User updated successfully');
             setIsEditing(false);
+            fetchUsers();
             openMemberDetails(selectedMember);
         } catch {
-            toast.error("Failed to update user");
+            toast.error('Failed to update user');
         } finally {
             setSaving(false);
         }
@@ -137,114 +165,130 @@ const ManageUsers: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-slate-800">Citizen Management</h1>
-                    <p className="text-slate-500 mt-1">Manage all registered users and their platform access.</p>
-                </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 font-medium shadow-sm">
-                        <Filter size={18} />
-                        Filters
-                    </button>
-                </div>
+            <div>
+                <h1 className="text-2xl md:text-3xl font-black text-slate-900">Manage Citizens</h1>
+                <p className="text-slate-500 mt-1 text-sm">
+                    Inspect citizen engagement, enable/disable or block accounts, change roles, or issue 1-click password resets.
+                </p>
             </div>
 
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                    <div className="relative w-full max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <div className="bg-white rounded-3xl shadow-xs border border-slate-200 overflow-hidden">
+                <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row gap-3 justify-between items-center">
+                    <div className="relative w-full sm:w-96">
+                        <Search className="absolute left-3.5 top-3 text-slate-400" size={16} />
                         <input
                             type="text"
-                            placeholder="Search by Anonymous ID..."
+                            placeholder="Search by email or name..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm"
+                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+                        />
+                    </div>
+                    <div className="w-full sm:w-52">
+                        <CustomSelect
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            options={[
+                                { value: 'All', label: 'All States' },
+                                { value: 'active', label: 'Enabled & Active' },
+                                { value: 'disabled', label: 'Disabled Only' },
+                                { value: 'blocked', label: 'Blocked Only' }
+                            ]}
+                            className="bg-slate-50 text-xs"
                         />
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-600">
-                        <thead className="bg-slate-50/50 text-slate-500 text-xs uppercase font-bold">
-                            <tr>
-                                <th className="px-6 py-4">Anonymous ID</th>
-                                <th className="px-6 py-4">Role</th>
-                                <th className="px-6 py-4">Complaints Filed</th>
-                                <th className="px-6 py-4">Strikes</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs uppercase font-bold">
+                                <th className="p-4">Citizen Identity</th>
+                                <th className="p-4">Joined</th>
+                                <th className="p-4">Reports / Strikes</th>
+                                <th className="p-4">Enabled</th>
+                                <th className="p-4 text-right">Block / Reset / Inspect</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-100 text-sm">
                             {loading ? (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <tr key={`skel-${i}`} className="animate-pulse">
-                                        <td className="px-6 py-4 flex items-center gap-2">
-                                            <div className="w-8 h-8 rounded-full bg-slate-200"></div>
-                                            <div className="h-4 bg-slate-200 rounded w-24"></div>
-                                        </td>
-                                        <td className="px-6 py-4"><div className="h-6 bg-slate-200 rounded-full w-16"></div></td>
-                                        <td className="px-6 py-4"><div className="h-6 bg-slate-200 rounded w-8"></div></td>
-                                        <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-4"></div></td>
-                                        <td className="px-6 py-4"><div className="h-6 bg-slate-200 rounded-full w-16"></div></td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <div className="w-8 h-8 bg-slate-200 rounded-lg"></div>
-                                                <div className="w-8 h-8 bg-slate-200 rounded-lg"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : users.filter((u) => u.anonymousId.toLowerCase().includes(searchTerm.toLowerCase())).map((user) => (
-                                <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
-                                            {user.anonymousId.substring(3, 5)}
-                                        </div>
-                                        {user.anonymousId}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
-                                            {user.role}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 font-medium">
-                                        <div className="flex items-center text-slate-700 bg-slate-100 w-max px-2 py-0.5 rounded-lg">
-                                            {user.complaints}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 font-medium">
-                                        {user.strikes > 0 ? (
-                                            <span className="text-red-500 font-bold flex items-center gap-1"><ShieldAlert size={14} /> {user.strikes}</span>
-                                        ) : (
-                                            <span className="text-slate-400">0</span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span
-                                            className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                                                user.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                                            }`}
-                                        >
-                                            {user.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <button
-                                                onClick={() => openMemberDetails(user.id)}
-                                                className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors font-bold text-xs flex items-center"
-                                            >
-                                                <Eye size={14} className="mr-1" /> Deep Dive
-                                            </button>
-                                            <button className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
-                                                <Ban size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
+                                <tr>
+                                    <td colSpan={5} className="p-8 text-center text-slate-400">Loading citizens...</td>
                                 </tr>
-                            ))}
+                            ) : users.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="p-8 text-center text-slate-400">No citizens found.</td>
+                                </tr>
+                            ) : (
+                                users.map((u) => {
+                                    const isEnabled = u.isActive !== false;
+                                    const isBlocked = Boolean(u.isBanned);
+                                    return (
+                                        <tr key={u._id} className="hover:bg-slate-50/70 transition-colors">
+                                            <td className="p-4">
+                                                <div className="font-mono font-bold text-slate-800">{u.anonymousId || u._id.slice(-6)}</div>
+                                                <div className="text-xs text-slate-500">{u.email}</div>
+                                            </td>
+                                            <td className="p-4 text-slate-500 text-xs">
+                                                {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="font-bold text-slate-800">{u.complaintsCount ?? 0} filed</div>
+                                                <span className={`inline-flex items-center gap-1 text-xs font-bold ${(u.strikes ?? 0) > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                                                    <ShieldAlert size={12} /> {u.strikes ?? 0} strikes
+                                                </span>
+                                            </td>
+                                            <td className="p-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleStatus(u._id, { isActive: !isEnabled })}
+                                                    aria-label="Toggle citizen enabled status"
+                                                    className={`w-12 h-6 rounded-full transition-colors p-0.5 cursor-pointer ${
+                                                        isEnabled ? 'bg-emerald-500' : 'bg-slate-300'
+                                                    }`}
+                                                >
+                                                    <div
+                                                        className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                                                            isEnabled ? 'translate-x-6' : 'translate-x-0'
+                                                        }`}
+                                                    />
+                                                </button>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleToggleStatus(u._id, { isBanned: !isBlocked })}
+                                                        className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                                                            isBlocked
+                                                                ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700'
+                                                                : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'
+                                                        }`}
+                                                    >
+                                                        <Ban size={12} />
+                                                        {isBlocked ? 'Unblock' : 'Block'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleResetPassword(u._id)}
+                                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold cursor-pointer"
+                                                    >
+                                                        <KeyRound size={12} /> Reset PW
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openMemberDetails(u._id)}
+                                                        className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-200 cursor-pointer"
+                                                        title="Inspect & Edit"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -260,29 +304,34 @@ const ManageUsers: React.FC = () => {
                 setIsEditing={setIsEditing}
                 saving={saving}
                 onSave={handleSaveEdit}
+                onQuickResetPassword={selectedMember ? () => handleResetPassword(selectedMember) : undefined}
                 editFormContent={
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="p-6 bg-slate-50 border-b border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">System Role</label>
-                            <CustomSelect
-                                value={editForm.role}
-                                onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                                options={ROLE_OPTIONS}
-                                className="w-full h-[38px]"
-                            />
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Role</label>
+                            <CustomSelect value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })} options={ROLE_OPTIONS} className="bg-white" />
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">Account Status</label>
-                            <CustomSelect
-                                value={editForm.isBanned ? 'banned' : 'active'}
-                                onChange={(e) => setEditForm({ ...editForm, isBanned: e.target.value === 'banned' })}
-                                options={STATUS_OPTIONS}
-                                className="w-full h-[38px]"
+                        <label className="flex items-center gap-2 text-xs font-bold text-slate-700 pb-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={editForm.isActive}
+                                onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
                             />
-                        </div>
+                            Account Enabled
+                        </label>
+                        <label className="flex items-center gap-2 text-xs font-bold text-rose-700 pb-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={editForm.isBanned}
+                                onChange={(e) => setEditForm({ ...editForm, isBanned: e.target.checked })}
+                            />
+                            Blocked / Suspended
+                        </label>
                     </div>
                 }
             />
+
+            <TempPasswordModal data={resetModalData} onClose={() => setResetModalData(null)} />
         </div>
     );
 };

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Complaint, { ComplaintCategory, ComplaintDocument } from './complaint.model.js';
 import User from '../user/user.model.js';
@@ -7,6 +8,8 @@ import uploadOnCloudinary, { deleteFromCloudinary } from '../../utils/cloudinary
 import notificationService from '../notification/notification.service.js';
 import { apiKeyManager } from '../../utils/apiKeyManager.js';
 import type { AuthenticatedUser } from '../../types/express.js';
+import { getGlobalSystemSettings } from '../settings/systemSettings.model.js';
+import { findLeastLoadedJuniorForCategory } from '../authority/autoAssign.service.js';
 import {
     ACTIVE_COMPLAINT_STATUSES,
     detectBestDuplicateMatch,
@@ -477,6 +480,16 @@ export const createComplaint = async (
         throw new ApiError(500, "Failed to upload complaint images to Cloudinary");
     }
 
+    let autoAssignedOfficial: { _id: { toString(): string }; name?: string } | null = null;
+    try {
+        const settings = await getGlobalSystemSettings();
+        if (settings?.escalationRules?.autoAssignEnabled !== false) {
+            autoAssignedOfficial = await findLeastLoadedJuniorForCategory(category);
+        }
+    } catch (e) {
+        console.error("Auto-assign lookup skipped:", e);
+    }
+
     const complaint = await Complaint.create({
         reportedBy: actor.anonymousId,
         category,
@@ -493,6 +506,16 @@ export const createComplaint = async (
         supportCount: 1,
         coReporters: [],
         mergedReports: [],
+        ...(autoAssignedOfficial && {
+            assignedTo: new mongoose.Types.ObjectId(autoAssignedOfficial._id.toString()),
+            status: 'Assigned' as const,
+            officialReplies: [
+                {
+                    authorityName: 'System Auto-Dispatch',
+                    content: `Automatically assigned to ${autoAssignedOfficial.name || 'Junior Officer'} (least-loaded on-duty official).`
+                }
+            ]
+        }),
         ...(parsedAddress && { address: parsedAddress }),
     });
 
@@ -511,8 +534,23 @@ export const createComplaint = async (
             actionUrl: `/complaints/${complaint._id}`
         });
 
+        if (autoAssignedOfficial?._id) {
+            await notificationService.createNotification({
+                recipient: String(autoAssignedOfficial._id),
+                title: 'New Task Auto-Assigned',
+                message: `You were automatically assigned a ${complaint.category} complaint.`,
+                type: 'Task Assigned',
+                priority: 'High',
+                complaint: complaint._id,
+                actionUrl: '/authority/tasks'
+            });
+        }
+
         const authorities = await User.find({ role: { $in: ['Admin', 'Authority'] } });
         for (const auth of authorities) {
+            if (autoAssignedOfficial?._id && auth._id.toString() === String(autoAssignedOfficial._id)) {
+                continue;
+            }
             await notificationService.createNotification({
                 recipient: auth._id.toString(),
                 title: 'New Issue Reported',

@@ -6,6 +6,8 @@ import {
     logoutUser,
     rotateAnonymousId,
     getMe,
+    updateMe,
+    changePassword,
     forgotPassword,
     resetPassword,
     getLeaderboard
@@ -38,6 +40,8 @@ router.post("/reset-password/:token", passwordResetLimiter, resetPassword);
 router.post("/logout", verifyJWT, logoutUser);
 router.post("/rotate-anonymous-id", verifyJWT, authLimiter, rotateAnonymousId);
 router.get("/me", verifyJWT, getMe);
+router.patch("/me", verifyJWT, updateMe);
+router.post("/change-password", verifyJWT, changePassword);
 router.get("/leaderboard", verifyJWT, getLeaderboard);
 
 export default router;

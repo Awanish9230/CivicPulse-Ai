@@ -10,7 +10,8 @@ import {
     updateTask,
     assignTask,
     getDepartmentMembers,
-    getEmployeeReport
+    getEmployeeReport,
+    updateDutyStatus
 } from "./authority.controller.js";
 
 const router = Router();
@@ -20,6 +21,7 @@ router.get("/members", verifyJWT, getAuthorityMembers);
 
 router.get("/department-members", verifyJWT, getDepartmentMembers);
 router.get("/employee-report/:employeeId", verifyJWT, getEmployeeReport);
+router.patch("/duty-status", verifyJWT, updateDutyStatus);
 
 router.get("/tasks", verifyJWT, getTasks);
 router.get("/analytics", verifyJWT, getAnalytics);

@@ -1,15 +1,36 @@
 export type UserRole = 'Citizen' | 'Authority' | 'Admin';
 export type AuthorityLevel = 'Junior' | 'Senior' | 'HOD';
+export type DutyStatus = 'On Duty' | 'Off Duty' | 'On Leave' | 'Busy';
+
+export interface RoleSummary {
+  _id: string;
+  name: string;
+  slug: string;
+  scope: UserRole;
+  description?: string;
+  permissions: string[];
+  isSystem?: boolean;
+  isActive?: boolean;
+  assignedCount?: number;
+}
 
 export interface User {
   _id: string;
   email: string;
   name?: string;
+  phone?: string;
+  bio?: string;
   anonymousId?: string;
   pastAnonymousIds?: string[];
   role: UserRole;
   authorityLevel?: AuthorityLevel;
   department?: string;
+  dutyStatus?: DutyStatus;
+  isAuthorityAdmin?: boolean;
+  customRole?: RoleSummary | string | null;
+  permissions?: string[];
+  isActive?: boolean;
+  lastSeenAt?: string;
   points?: number;
   badges?: string[];
   strikes?: number;

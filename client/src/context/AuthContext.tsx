@@ -68,7 +68,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     useEffect(() => {
-        if (!user || user.role === 'Authority') return;
+        if (!user || user.role !== 'Citizen') {
+            localStorage.removeItem('nextRotationTime');
+            return;
+        }
 
         const rotateIdentity = async () => {
             try {

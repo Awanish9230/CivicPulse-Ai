@@ -54,7 +54,7 @@ const AuthorityTasks: React.FC = () => {
     const [testModeBypass, setTestModeBypass] = useState<boolean>(false);
     const [resolving, setResolving] = useState<boolean>(false);
 
-    const isSeniorOrHOD = user?.role === 'Admin' || user?.authorityLevel === 'Senior' || user?.authorityLevel === 'HOD';
+    const isSeniorOrHOD = user?.role === 'Admin' || user?.isAuthorityAdmin || user?.authorityLevel === 'Senior' || user?.authorityLevel === 'HOD';
 
     const fetchTasks = async (): Promise<void> => {
         try {
@@ -221,10 +221,14 @@ const AuthorityTasks: React.FC = () => {
             );
 
             const filteredMembers = data.data.filter((member) => {
-                const isCorrectDepartment = user?.role === 'Admin' ? member.department === targetDepartment : true;
+                const isCorrectDepartment = targetDepartment
+                    ? member.department === targetDepartment
+                    : user?.isAuthorityAdmin
+                        ? true
+                        : member.department === user?.department;
 
                 let isCorrectRank = false;
-                if (user?.role === 'Admin') isCorrectRank = true;
+                if (user?.role === 'Admin' || user?.isAuthorityAdmin) isCorrectRank = true;
                 else if (user?.authorityLevel === 'HOD') isCorrectRank = ['Senior', 'Junior'].includes(member.authorityLevel);
                 else if (user?.authorityLevel === 'Senior') isCorrectRank = member.authorityLevel === 'Junior';
 

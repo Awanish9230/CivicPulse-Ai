@@ -60,6 +60,33 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
+export const updateMe = asyncHandler(async (req: Request, res: Response) => {
+    const updatedUser = await userService.updateOwnProfile(req.user!, req.body);
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedUser, "Profile updated successfully")
+    );
+});
+
+export const changePassword = asyncHandler(async (req: Request, res: Response) => {
+    const { currentPassword, newPassword } = req.body as {
+        currentPassword?: string;
+        newPassword?: string;
+    };
+    const { accessToken, refreshToken } = await userService.changeOwnPassword(
+        req.user!,
+        currentPassword,
+        newPassword
+    );
+    const options = userService.getCookieOptions(true);
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
 export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
     const { email } = req.body;
     await userService.forgotPassword(email);

@@ -1,11 +1,15 @@
 import React, { useState, useContext } from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users, MessageSquare, Eye, EyeOff, LucideIcon } from 'lucide-react';
+import { Map, CheckSquare, BarChart, Settings, LogOut, Lock, Users, MessageSquare, Eye, EyeOff, UserCircle, LucideIcon } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import AuthorityBottomNav from './AuthorityBottomNav';
 import { NotificationBell } from '../notifications/NotificationBell';
-import type { User } from '../../types';
+import api from '../../config/api';
+import toast from 'react-hot-toast';
+import type { DutyStatus, User } from '../../types';
+
+const DUTY_STATUS_OPTIONS: DutyStatus[] = ['On Duty', 'Busy', 'Off Duty', 'On Leave'];
 
 interface AuthNavItem {
     name: string;
@@ -61,6 +65,10 @@ const AuthoritySidebar = ({ onLogout }: { onLogout: () => void }) => {
             </nav>
 
             <div className="p-4 border-t border-emerald-900">
+                <Link to="/authority/profile" className="flex items-center justify-center lg:justify-start p-3 mb-2 rounded-xl text-emerald-200/70 hover:text-white hover:bg-emerald-900 transition-colors">
+                    <UserCircle size={20} />
+                    <span className="hidden lg:block ml-3 font-bold text-sm">My Profile</span>
+                </Link>
                 <button onClick={onLogout} className="w-full flex items-center justify-center lg:justify-start p-3 rounded-xl text-emerald-200/70 hover:text-red-400 hover:bg-red-500/10 transition-colors">
                     <LogOut size={20} />
                     <span className="hidden lg:block ml-3 font-bold text-sm">Logout</span>
@@ -72,7 +80,23 @@ const AuthoritySidebar = ({ onLogout }: { onLogout: () => void }) => {
 
 const AuthorityLayout = () => {
     const location = useLocation();
-    const { user, login, logout } = useContext(AuthContext);
+    const { user, login, logout, fetchUser } = useContext(AuthContext);
+    const [updatingDuty, setUpdatingDuty] = useState(false);
+
+    const handleDutyChange = async (nextDutyStatus: DutyStatus) => {
+        if (!user || updatingDuty || user.dutyStatus === nextDutyStatus) return;
+        setUpdatingDuty(true);
+        try {
+            await api.patch('/authority/duty-status', { dutyStatus: nextDutyStatus });
+            await fetchUser();
+            toast.success(`Presence updated to ${nextDutyStatus}`);
+        } catch (err: unknown) {
+            const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to update duty status';
+            toast.error(msg);
+        } finally {
+            setUpdatingDuty(false);
+        }
+    };
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -177,15 +201,53 @@ const AuthorityLayout = () => {
 
                     <div className="hidden md:flex flex-col">
                         <span className="font-black text-slate-900 text-lg">Welcome, {user?.name || 'Authority'}</span>
-                        <span className="text-sm font-bold text-emerald-600 flex items-center gap-1">
-                            <span className="bg-emerald-100 px-2 py-0.5 rounded-md">{user?.authorityLevel || 'Member'}</span>
+                        <span className="text-sm font-bold text-emerald-600 flex items-center gap-1.5 flex-wrap">
+                            {user?.isAuthorityAdmin ? (
+                                <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md">
+                                    Authority Admin (All Depts)
+                                </span>
+                            ) : (
+                                <span className="bg-emerald-100 px-2 py-0.5 rounded-md">{user?.authorityLevel || 'Member'}</span>
+                            )}
                             <span className="text-slate-400">•</span>
-                            <span className="text-slate-500">{user?.department || 'Department'}</span>
+                            <span className="text-slate-500">{user?.isAuthorityAdmin ? 'All Municipal Departments' : (user?.department || 'Department')}</span>
                         </span>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
+                        <label className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+                            <span className={`w-2 h-2 rounded-full ${
+                                (user?.dutyStatus || 'On Duty') === 'On Duty'
+                                    ? 'bg-emerald-500'
+                                    : user?.dutyStatus === 'Busy'
+                                        ? 'bg-amber-500'
+                                        : 'bg-slate-400'
+                            }`} />
+                            <select
+                                aria-label="Duty Status"
+                                value={user?.dutyStatus || 'On Duty'}
+                                disabled={updatingDuty}
+                                onChange={(e) => handleDutyChange(e.target.value as DutyStatus)}
+                                className="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer disabled:opacity-50"
+                            >
+                                {DUTY_STATUS_OPTIONS.map((statusOption) => (
+                                    <option key={statusOption} value={statusOption}>
+                                        {statusOption}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
                         <NotificationBell />
+                        <Link
+                            to="/authority/profile"
+                            className="hidden sm:flex items-center gap-2.5 pl-3 border-l border-slate-200 hover:opacity-80 transition-opacity"
+                            title="View & Edit Profile"
+                        >
+                            <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 font-black flex items-center justify-center text-sm">
+                                {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
+                            </div>
+                            <span className="hidden lg:inline text-xs font-bold text-slate-700">My Profile</span>
+                        </Link>
                     </div>
                 </header>
 

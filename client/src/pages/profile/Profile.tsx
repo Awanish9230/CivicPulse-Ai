@@ -21,6 +21,11 @@ const Profile = () => {
     };
 
     useEffect(() => {
+        if (!user || user.role !== 'Citizen') {
+            setTimeLeft(0);
+            return;
+        }
+
         const nextTime = getNextRotationTime();
         
         const updateTimer = () => {
@@ -38,7 +43,7 @@ const Profile = () => {
         const interval = setInterval(updateTimer, 1000);
 
         return () => clearInterval(interval);
-    }, [user?.anonymousId]);
+    }, [user?._id, user?.role, user?.anonymousId]);
 
     const formatTime = (ms: number): string => {
         if (ms <= 0) return "00:00";
@@ -64,7 +69,7 @@ const Profile = () => {
         );
     }
 
-    const isAuthority = user.role === 'Authority';
+    const isAuthority = user.role === 'Authority' || user.role === 'Admin';
     const strikes = user.strikes ?? 0;
 
     const containerVariants = {

@@ -6,6 +6,7 @@ import type { PushSubscription } from 'web-push';
 
 export type UserRole = 'Citizen' | 'Authority' | 'Admin';
 export type AuthorityLevel = 'Junior' | 'Senior' | 'HOD';
+export type DutyStatus = 'On Duty' | 'Off Duty' | 'On Leave' | 'Busy';
 export type Department =
     | 'Public Works'
     | 'Water & Sanitation'
@@ -22,9 +23,17 @@ export interface IUser {
     pastAnonymousIds: string[];
     role: UserRole;
     name?: string;
+    phone?: string;
+    bio?: string;
     pushSubscriptions: PushSubscription[];
     authorityLevel?: AuthorityLevel;
     department?: Department;
+    dutyStatus: DutyStatus;
+    isAuthorityAdmin: boolean;
+    customRole?: mongoose.Types.ObjectId | null;
+    permissions: string[];
+    isActive: boolean;
+    lastSeenAt?: Date;
     deviceToken?: string;
     refreshToken?: string;
     strikes: number;
@@ -85,6 +94,15 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>({
         type: String,
         trim: true,
     },
+    phone: {
+        type: String,
+        trim: true,
+    },
+    bio: {
+        type: String,
+        trim: true,
+        maxlength: 300,
+    },
     pushSubscriptions: {
         type: [mongoose.Schema.Types.Mixed] as unknown as PushSubscription[],
         default: []
@@ -97,6 +115,32 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>({
         type: String,
         trim: true,
         enum: ['Public Works', 'Water & Sanitation', 'Power', 'Traffic & Safety', 'Animal Control', 'General Administration', 'Master Admin'],
+    },
+    dutyStatus: {
+        type: String,
+        enum: ['On Duty', 'Off Duty', 'On Leave', 'Busy'],
+        default: 'On Duty',
+    },
+    isAuthorityAdmin: {
+        type: Boolean,
+        default: false,
+    },
+    customRole: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role',
+        default: null,
+    },
+    permissions: {
+        type: [String],
+        default: [],
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
+    },
+    lastSeenAt: {
+        type: Date,
+        default: Date.now,
     },
     deviceToken: {
         type: String,

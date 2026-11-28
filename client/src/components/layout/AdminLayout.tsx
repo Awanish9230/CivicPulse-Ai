@@ -8,7 +8,7 @@ import {
     BrainCircuit, Bell, Radio, BarChart3, FileText,
     Activity, ClipboardList, Settings, ShieldAlert,
     Database, MessageCircle, Webhook, Link as LinkIcon,
-    History, UserCircle, Search, LogOut, Eye, EyeOff, LucideIcon
+    History, UserCircle, Search, LogOut, Eye, EyeOff, KeyRound, LucideIcon
 } from 'lucide-react';
 import { NotificationBell } from '../notifications/NotificationBell';
 import type { User } from '../../types';
@@ -70,6 +70,7 @@ const adminNavGroups: NavGroup[] = [
             { name: 'API Manager', path: '/admin/api', icon: Webhook },
             { name: 'Integrations', path: '/admin/integrations', icon: LinkIcon },
             { name: 'Backups', path: '/admin/backups', icon: History },
+            { name: 'Env Variables', path: '/admin/env', icon: KeyRound },
             { name: 'Settings', path: '/admin/settings', icon: Settings },
         ]
     }
@@ -259,15 +260,19 @@ const AdminLayout = () => {
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                         <NotificationBell />
-                        <div className="hidden md:flex items-center gap-3 pl-4 border-l border-slate-200">
+                        <Link
+                            to="/admin/profile"
+                            className="hidden md:flex items-center gap-3 pl-4 border-l border-slate-200 hover:opacity-80 transition-opacity"
+                            title="View & Edit Admin Profile"
+                        >
                             <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold">
                                 {user.name ? user.name.charAt(0).toUpperCase() : 'A'}
                             </div>
                             <div className="text-sm">
                                 <p className="font-bold text-slate-800 leading-tight">{user.name || 'Admin User'}</p>
-                                <p className="text-slate-500 text-xs">Super Administrator</p>
+                                <p className="text-slate-500 text-xs">Super Administrator · My Profile</p>
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 </header>
 

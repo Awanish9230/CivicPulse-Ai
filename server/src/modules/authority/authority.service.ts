@@ -1,11 +1,12 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import User, { AuthorityLevel, Department } from "../user/user.model.js";
+import User, { AuthorityLevel, Department, DutyStatus } from "../user/user.model.js";
 import Complaint, { ComplaintStatus } from "../complaint/complaint.model.js";
 import ApiError from "../../utils/ApiError.js";
 import notificationService from "../notification/notification.service.js";
 import uploadOnCloudinary from "../../utils/cloudinary.js";
 import { calculateDistance } from '../../utils/geo.js';
 import { getCategoriesForDepartment } from "../../utils/departmentMapping.js";
+import { getDepartmentForCategory } from "./autoAssign.service.js";
 import type { AuthenticatedUser } from "../../types/express.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -16,10 +17,12 @@ const ensureAuthorityOrAdmin = (actor: AuthenticatedUser): void => {
     }
 };
 
-const checkSuperOfficer = (actor: AuthenticatedUser): void => {
-    if (actor.email !== 'officer@city.gov') {
-        throw new ApiError(403, "Access denied. Only the chief officer can perform this action.");
-    }
+export const isGlobalAuthorityManager = (actor: AuthenticatedUser): boolean => {
+    return (
+        actor.role === 'Admin' ||
+        Boolean(actor.isAuthorityAdmin) ||
+        (Array.isArray(actor.permissions) && actor.permissions.includes('manage_all_departments'))
+    );
 };
 
 const buildAuthorityFilter = (
@@ -28,7 +31,7 @@ const buildAuthorityFilter = (
 ): Record<string, unknown> => {
     const filter = { ...baseFilter };
 
-    if (actor.role !== 'Admin') {
+    if (!isGlobalAuthorityManager(actor)) {
         const allowedCategories = getCategoriesForDepartment(actor.department);
         filter.category = { $in: allowedCategories };
 
@@ -49,20 +52,42 @@ export interface CreateAuthorityInput {
     name?: string;
     authorityLevel?: AuthorityLevel;
     department?: Department;
+    isAuthorityAdmin?: boolean;
+    dutyStatus?: DutyStatus;
 }
 
 export const createAuthorityMember = async (
     input: CreateAuthorityInput,
     actor: AuthenticatedUser
 ) => {
-    checkSuperOfficer(actor);
+    ensureAuthorityOrAdmin(actor);
+    const globalManager = isGlobalAuthorityManager(actor);
 
-    const { email, password, name, authorityLevel, department } = input;
-    if (!email || !password || !name || !authorityLevel || !department) {
+    if (!globalManager && actor.authorityLevel !== 'HOD') {
+        throw new ApiError(403, "Only Administrators or Heads of Department can create officials.");
+    }
+
+    const {
+        email,
+        password,
+        name,
+        authorityLevel = 'Junior',
+        department,
+        isAuthorityAdmin = false,
+        dutyStatus = 'On Duty'
+    } = input;
+
+    const targetDepartment = globalManager ? department : actor.department;
+
+    if (!email || !password || !name || !authorityLevel || !targetDepartment) {
         throw new ApiError(400, "All fields are required");
     }
 
-    const existedUser = await User.findOne({ email });
+    if (!globalManager && authorityLevel === 'HOD') {
+        throw new ApiError(403, "Only Admin or Authority Admin can appoint an HOD.");
+    }
+
+    const existedUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existedUser) {
         throw new ApiError(409, "Authority member with this email already exists");
     }
@@ -70,16 +95,19 @@ export const createAuthorityMember = async (
     const anonymousId = User.generateAnonymousId();
 
     const user = await User.create({
-        email,
+        email: email.toLowerCase().trim(),
         password,
-        name,
+        name: name.trim(),
         role: "Authority",
         authorityLevel,
-        department,
+        department: targetDepartment,
+        dutyStatus,
+        isActive: true,
+        isAuthorityAdmin: globalManager ? Boolean(isAuthorityAdmin) : false,
         anonymousId
     });
 
-    return User.findById(user._id).select("-password");
+    return User.findById(user._id).select("-password -refreshToken");
 };
 
 export const getAuthorityMembers = async (actor: AuthenticatedUser) => {
@@ -329,8 +357,9 @@ export const assignTask = async (
     actor: AuthenticatedUser
 ) => {
     ensureAuthorityOrAdmin(actor);
+    const globalManager = isGlobalAuthorityManager(actor);
 
-    if (actor.role === 'Authority' && actor.authorityLevel === 'Junior') {
+    if (!globalManager && actor.authorityLevel === 'Junior') {
         throw new ApiError(403, "Juniors cannot assign tasks");
     }
 
@@ -342,11 +371,25 @@ export const assignTask = async (
         throw new ApiError(404, "Assignee not found or is not an authority member");
     }
 
-    if (actor.role !== 'Admin' && actor.department !== assignee.department) {
+    if (assignee.isActive === false || assignee.isBanned) {
+        throw new ApiError(400, "Cannot assign task to a disabled or blocked official");
+    }
+
+    if (complaint.category && complaint.category !== 'Others') {
+        const expectedDepartment = getDepartmentForCategory(complaint.category);
+        if (assignee.department !== expectedDepartment) {
+            throw new ApiError(
+                400,
+                `${complaint.category} issues can only be assigned to ${expectedDepartment} officials`
+            );
+        }
+    }
+
+    if (!globalManager && actor.department !== assignee.department) {
         throw new ApiError(403, "Cannot assign tasks outside your department");
     }
 
-    if (actor.role !== 'Admin') {
+    if (!globalManager) {
         const levelMap: Record<AuthorityLevel, number> = { Junior: 1, Senior: 2, HOD: 3 };
         const assigneeRank = assignee.authorityLevel ? levelMap[assignee.authorityLevel] : 0;
         const actorRank = actor.authorityLevel ? levelMap[actor.authorityLevel] : 0;
@@ -385,11 +428,35 @@ export const assignTask = async (
     return complaint;
 };
 
+export const updateDutyStatus = async (
+    dutyStatus: DutyStatus | undefined,
+    actor: AuthenticatedUser
+) => {
+    ensureAuthorityOrAdmin(actor);
+    const validStatuses: DutyStatus[] = ['On Duty', 'Off Duty', 'On Leave', 'Busy'];
+    if (!dutyStatus || !validStatuses.includes(dutyStatus)) {
+        throw new ApiError(400, "Invalid duty status");
+    }
+
+    const updated = await User.findByIdAndUpdate(
+        actor._id,
+        { dutyStatus, lastSeenAt: new Date() },
+        { new: true }
+    ).select("-password -refreshToken");
+
+    if (!updated) {
+        throw new ApiError(404, "Official not found");
+    }
+
+    return updated;
+};
+
 export const getDepartmentMembers = async (actor: AuthenticatedUser) => {
     ensureAuthorityOrAdmin(actor);
+    const globalManager = isGlobalAuthorityManager(actor);
 
     const filter: Record<string, unknown> = { role: "Authority" };
-    if (actor.role !== 'Admin') {
+    if (!globalManager) {
         filter.department = actor.department;
     }
 
@@ -417,13 +484,14 @@ export const getDepartmentMembers = async (actor: AuthenticatedUser) => {
 
 export const getEmployeeReport = async (employeeId: string, actor: AuthenticatedUser) => {
     ensureAuthorityOrAdmin(actor);
+    const globalManager = isGlobalAuthorityManager(actor);
 
     const employee = await User.findById(employeeId).select("-password -refreshToken");
     if (!employee || employee.role !== 'Authority') {
         throw new ApiError(404, "Employee not found");
     }
 
-    if (actor.role !== 'Admin' && actor.department !== employee.department) {
+    if (!globalManager && actor.department !== employee.department) {
         throw new ApiError(403, "Can only view reports for employees in your department");
     }
 

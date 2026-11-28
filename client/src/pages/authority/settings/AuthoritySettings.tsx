@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Settings, User, Bell, Shield, Mail, MapPin, Save } from 'lucide-react';
+import { Settings, User, Bell, Shield, Mail, MapPin, Save, Edit3 } from 'lucide-react';
 import { AuthContext } from '../../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -64,9 +65,18 @@ const AuthoritySettings: React.FC = () => {
                 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
                 className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden"
             >
-                <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-                    <User className="text-emerald-600" size={24} />
-                    <h2 className="text-xl font-black text-slate-900">Official Profile</h2>
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <User className="text-emerald-600" size={24} />
+                        <h2 className="text-xl font-black text-slate-900">Official Profile</h2>
+                    </div>
+                    <Link
+                        to="/authority/profile"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition-colors"
+                    >
+                        <Edit3 size={14} />
+                        Edit Profile Details
+                    </Link>
                 </div>
                 <div className="p-8">
                     <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -165,11 +175,14 @@ const AuthoritySettings: React.FC = () => {
                 <div className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div>
                         <h4 className="font-black text-red-600 text-xl mb-1">Security Settings</h4>
-                        <p className="text-sm font-medium text-red-500/70">Update password or configure two-factor authentication.</p>
+                        <p className="text-sm font-medium text-red-500/70">Update password or review active role permissions.</p>
                     </div>
-                    <button className="bg-white text-red-600 border border-red-200 px-6 py-2.5 rounded-xl font-bold hover:bg-red-50 hover:border-red-300 transition-colors whitespace-nowrap">
+                    <Link
+                        to="/authority/profile"
+                        className="bg-white text-red-600 border border-red-200 px-6 py-2.5 rounded-xl font-bold hover:bg-red-50 hover:border-red-300 transition-colors whitespace-nowrap"
+                    >
                         Change Password
-                    </button>
+                    </Link>
                 </div>
             </motion.div>
         </motion.div>
